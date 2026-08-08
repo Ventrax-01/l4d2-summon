@@ -77,7 +77,7 @@ export default function Reservar() {
       <main className="rsv">
         <header className="rsv-cab">
           {intent.slotIndex != null && (
-            <span className="rsv-etiqueta">SERVIDOR #{intent.slotIndex}</span>
+            <span className="rsv-etiqueta">SERVIDOR #{intent.slotIndex} · TUYO</span>
           )}
           <h1>Preparando tu servidor</h1>
           <p>
@@ -85,6 +85,7 @@ export default function Reservar() {
               ? 'Está durmiendo, así que tarda un poco más. Suele estar listo en unos 3 minutos.'
               : 'Suele estar listo en menos de un minuto.'}
           </p>
+          <p className="rsv-persiste">Puedes salir y volver: tu reserva sigue viva.</p>
         </header>
 
         {intent.stepper && <Stepper datos={intent.stepper} fallido={fallido} />}

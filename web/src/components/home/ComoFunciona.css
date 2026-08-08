@@ -1,0 +1,150 @@
+/* Valores tomados literalmente del prototipo (design/Prototipo.dc.html). */
+
+.cf-divisor {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.cf-linea {
+  flex: 1;
+  height: 1px;
+  background: #1e222a;
+}
+
+.cf-rotulo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10.5px;
+  color: #6e7787;
+  letter-spacing: 0.18em;
+}
+
+.cf-lista {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0 2px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* Espina central. En móvil se corre al carril de los badges. */
+.cf-espina {
+  position: absolute;
+  left: 50%;
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  transform: translateX(-1px);
+  background: linear-gradient(180deg, rgb(40 216 255 / 0.35), rgb(40 216 255 / 0.08));
+}
+
+.cf-paso {
+  display: grid;
+  grid-template-columns: 1fr 96px 1fr;
+  align-items: center;
+}
+
+.cf-tarjeta {
+  /* grid-row explícito: sin él, al poner la tarjeta en la columna 3 el badge (columna 2)
+     no cabe "hacia atrás" en la misma fila y el auto-placement lo tira a la siguiente. */
+  grid-row: 1;
+  grid-column: 1;
+  justify-self: end;
+  width: min(100%, 340px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 20px;
+  border: 1px solid #262a33;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
+  box-sizing: border-box;
+}
+
+.cf-paso--der .cf-tarjeta {
+  grid-column: 3;
+  justify-self: start;
+}
+
+/* Sin esto flexbox comprime el SVG y el icono se ve aplastado. */
+.cf-tarjeta > svg {
+  flex: none;
+}
+
+.cf-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cf-titulo {
+  /* Es un h3 por semántica, pero se ve como el span del prototipo: mismo tamaño y
+     sin el ajuste de tracking que aplican los títulos globales. */
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: normal;
+  margin: 0;
+}
+
+.cf-desc {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #8a94a6;
+}
+
+.cf-badge {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-round);
+  background: #0e2a33;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 0 18px rgb(40 216 255 / 0.25);
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+/* En móvil no caben dos columnas: el badge pasa a la izquierda y las tarjetas se
+   apilan en un solo carril. */
+@media (max-width: 780px) {
+  .cf-paso,
+  .cf-paso--der {
+    grid-template-columns: 40px 1fr;
+    gap: 14px;
+  }
+
+  .cf-tarjeta,
+  .cf-paso--der .cf-tarjeta {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: stretch;
+    width: 100%;
+    padding: 18px 16px;
+  }
+
+  .cf-badge {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  .cf-espina {
+    left: 20px;
+    transform: none;
+  }
+}

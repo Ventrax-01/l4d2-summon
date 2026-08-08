@@ -6,7 +6,7 @@ test.describe('Home pública', () => {
   test('se ve la flota sin iniciar sesión', async ({ page }) => {
     await page.goto('/?anon=1&n=4')
 
-    await expect(page.getByRole('heading', { name: 'Servidores' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Reserva y juega en minutos' })).toBeVisible()
     await expect(page.getByRole('article')).toHaveCount(4)
 
     // Sin sesión, la cabecera invita a entrar y el CTA avisa de que hará falta.
@@ -35,7 +35,7 @@ test.describe('Home pública', () => {
 
   test('la nota del cierre automático se comunica como algo normal', async ({ page }) => {
     await page.goto('/?anon=1')
-    await expect(page.getByText(/se cierran solos cuando quedan vacíos/)).toBeVisible()
+    await expect(page.getByText(/queda vacío un rato, se cierra solo/)).toBeVisible()
   })
 
   test('un servidor libre se muestra como disponible', async ({ page }) => {

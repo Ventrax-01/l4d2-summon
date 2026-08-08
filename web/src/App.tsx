@@ -8,6 +8,7 @@ import { useFlota } from '@/context/FlotaContext'
 import type { ReactElement } from 'react'
 
 import PanelEscenarios from '@/components/demo/PanelEscenarios'
+import PieGlobal from '@/components/layout/PieGlobal'
 import Home from '@/screens/Home'
 import Login from '@/screens/Login'
 import Reservar from '@/screens/Reservar'
@@ -41,7 +42,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <div className="pagina">
       <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/entrar" element={<Login />} />
@@ -79,7 +80,8 @@ export default function App() {
       />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PieGlobal />
       <PanelEscenarios />
-    </>
+    </div>
   )
 }

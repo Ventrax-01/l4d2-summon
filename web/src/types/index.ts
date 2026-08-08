@@ -13,6 +13,7 @@ export type EstadoSlot =
   | 'VACIO'           // activo pero sin humanos; corre el timer de cierre
   | 'RESERVADO_COLA'  // liberado y guardado para el primero de la cola
   | 'CERRANDO'        // el agente lo está deteniendo
+  | 'ERROR'           // no se pudo preparar; el operador tiene que mirarlo
 
 /** Estados del intent de reserva. Los intermedios se mapean al stepper que ve el usuario. */
 export type EstadoIntent =

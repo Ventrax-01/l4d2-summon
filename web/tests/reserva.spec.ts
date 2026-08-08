@@ -104,6 +104,6 @@ test.describe('La reserva sobrevive a la navegación', () => {
     await expect(page).toHaveURL(/\/$|\/\?/)
 
     // El slot aparece como preparándose para todo el mundo.
-    await expect(page.getByText('Alguien lo está preparando…')).toBeVisible()
+    await expect(page.getByText('Alguien lo está reservando ahora mismo…')).toBeVisible()
   })
 })

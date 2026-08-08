@@ -45,7 +45,7 @@ test.describe('Cola de espera', () => {
     await page.getByRole('button', { name: 'Salir de la cola' }).click()
 
     await expect(page).toHaveURL(/\/$|\/\?/)
-    await expect(page.getByRole('heading', { name: 'Servidores' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Reserva y juega en minutos' })).toBeVisible()
   })
 
   test('reclamar el turno arranca la preparación', async ({ page }) => {

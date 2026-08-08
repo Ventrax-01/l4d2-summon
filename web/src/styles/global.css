@@ -12,13 +12,15 @@ body,
   height: 100%;
 }
 
+/* El prototipo no fija tamaño ni interlineado en body: hereda los del navegador
+   (16px / normal). Fijar 15px/1.5 desplazaba TODO el texto que no lleva tamaño
+   explícito, y el resultado no cuadraba con el diseño. */
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.5;
+  line-height: normal;
   -webkit-font-smoothing: antialiased;
 }
 

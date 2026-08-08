@@ -72,7 +72,16 @@ function crear(e: Escenario): EstadoInterno {
   const ahora = Date.now()
   const slots: SlotInterno[] = Array.from({ length: e.numServidores }, (_, i) => {
     const index = i + 1
-    if (!e.todosOcupados) return { index, estado: 'LIBRE' as EstadoSlot }
+    // Un slot libre ya sabe qué mapa cargará: la tarjeta lo muestra como "próximo mapa".
+    if (!e.todosOcupados) {
+      return {
+        index,
+        estado: 'LIBRE' as EstadoSlot,
+        map: estable(CAMPANIAS, index).map,
+        players: 0,
+        maxPlayers: 8,
+      }
+    }
 
     const camp = estable(CAMPANIAS, index)
     return {
@@ -220,9 +229,9 @@ function liberarSlotDe(slotIndex: number | null): void {
   s.ownerNick = undefined
   s.ownerSteamId = undefined
   s.connect = undefined
-  s.players = undefined
-  s.map = undefined
+  s.players = 0
   s.since = undefined
+  // El mapa se conserva: es el que cargará el siguiente que lo reserve.
 }
 
 // ---------------------------------------------------------------- API del motor

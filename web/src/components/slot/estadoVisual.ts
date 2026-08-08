@@ -52,6 +52,12 @@ const VISUALES: Record<EstadoSlot, Visual> = {
     color: '--text-muted',
     descripcion: 'Servidor cerrándose',
   },
+  ERROR: {
+    etiqueta: 'ERROR',
+    icono: '⚠',
+    color: '--danger',
+    descripcion: 'El servidor no pudo prepararse',
+  },
 }
 
 export function visualDe(estado: EstadoSlot): Visual {

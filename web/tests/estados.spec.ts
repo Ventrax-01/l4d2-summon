@@ -9,8 +9,8 @@ test.describe('Errores', () => {
   test('si el servicio no responde, se muestra la pantalla global', async ({ page }) => {
     await page.goto('/?caido=1')
 
-    await expect(page.getByRole('heading', { name: 'No podemos conectar' })).toBeVisible()
-    await expect(page.getByText(/No es cosa tuya/)).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Estamos fuera de línea' })).toBeVisible()
+    await expect(page.getByText(/No es tu conexión/)).toBeVisible()
     await expect(page.getByRole('button', { name: 'Reintentar' })).toBeVisible()
   })
 
@@ -76,7 +76,7 @@ test.describe('Mi servidor', () => {
     await page.getByRole('dialog').getByRole('button', { name: /Sí, cerrar servidor/ }).click()
 
     await expect(page).toHaveURL(/\/$|\/\?/)
-    await expect(page.getByRole('heading', { name: 'Servidores' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Reserva y juega en minutos' })).toBeVisible()
   })
 })
 

@@ -1,8 +1,11 @@
 /* Tarjeta de servidor.
 
-   Traducida del prototipo. Cubre los estados que puede devolver el backend: libre,
-   preparando, activo (con dueño, mapa y jugadores), vacío, reservado para la cola,
-   cerrando y error. El CTA de reservar NO vive aquí: es el botón principal de la home. */
+   Cada estado que puede devolver el backend tiene su presentación: libre, preparando,
+   activo, vacío, reservado para la cola, cerrando y error. El estado nunca se comunica
+   solo con color — siempre lleva icono y etiqueta de texto.
+
+   La miniatura del mapa se servirá desde el CDN; por ahora es un degradado con el rótulo
+   que marca dónde irá la imagen. */
 
 import type { Slot } from '@/types'
 import { visualDe } from './estadoVisual'
@@ -11,10 +14,9 @@ import './TarjetaSlot.css'
 
 interface Props {
   slot: Slot
-  /** true si el slot es del usuario en sesión. */
   mio?: boolean
-  /** Errores por slot: el backend no los expone en el estado, los pone la UI. */
-  conError?: boolean
+  /** Reservar este servidor concreto (no "uno cualquiera"). */
+  onReservar?: () => void
   onGestionar?: () => void
   onReintentar?: () => void
   onAvisar?: () => void
@@ -23,50 +25,48 @@ interface Props {
 export default function TarjetaSlot({
   slot,
   mio = false,
-  conError = false,
+  onReservar,
   onGestionar,
   onReintentar,
   onAvisar,
 }: Props) {
   const v = visualDe(slot.estado)
   const enJuego = slot.estado === 'ACTIVO' || slot.estado === 'VACIO'
+  const libre = slot.estado === 'LIBRE'
+  const preparando = slot.estado === 'PREPARANDO'
+  const conError = slot.estado === 'ERROR'
   const lleno = Boolean(slot.players && slot.maxPlayers && slot.players >= slot.maxPlayers)
   const titulo = `Servidor #${slot.index}`
+  const mapa = nombreDeMapa(slot.map)
 
-  if (conError) {
-    return (
-      <article className="tsl tsl--error">
-        <div className="tsl-cuerpo">
-          <div className="tsl-fila">
-            <h3 className="tsl-nombre">{titulo}</h3>
-            <span className="tsl-chip tsl-chip--error">⚠ ERROR</span>
-          </div>
-          <p className="tsl-sub">No pudimos preparar este servidor.</p>
-          <div className="tsl-acciones">
-            <button className="tsl-btn tsl-btn--contorno" onClick={onReintentar}>
-              Reintentar
-            </button>
-            <button className="tsl-btn tsl-btn--texto" onClick={onAvisar}>
-              Avisar al operador
-            </button>
-          </div>
-        </div>
-      </article>
-    )
-  }
+  // El error no muestra miniatura: no hay partida que enseñar.
+  const conMiniatura = (enJuego || libre || preparando) && !conError
 
   return (
     <article className="tsl" data-estado={slot.estado}>
-      {enJuego && (
-        <div className="tsl-mapa" role="img" aria-label={`Mapa ${nombreDeMapa(slot.map)}`}>
+      {conMiniatura && (
+        <div
+          className={`tsl-mapa ${libre ? 'tsl-mapa--atenuado' : ''} ${preparando ? 'tsl-mapa--prep' : ''}`}
+          role="img"
+          aria-label={mapa ? `Mapa ${mapa}` : 'Servidor sin partida'}
+        >
           <span className="tsl-mapa-trama" aria-hidden="true" />
+          <span className="tsl-mapa-cdn" aria-hidden="true">
+            IMAGEN MAPA · CDN
+          </span>
+
           {slot.estado === 'ACTIVO' && (
-            <span className="tsl-enjuego">
+            <span className="tsl-badge tsl-badge--juego">
               <span className="tsl-punto" aria-hidden="true" />
               EN JUEGO
             </span>
           )}
-          <span className="tsl-mapa-nombre">{nombreDeMapa(slot.map)}</span>
+
+          {mapa && (
+            <span className="tsl-mapa-nombre">
+              {libre ? `Próximo mapa · ${mapa}` : mapa}
+            </span>
+          )}
         </div>
       )}
 
@@ -77,35 +77,37 @@ export default function TarjetaSlot({
             {mio && <span className="tsl-tuyo">TUYO</span>}
           </h3>
 
-          {enJuego && slot.players != null && (
-            <span className="tsl-jugadores">
-              <span aria-hidden="true">👥</span> {slot.players}/{slot.maxPlayers ?? 8}
+          {(enJuego || libre) && (
+            <span className={`tsl-jugadores ${libre ? 'tsl-jugadores--vacio' : ''}`}>
+              <span aria-hidden="true">👥</span> {slot.players ?? 0}/{slot.maxPlayers ?? 8}
             </span>
           )}
 
           {v.etiqueta && (
-            <span className="tsl-chip" style={{ '--c': `var(${v.color})` } as React.CSSProperties}>
+            <span
+              className={`tsl-chip ${preparando ? 'tsl-chip--pulso' : ''}`}
+              style={{ '--c': `var(${v.color})` } as React.CSSProperties}
+            >
               <span aria-hidden="true">{v.icono}</span> {v.etiqueta}
             </span>
           )}
         </div>
 
-        {/* Cuando hay chip, su texto ya anuncia el estado. Cuando no lo hay (ACTIVO), la
-            insignia "EN JUEGO" vive dentro de un role="img" y los lectores de pantalla no
-            leen su contenido, así que hace falta el texto alternativo. */}
+        {/* Cuando no hay chip (ACTIVO), la insignia vive dentro de un role="img" y los
+            lectores de pantalla no leen su contenido: hace falta el texto alternativo. */}
         {!v.etiqueta && <span className="solo-lectores">{v.descripcion}</span>}
 
-        {slot.estado === 'LIBRE' && (
-          <p className="tsl-sub">Disponible — resérvalo y juega.</p>
-        )}
+        {libre && <p className="tsl-sub">Disponible — resérvalo y juega.</p>}
 
         {slot.estado === 'RESERVADO_COLA' && (
           <p className="tsl-sub">Guardado para el siguiente de la cola.</p>
         )}
 
-        {slot.estado === 'PREPARANDO' && (
+        {conError && <p className="tsl-sub">No pudo prepararse. Ya estamos en ello.</p>}
+
+        {preparando && (
           <>
-            <p className="tsl-sub">Alguien lo está preparando…</p>
+            <p className="tsl-sub">Alguien lo está reservando ahora mismo…</p>
             <div className="tsl-barra" role="progressbar" aria-label="Preparando servidor">
               <span />
             </div>
@@ -118,14 +120,32 @@ export default function TarjetaSlot({
               {iniciales(slot.ownerNick)}
             </span>
             <span className="tsl-dueno-nick">{slot.ownerNick}</span>
-            {slot.since && <span className="tsl-dueno-desde">· {desdeHace(slot.since)}</span>}
+            {slot.since && <span className="tsl-dueno-desde">· hace {desdeHace(slot.since)}</span>}
+          </div>
+        )}
+
+        {/* --- Acción --- */}
+        {libre && (
+          <button className="tsl-btn tsl-btn--libre" onClick={onReservar}>
+            Reservar este
+          </button>
+        )}
+
+        {conError && (
+          <div className="tsl-acciones">
+            <button className="tsl-btn tsl-btn--contorno" onClick={onReintentar}>
+              Reintentar
+            </button>
+            <button className="tsl-btn tsl-btn--texto" onClick={onAvisar}>
+              Avisar al operador
+            </button>
           </div>
         )}
 
         {enJuego &&
           (mio ? (
             <button className="tsl-btn tsl-btn--mio" onClick={onGestionar}>
-              Gestionar mi servidor
+              Ir a Mi servidor
             </button>
           ) : lleno ? (
             <button className="tsl-btn" disabled>
@@ -136,6 +156,12 @@ export default function TarjetaSlot({
               Entrar a jugar
             </a>
           ))}
+
+        {preparando && mio && (
+          <button className="tsl-btn tsl-btn--mio" onClick={onGestionar}>
+            Ver progreso
+          </button>
+        )}
       </div>
     </article>
   )

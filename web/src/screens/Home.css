@@ -8,12 +8,74 @@
   gap: 16px;
 }
 
-.home-cab {
+/* --- Hero --- */
+.hero {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+  gap: 20px;
+  padding: 22px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: rgb(21 24 30 / 0.88);
+}
+
+.hero-texto h1 {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.hero-texto > p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  max-width: 44ch;
+}
+
+.hero-conteo {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+  margin: 18px 0 0;
+  padding: 0;
+}
+
+.hero-conteo li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-conteo span {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 9.5px;
+  color: var(--text-subtle);
+  letter-spacing: 0.14em;
+}
+
+.hero-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.hero-num--libre { color: var(--free); }
+.hero-num--prep { color: var(--prep); }
+.hero-num--juego { color: var(--accent); }
+
+.hero-accion {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  min-width: 240px;
+}
+
+@media (max-width: 700px) {
+  .hero-accion { width: 100%; }
 }
 
 .home-titulo {
@@ -51,7 +113,7 @@
 
 /* CTA principal: la acción primaria del producto. */
 .home-cta {
-  height: 56px;
+  height: 58px;
   border: 0;
   border-radius: var(--r);
   background: var(--accent);
@@ -169,4 +231,22 @@
   font-size: 12.5px;
   line-height: 1.5;
   color: #8a94a6;
+}
+
+
+/* --- Fondo de la página --- */
+.pagina {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse 90% 40% at 50% 0%, rgb(40 216 255 / 0.06), transparent 60%),
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.015) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.015) 0 1px, transparent 1px 48px);
+}
+
+.home-cta--chico {
+  height: 44px;
+  padding: 0 24px;
+  font-size: 14px;
 }

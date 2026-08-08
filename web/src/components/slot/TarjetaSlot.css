@@ -264,3 +264,85 @@
   gap: 6px;
   margin-top: auto;
 }
+
+/* ---------------------------------------------- Añadidos del rediseño (ago 2026) */
+
+.tsl[data-estado='ERROR'] {
+  border-color: rgb(255 92 92 / 0.32);
+  background: rgb(255 92 92 / 0.04);
+}
+
+/* Un servidor libre enseña su próximo mapa, pero atenuado: todavía no hay partida. */
+.tsl-mapa--atenuado::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(16 17 20 / 0.5);
+}
+
+.tsl-mapa--prep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(16 17 20 / 0.3);
+}
+
+/* Marca dónde irá la imagen real del mapa servida desde el CDN. */
+.tsl-mapa-cdn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 3px 6px;
+  border-radius: var(--r-mini);
+  background: rgb(0 0 0 / 0.35);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 8px;
+  color: #8a94a6;
+  letter-spacing: 0.14em;
+}
+
+.tsl-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--r-chip);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.tsl-badge--juego {
+  background: rgb(9 42 52 / 0.85);
+  border: 1px solid rgb(40 216 255 / 0.4);
+  color: var(--accent);
+}
+
+/* El nombre del mapa va sobre la capa de atenuación, no debajo. */
+.tsl-mapa-nombre {
+  z-index: 2;
+}
+
+.tsl-chip--pulso {
+  animation: vxPulse 1.6s infinite;
+}
+
+.tsl-jugadores--vacio {
+  color: var(--text-subtle);
+}
+
+.tsl-btn--libre {
+  border-color: rgb(61 220 145 / 0.45);
+  color: var(--free);
+}
+
+.tsl-btn--libre:hover {
+  background: rgb(61 220 145 / 0.08);
+}

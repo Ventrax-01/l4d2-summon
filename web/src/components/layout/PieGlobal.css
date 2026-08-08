@@ -1,0 +1,13 @@
+/* Valores del prototipo. El `font` en atajo también reinicia la altura de línea, así que
+   se fija explícitamente: heredar la del cuerpo (1.5) hacía que el pie se viera distinto. */
+
+.pie {
+  margin-top: auto;
+  padding: 22px 20px 18px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: normal;
+  color: #5b6675;
+}

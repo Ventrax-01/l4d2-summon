@@ -1,5 +1,5 @@
 .caido {
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -9,9 +9,19 @@
   text-align: center;
 }
 
-.caido-ico {
-  font-size: 40px;
-  opacity: 0.85;
+/* Logo apagado: la marca sigue ahí, pero sin vida. */
+.caido-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-modal);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text-disabled);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
 }
 
 .caido h1 {
@@ -38,4 +48,9 @@
   font-weight: 700;
   font-size: 15px;
   box-shadow: 0 0 28px var(--accent-glow-soft);
+}
+
+.caido-auto {
+  font-size: 12.5px;
+  color: var(--text-subtle);
 }
