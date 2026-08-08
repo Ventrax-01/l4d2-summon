@@ -40,6 +40,22 @@
   when: fuente_plugin is changed or not summon_smx.stat.exists
   changed_when: true
 
+- name: Install the summon matchmode plugin list
+  ansible.builtin.copy:
+    src: summon_plugins.cfg
+    dest: "{{ install_dir }}/left4dead2/cfg/cfgogl/summon_plugins.cfg"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+
+- name: Ask confogl to load the admin plugin when a match starts
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/cfg/cfgogl/zonemod/zonemod.cfg"
+    line: "exec cfgogl/summon_plugins.cfg"
+    insertafter: EOF
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+
 - name: Deploy the agent
   ansible.builtin.copy:
     src: summon_agent.py

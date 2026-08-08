@@ -4,10 +4,10 @@
   width: 100%;
   /* El relleno inferior es la mitad de lo que separa el último bloque del pie; la otra
      mitad es el relleno superior del propio pie. */
-  padding: 24px 20px 8px;
+  padding: 14px 20px 6px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 /* --- Hero --- */
@@ -22,7 +22,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 20px;
-  padding: 22px 24px;
+  padding: 16px 24px;
   border-radius: var(--r-modal);
   border: 1px solid var(--border);
   background: rgb(21 24 30 / 0.88);
@@ -149,7 +149,7 @@
   /* Se suma al gap del contenedor: separa el bloque de servidores del hero y de
      la sección de abajo, para que respire como bloque propio. Ajustado a la baja —
      con 40px entre tarjetas, el aire de fuera no necesita competir con el de dentro. */
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 @media (max-width: 639px) {

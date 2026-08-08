@@ -135,6 +135,27 @@
   when: fuentes_plugins is changed or not unloader_smx.stat.exists
   changed_when: true
 
+# Without this, a competitive match silently drops the fleet's always-on plugins: chat logs
+# stop being written, !admin stops working, and the idle FPS cap goes away — for the whole
+# match, with no way to bring them back until the map changes.
+- name: Install the fleet's matchmode plugin list
+  ansible.builtin.copy:
+    src: fleet_plugins.cfg
+    dest: "{{ install_dir }}/left4dead2/cfg/cfgogl/fleet_plugins.cfg"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+
+# The line goes into ZoneMod's own config, so a ZoneMod update wipes it. Re-running the
+# playbook puts it back, which is why this is a task and not a one-off edit.
+- name: Ask confogl to load them when a match starts
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/cfg/cfgogl/zonemod/zonemod.cfg"
+    line: "exec cfgogl/fleet_plugins.cfg"
+    insertafter: EOF
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+
 # Custom banners — opt-in. The HTML files are gitignored (see motd_file/host_file
 # in defaults). Runs after the zonemod role so it overrides ZoneMod's defaults.
 - name: Install a custom MOTD (optional; HTML is gitignored)

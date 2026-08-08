@@ -1,7 +1,7 @@
 .cf {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 /* Valores tomados literalmente del prototipo (design/Prototipo.dc.html). */
@@ -9,7 +9,7 @@
 .cf-divisor {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 .cf-linea {
@@ -29,19 +29,21 @@
 .cf-lista {
   list-style: none;
   margin: 0;
-  padding: 6px 0 2px;
+  padding: 2px 0 0;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 26px;
+  /* Compactado para que la página entera quepa en una pantalla de portátil sin desplazar:
+     el pie forma parte del mensaje y no se debería tener que bajar para verlo. */
+  gap: 14px;
 }
 
 /* Espina central. En móvil se corre al carril de los badges. */
 .cf-espina {
   position: absolute;
   left: 50%;
-  top: 24px;
-  bottom: 24px;
+  top: 18px;
+  bottom: 18px;
   width: 2px;
   transform: translateX(-1px);
   background: linear-gradient(180deg, rgb(40 216 255 / 0.35), rgb(40 216 255 / 0.08));
@@ -63,7 +65,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 22px 20px;
+  padding: 12px 20px;
   border: 1px solid #262a33;
   border-radius: 8px;
   background: var(--surface);
