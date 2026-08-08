@@ -109,9 +109,19 @@ La Lambda de encendido manda el paquete mágico a la IP pública de casa. El rou
 al equipo… mientras el equipo esté encendido. **Apagado, el router ya no tiene su entrada ARP
 y no sabe a qué tarjeta entregar el paquete: lo tira.** Y es justo cuando hace falta.
 
-Comprobado en esta instalación: los paquetes llegan de verdad al equipo (se ven en `udp/9`
-cuando está encendido), y aun así, apagado, no despierta desde internet — pero sí desde la
-LAN. O sea que la tarjeta y la BIOS están bien; el eslabón que falla es el router.
+Comprobado en esta instalación, y el patrón depende de **cuánto lleve apagada**:
+
+| tiempo apagada | encendido desde internet |
+|---|---|
+| 66 s | ✅ despertó |
+| 120 s | ✅ |
+| 201 s | ✅ |
+| 6 h | ❌ (dos intentos seguidos, y el barrido reintentando cada 60 s) |
+
+Los paquetes llegan de verdad al equipo —se ven entrar por `udp/9` con el equipo encendido— y
+desde la LAN despierta siempre. O sea que la tarjeta y la BIOS están bien: recién apagada el
+router todavía la recuerda y entrega, y cuando esa entrada caduca deja de saber a quién
+entregar. Insistir no sirve: el barrido manda un paquete por minuto y ninguno llega.
 
 En el router hace falta **una** de estas dos cosas:
 
