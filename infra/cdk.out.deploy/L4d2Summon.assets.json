@@ -16,6 +16,21 @@
         }
       }
     },
+    "d2aa86f5926fb00c563fe80f5b5f52303d1030e4d755e155316fbc8bb81e8052": {
+      "displayName": "Funciones/auth-steam/Code",
+      "source": {
+        "path": "asset.d2aa86f5926fb00c563fe80f5b5f52303d1030e4d755e155316fbc8bb81e8052",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "211125402452-us-east-2-35af429b": {
+          "bucketName": "cdk-hnb659fds-assets-211125402452-us-east-2",
+          "objectKey": "d2aa86f5926fb00c563fe80f5b5f52303d1030e4d755e155316fbc8bb81e8052.zip",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::211125402452:role/cdk-hnb659fds-file-publishing-role-211125402452-us-east-2"
+        }
+      }
+    },
     "63dce0273fd9cb525f74e71d3b25e5006ec9231fbad85e88186fc85385625b41": {
       "displayName": "Funciones/wol/Code",
       "source": {
@@ -76,16 +91,16 @@
         }
       }
     },
-    "b226205700860ee26bb574ca2e4688a730c4e539a17d053021bc96a6798d7aac": {
+    "41ce43d2e54b11c28b247ca0bdd109635e19d85caa4a74213b0ee81878a31dc6": {
       "displayName": "L4d2Summon Template",
       "source": {
         "path": "L4d2Summon.template.json",
         "packaging": "file"
       },
       "destinations": {
-        "211125402452-us-east-2-c1896ab0": {
+        "211125402452-us-east-2-4cd7c156": {
           "bucketName": "cdk-hnb659fds-assets-211125402452-us-east-2",
-          "objectKey": "b226205700860ee26bb574ca2e4688a730c4e539a17d053021bc96a6798d7aac.json",
+          "objectKey": "41ce43d2e54b11c28b247ca0bdd109635e19d85caa4a74213b0ee81878a31dc6.json",
           "region": "us-east-2",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::211125402452:role/cdk-hnb659fds-file-publishing-role-211125402452-us-east-2"
         }

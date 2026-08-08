@@ -553,7 +553,7 @@
     ],
     "Code": {
      "S3Bucket": "cdk-hnb659fds-assets-211125402452-us-east-2",
-     "S3Key": "7fb031f1401bfc53cb17f8291abefbe41d7059eda0185096b93a4fd0ec584b50.zip"
+     "S3Key": "d2aa86f5926fb00c563fe80f5b5f52303d1030e4d755e155316fbc8bb81e8052.zip"
     },
     "Environment": {
      "Variables": {
@@ -611,7 +611,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "L4d2Summon/Funciones/auth-steam/Resource",
-    "aws:asset:path": "asset.7fb031f1401bfc53cb17f8291abefbe41d7059eda0185096b93a4fd0ec584b50",
+    "aws:asset:path": "asset.d2aa86f5926fb00c563fe80f5b5f52303d1030e4d755e155316fbc8bb81e8052",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
