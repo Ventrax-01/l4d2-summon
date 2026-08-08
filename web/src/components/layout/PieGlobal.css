@@ -3,7 +3,10 @@
 
 .pie {
   margin-top: auto;
-  padding: 22px 20px 18px;
+  /* El relleno superior baja de los 22px del prototipo a 14: con el pie anclado abajo,
+     esos 22 se sumaban al relleno de la página y dejaban al texto demasiado suelto de la
+     última ficha. */
+  padding: 14px 20px 18px;
   text-align: center;
   font-family: var(--font-body);
   font-weight: 400;

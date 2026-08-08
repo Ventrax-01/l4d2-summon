@@ -2,7 +2,9 @@
   max-width: 1320px;
   margin: 0 auto;
   width: 100%;
-  padding: 24px 20px 36px;
+  /* El relleno inferior es la mitad de lo que separa el último bloque del pie; la otra
+     mitad es el relleno superior del propio pie. */
+  padding: 24px 20px 8px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -145,8 +147,9 @@
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 40px;
   /* Se suma al gap del contenedor: separa el bloque de servidores del hero y de
-     la sección de abajo, para que respire como bloque propio. */
-  margin: 18px 0 26px;
+     la sección de abajo, para que respire como bloque propio. Ajustado a la baja —
+     con 40px entre tarjetas, el aire de fuera no necesita competir con el de dentro. */
+  margin: 0 0 4px;
 }
 
 @media (max-width: 639px) {
