@@ -39,3 +39,37 @@ Simplificaciones que esto habilita (aplicar en el diseño):
   instancias L4D2 aguanta antes de fijar N (ahora sin la agravante de co-tenencia crítica, ya que
   InfoGestion es prescindible).
 - Riesgo #3 (abuso de encendido) → sin cambios; mitigado por el rate-limit atómico en el claim.
+
+---
+
+## Decisiones de repositorio (2026-08-08)
+
+**Monorepo público `l4d2-summon`.** Todo el sistema vive en un solo repositorio, público:
+`web/`, `infra/`, `agent/`, `ansible/`, `docs/`, `design/`.
+
+| Decisión | Detalle |
+|---|---|
+| **Nombre** | `l4d2-summon` — "invocar" un servidor describe la experiencia del jugador mejor que cualquier término de infraestructura. Sustituye al provisional `l4d2-panel`. |
+| **Visibilidad** | **Público.** Esto anula el argumento que sostenía la separación de repos: ya no hay conflicto entre un repo público (la flota) y uno privado (el panel). |
+| **Fusión de `l4d2-fleet`** | Su contenido pasa a `ansible/` como material nuevo. El repositorio original queda **archivado** en GitHub con un aviso; su historia sigue consultable ahí. |
+| **Ubicación del agente** | `agent/` en este monorepo, **no** en el Ansible. El agente es un cliente de la API del panel (habla `/agent/poll`), así que pertenece junto al contrato que consume. Ansible solo lo instala, copiándolo del checkout local. |
+| **Plugin `fleet_admin.sp`** | Se queda en `ansible/roles/l4d2_fleet/files/custom-plugins/`, junto a los demás plugins del juego. |
+| **Pipelines** | Uno por pieza, filtrado por ruta (`paths:`). Si aparece un contrato compartido, su ruta debe incluirse en los filtros de front y back, o se despliegan desincronizados. |
+
+### Correcciones a los documentos de diseño
+
+- `04-agente.md` afirma que **`l4d2-fleet` es privado**: era **falso**, siempre fue público. La
+  justificación de "copiar desde el checkout local por privacidad" no aplica; se copia igual, pero
+  por simplicidad. **Ningún secreto se commitea**, que es lo que de verdad importa.
+- Donde los documentos digan `l4d2-panel` o `ventrax-servers`, léase **`l4d2-summon`**.
+- Donde ubiquen el agente bajo el repo de Ansible, léase **`agent/` en el monorepo**.
+
+### Rutas de runtime en la máquina anfitriona
+
+`/opt/l4d2-fleet` y `/etc/l4d2-fleet` **se mantienen sin renombrar**. Están referenciadas por las
+units de systemd en ejecución, el launcher, el exporter y Promtail; renombrarlas obligaría a
+reiniciar los cuatro servidores (desconectando jugadores) sin ninguna ganancia funcional. Son
+rutas internas. El checkout sí se movió a `/home/ventrax/l4d2-summon`.
+
+**Configuración que solo vive en la máquina** (nunca en el repo) y que se preservó en la
+migración: `ansible/group_vars/all.yml`, `motd.local.html` y `host.local.html`.
