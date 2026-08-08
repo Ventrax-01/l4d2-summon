@@ -1,23 +1,303 @@
-/* API pública que consume el navegador: estado de la flota, reservar, cola y cerrar.
+/* API pública: lo que consume el navegador.
 
-   PENDIENTE DE IMPLEMENTAR. El contrato está definido en
-   docs/tecnico/02-estados-api.md; este esqueleto existe para que la infraestructura sea
-   desplegable y verificable de punta a punta antes de escribir la lógica.
+   El endpoint que de verdad importa es GET /api/state: devuelve la flota entera más lo que
+   le pasa a quien pregunta. La interfaz se apaña con ese solo, lo que mantiene el número de
+   invocaciones bajo — que es lo que decide el coste de este sistema.
 
-   Responde 501 a propósito: es explícito y no simula un funcionamiento que no existe. */
+   El stepper se calcula AQUÍ y se manda ya resuelto ({total, actual, etiquetas}). Así la
+   interfaz no necesita conocer los estados internos de la máquina, y las dos duraciones no
+   generan ramas en el navegador. */
 
-import { error } from '../shared/http'
+import { error, ok } from '../shared/http'
 import { vieneDeCloudFront } from '../shared/origen'
+import { secreto } from '../shared/ssm'
+import { verificar, sesionDeCookies, type Sesion } from '../shared/jwt'
+import { obtener } from '../shared/usuarios'
+import * as m from '../shared/modelo'
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda'
+
+const SSM_JWT = process.env.ssmJwt!
+const HOST_JUEGO = process.env.gameHost!
+const FN_WOL = process.env.wolFunction
+
+const lambda = new LambdaClient({})
 
 interface Evento {
+  rawPath?: string
   headers?: Record<string, string | undefined>
+  requestContext?: { http?: { method?: string; path?: string } }
 }
 
+// ---------------------------------------------------------------- stepper
+
+/** Perfil ASLEEP añade la etapa de encendido al frente. NO existe un perfil instantáneo:
+    un slot libre puede venir sucio de una partida anterior, así que siempre se reinicia. */
+const ETAPAS = {
+  ASLEEP: ['Despertando', 'Iniciando', 'Verificando', '¡Listo!'],
+  AWAKE: ['Iniciando', 'Verificando', '¡Listo!'],
+}
+
+const CELDA: Record<string, { ASLEEP: number; AWAKE: number }> = {
+  DESPERTANDO: { ASLEEP: 1, AWAKE: 1 },
+  BOOTEANDO: { ASLEEP: 2, AWAKE: 1 },
+  INICIANDO: { ASLEEP: 2, AWAKE: 1 },
+  VERIFICANDO: { ASLEEP: 3, AWAKE: 2 },
+  LISTO: { ASLEEP: 4, AWAKE: 3 },
+}
+
+function stepper(it: m.Intent) {
+  const perfil = it.profile ?? 'AWAKE'
+  const labels = ETAPAS[perfil]
+  return { total: labels.length, current: CELDA[it.estado]?.[perfil] ?? 1, labels }
+}
+
+function intentPublico(it: m.Intent, posicionCola?: number, promovido?: boolean) {
+  return {
+    id: it.id,
+    estado: it.estado,
+    profile: it.profile,
+    slotIndex: it.slotIndex,
+    ...(it.estado === 'EN_COLA'
+      ? { queue: { position: posicionCola ?? 1, promoted: Boolean(promovido) } }
+      : { stepper: stepper(it) }),
+    connectUrl: it.connectUrl,
+    errorCode: it.errorCode,
+    createdAt: it.createdAt,
+  }
+}
+
+// ---------------------------------------------------------------- sesión
+
+async function sesionDe(evento: Evento): Promise<Sesion | null> {
+  const token = sesionDeCookies(evento.headers?.cookie ?? evento.headers?.Cookie)
+  if (!token) return null
+  return verificar(token, await secreto(SSM_JWT))
+}
+
+// ---------------------------------------------------------------- estado
+
+async function estado(sesion: Sesion | null) {
+  const cfg = await m.config()
+  const [h, listaSlots, laCola] = await Promise.all([m.host(), m.slots(cfg.n), m.cola()])
+
+  const publicos = listaSlots.map((s) => ({
+    index: s.index,
+    estado: s.estado,
+    ownerNick: s.ownerNick ?? undefined,
+    map: s.map ?? undefined,
+    players: s.players,
+    maxPlayers: s.maxPlayers ?? 8,
+    since: s.since ?? undefined,
+    // La dirección solo se da si hay algo a lo que conectarse.
+    connect:
+      s.estado === 'ACTIVO' || s.estado === 'VACIO'
+        ? `steam://connect/${HOST_JUEGO}:${s.port}`
+        : undefined,
+  }))
+
+  const base = {
+    host: { state: h.state, since: h.lastHeartbeat },
+    config: { n: cfg.n, reservasEnabled: cfg.reservasEnabled },
+    slots: publicos,
+    queue: { length: laCola.length },
+    ts: Date.now(),
+  }
+
+  if (!sesion) return base
+
+  const usuario = await obtener(sesion.steamId)
+  const enCola = laCola.findIndex((e) => e.steamId === sesion.steamId)
+  const miEntrada = enCola >= 0 ? laCola[enCola] : null
+
+  let intent: m.Intent | null = null
+  if (usuario?.intentActivo) {
+    intent = await m.intentDe(sesion.steamId, usuario.intentActivo)
+  }
+
+  const mio = listaSlots.find((s) => s.ownerSteamId === sesion.steamId)
+
+  return {
+    ...base,
+    me: {
+      steamId: sesion.steamId,
+      nick: sesion.nick,
+      avatar: sesion.avatar,
+      operador: sesion.operador,
+      suspendido: usuario?.suspendido ?? false,
+      intent: intent ? intentPublico(intent, enCola + 1, miEntrada?.estado === 'PROMOVIDO') : null,
+      queue: {
+        inQueue: enCola >= 0,
+        position: enCola >= 0 ? enCola + 1 : null,
+        promoted: miEntrada?.estado === 'PROMOVIDO',
+        claimDeadline: miEntrada?.claimDeadline ?? null,
+      },
+      slot: mio
+        ? {
+            index: mio.index,
+            connect: `steam://connect/${HOST_JUEGO}:${mio.port}`,
+            players: mio.players,
+            map: mio.map ?? undefined,
+            emptySince: mio.emptySince ?? null,
+          }
+        : null,
+    },
+  }
+}
+
+// ---------------------------------------------------------------- reservar
+
+async function reservar(sesion: Sesion) {
+  const cfg = await m.config()
+  const usuario = await obtener(sesion.steamId)
+
+  if (usuario?.suspendido) return error('SUSPENDED', 'Tu cuenta está suspendida.')
+  if (!cfg.reservasEnabled) {
+    return error('RESERVAS_DISABLED', 'Las reservas están cerradas ahora mismo.')
+  }
+
+  /* Idempotencia: si ya hay una reserva viva se devuelve ESA, no se crea otra. Es lo que
+     hace que un doble clic, o dos pestañas, no acaben con dos reservas. */
+  if (usuario?.intentActivo) {
+    const vivo = await m.intentDe(sesion.steamId, usuario.intentActivo)
+    if (vivo && !m.esTerminal(vivo.estado)) {
+      const laCola = await m.cola()
+      const pos = laCola.findIndex((e) => e.steamId === sesion.steamId)
+      const promovido = pos >= 0 && laCola[pos].estado === 'PROMOVIDO'
+      // Salvo que sea reclamar un turno ya concedido: eso sí avanza.
+      if (!(vivo.estado === 'EN_COLA' && promovido)) {
+        return ok(intentPublico(vivo, pos + 1, promovido))
+      }
+    }
+  }
+
+  const h = await m.host()
+  const listaSlots = await m.slots(cfg.n)
+  const ahora = Date.now()
+  const id = `int_${ahora.toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`
+
+  // Un slot guardado para mí por la cola tiene prioridad sobre los libres.
+  const candidatos = [
+    ...listaSlots.filter((s) => s.estado === 'RESERVADO_COLA' && s.claimSteamId === sesion.steamId),
+    ...listaSlots.filter((s) => s.estado === 'LIBRE'),
+  ]
+
+  if (candidatos.length === 0) {
+    const laCola = await m.cola()
+    const ya = laCola.find((e) => e.steamId === sesion.steamId)
+    const entrada = ya ?? (await m.entrarACola(sesion.steamId))
+    const pos = (ya ? laCola.findIndex((e) => e.steamId === sesion.steamId) : laCola.length) + 1
+
+    const it: m.Intent = {
+      id, steamId: sesion.steamId, slotIndex: null, estado: 'EN_COLA',
+      profile: null, connectUrl: null, errorCode: null,
+      createdAt: ahora, updatedAt: ahora,
+      stateDeadline: ahora + 6 * 3600_000, // la espera en cola no caduca sola tan pronto
+    }
+    await m.guardarIntent(it)
+    await m.fijarIntentActivo(sesion.steamId, id)
+    return ok(intentPublico(it, pos, entrada.estado === 'PROMOVIDO'))
+  }
+
+  // Se intenta reclamar en orden; si otro se adelantó, se prueba el siguiente.
+  let reclamado: m.Slot | null = null
+  for (const s of candidatos) {
+    if (await m.reclamarSlot(s.index, id, sesion.steamId, sesion.nick)) {
+      reclamado = s
+      break
+    }
+  }
+  if (!reclamado) {
+    return error('CONFLICTO', 'Alguien se adelantó. Vuelve a intentarlo.')
+  }
+
+  const dormida = h.state !== 'UP'
+  const it: m.Intent = {
+    id,
+    steamId: sesion.steamId,
+    slotIndex: reclamado.index,
+    estado: dormida ? 'DESPERTANDO' : 'BOOTEANDO',
+    profile: dormida ? 'ASLEEP' : 'AWAKE',
+    connectUrl: null,
+    errorCode: null,
+    createdAt: ahora,
+    updatedAt: ahora,
+    stateDeadline: ahora + (dormida ? 240_000 : 90_000),
+  }
+  await m.guardarIntent(it)
+  await m.fijarIntentActivo(sesion.steamId, id)
+
+  if (dormida) {
+    await m.marcarDespertando()
+    // El encendido se dispara sin esperar respuesta: la máquina tarda minutos y el
+    // navegador no debe quedarse colgado por eso. El barrido periódico reintenta.
+    if (FN_WOL) {
+      lambda
+        .send(new InvokeCommand({ FunctionName: FN_WOL, InvocationType: 'Event' }))
+        .catch((e) => console.warn(JSON.stringify({ msg: 'no se pudo pedir el encendido', e: String(e) })))
+    }
+  }
+
+  return ok(intentPublico(it))
+}
+
+// ---------------------------------------------------------------- cerrar
+
+async function cerrar(sesion: Sesion) {
+  const cfg = await m.config()
+  const listaSlots = await m.slots(cfg.n)
+  const mio = listaSlots.find((s) => s.ownerSteamId === sesion.steamId)
+
+  if (mio) {
+    await m.liberarSlot(mio.index)
+    await m.fijarIntentActivo(sesion.steamId, null)
+    return ok({ ok: true, closed: { slotIndex: mio.index } })
+  }
+
+  const usuario = await obtener(sesion.steamId)
+  if (usuario?.intentActivo) {
+    const it = await m.intentDe(sesion.steamId, usuario.intentActivo)
+    if (it && !m.esTerminal(it.estado)) {
+      if (it.slotIndex) await m.liberarSlot(it.slotIndex)
+      await m.guardarIntent({ ...it, estado: 'CANCELADO', updatedAt: Date.now() })
+      await m.fijarIntentActivo(sesion.steamId, null)
+    }
+  }
+
+  const laCola = await m.cola()
+  const mia = laCola.find((e) => e.steamId === sesion.steamId)
+  if (mia) await m.salirDeCola(mia.sk)
+
+  return ok({ ok: true })
+}
+
+// ---------------------------------------------------------------- entrada
+
 export async function handler(evento: Evento) {
-  // Primero: solo se atienden peticiones que vengan por CloudFront.
   if (!vieneDeCloudFront(evento.headers ?? {})) {
     return error('UNAUTHORIZED', 'Acceso no autorizado.')
   }
 
-  return error('UNKNOWN', 'Este endpoint todavía no está implementado.')
+  const ruta = evento.requestContext?.http?.path ?? evento.rawPath ?? ''
+  const metodo = evento.requestContext?.http?.method ?? 'GET'
+  const sesion = await sesionDe(evento)
+
+  try {
+    // El estado es público: sin sesión se ve la flota, solo que sin el bloque personal.
+    if (ruta.endsWith('/api/state') && metodo === 'GET') return ok(await estado(sesion))
+
+    if (!sesion) return error('UNAUTHORIZED', 'Necesitas iniciar sesión.')
+
+    if (ruta.endsWith('/api/reserve') && metodo === 'POST') return reservar(sesion)
+    if (ruta.endsWith('/api/close') && metodo === 'POST') return cerrar(sesion)
+    if (ruta.endsWith('/api/queue/leave') && metodo === 'POST') return cerrar(sesion)
+    if (ruta.endsWith('/api/me') && metodo === 'GET') {
+      const e = await estado(sesion)
+      return ok('me' in e ? e.me : null)
+    }
+
+    return error('NOT_FOUND', 'Ruta desconocida.')
+  } catch (e) {
+    console.error(JSON.stringify({ msg: 'fallo en la API', ruta, e: String(e) }))
+    return error('UNKNOWN', 'Algo salió mal por nuestro lado.')
+  }
 }

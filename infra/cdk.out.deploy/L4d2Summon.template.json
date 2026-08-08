@@ -281,7 +281,7 @@
     ],
     "Code": {
      "S3Bucket": "cdk-hnb659fds-assets-211125402452-us-east-2",
-     "S3Key": "7fb031f1401bfc53cb17f8291abefbe41d7059eda0185096b93a4fd0ec584b50.zip"
+     "S3Key": "31f7acbe24ce56879868cf7485c3dbac1284feee518431b4758935dc76341aba.zip"
     },
     "Environment": {
      "Variables": {
@@ -342,7 +342,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "L4d2Summon/Funciones/api/Resource",
-    "aws:asset:path": "asset.7fb031f1401bfc53cb17f8291abefbe41d7059eda0185096b93a4fd0ec584b50",
+    "aws:asset:path": "asset.31f7acbe24ce56879868cf7485c3dbac1284feee518431b4758935dc76341aba",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
