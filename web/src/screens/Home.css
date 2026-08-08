@@ -1,5 +1,5 @@
 .home {
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
   width: 100%;
   padding: 24px 20px 36px;
@@ -139,13 +139,14 @@
    a 3, 2 y 1 columna segun se estrecha la pantalla. */
 .home-rejilla {
   display: grid;
-  /* El minimo se mantiene por debajo del ancho resultante para que las cuatro
-     columnas entren con esta separacion: (1160 - 3*32) / 4 = 266px por tarjeta. */
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 32px;
+  /* Con el contenedor fijo, subir el hueco solo achicaba la tarjeta. Ensanchado a
+     1320px caben las cuatro columnas con 40px de separacion Y tarjetas mas grandes:
+     (1280 - 3*40) / 4 = 290px. */
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 40px;
   /* Se suma al gap del contenedor: separa el bloque de servidores del hero y de
      la sección de abajo, para que respire como bloque propio. */
-  margin: 28px 0 38px;
+  margin: 18px 0 26px;
 }
 
 @media (max-width: 639px) {
