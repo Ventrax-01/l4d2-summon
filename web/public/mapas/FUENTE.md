@@ -30,12 +30,16 @@ sitio.
 
 `tools/descargar-mapas.py` tiene el mapeo de los 57 códigos de mapa a su página del wiki.
 
-## Mapas sin imagen
+## Cobertura
 
-Tres capítulos no tienen miniatura en el wiki y usan el degradado de su campaña:
-`c4m4_milltown_b` (Return to Town), `c5m5_bridge` (The Bridge, The Parish) y `c12m3_bridge`
-(The Bridge, Blood Harvest). Los dos últimos comparten nombre con otros mapas y el wiki no los
-desambigua.
+**Los 57 capítulos de las 14 campañas oficiales tienen miniatura.**
+
+Tres costaron encontrarlos porque el wiki desambigua los nombres repetidos de una forma que no
+es evidente: el puente de The Parish es `The Bridge (Left 4 Dead 2)`, el de Blood Harvest es
+`The Bridge (Left 4 Dead)`, y `Return To Town` lleva la T mayúscula.
+
+Los **mapas personalizados** no tienen miniatura y caen al degradado de su campaña. Es lo
+esperable: en comunidades competitivas se juegan mapas de la comunidad con frecuencia.
 
 ## Derechos
 

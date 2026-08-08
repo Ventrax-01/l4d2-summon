@@ -129,9 +129,11 @@
 
 /* La rejilla es fluida a propósito: el número de servidores lo decide el operador y
    puede ser cualquiera entre 1 y 8. */
+/* auto-fill con un minimo de 230px da 4 tarjetas por fila a 1040px de ancho, y
+   baja solo a 3, 2 y 1 segun se estrecha la pantalla. */
 .home-rejilla {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 14px;
 }
 

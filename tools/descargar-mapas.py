@@ -37,12 +37,12 @@ MAPAS = {
     "c3m3_shantytown": "Shanty Town", "c3m4_plantation": "The Plantation",
     # Hard Rain
     "c4m1_milltown_a": "The Milltown", "c4m2_sugarmill_a": "The Sugar Mill",
-    "c4m3_sugarmill_b": "Mill Escape", "c4m4_milltown_b": "Return to Town",
+    "c4m3_sugarmill_b": "Mill Escape", "c4m4_milltown_b": "Return To Town",
     "c4m5_milltown_escape": "Town Escape",
     # The Parish
     "c5m1_waterfront": "The Waterfront", "c5m2_park": "The Park",
     "c5m3_cemetery": "The Cemetery", "c5m4_quarter": "The Quarter",
-    "c5m5_bridge": "The Bridge (The Parish)",
+    "c5m5_bridge": "The Bridge (Left 4 Dead 2)",
     # The Passing
     "c6m1_riverbank": "The Riverbank", "c6m2_bedlam": "The Underground",
     "c6m3_port": "The Port",
@@ -65,7 +65,7 @@ MAPAS = {
     "c11m5_runway": "Runway Finale",
     # Blood Harvest
     "c12m1_hilltop": "The Woods", "c12m2_traintunnel": "The Tunnel",
-    "c12m3_bridge": "The Bridge (Blood Harvest)", "c12m4_barn": "The Train Station",
+    "c12m3_bridge": "The Bridge (Left 4 Dead)", "c12m4_barn": "The Train Station",
     "c12m5_cornfield": "Farmhouse Finale",
     # Cold Stream
     "c13m1_alpinecreek": "Alpine Creek", "c13m2_southpinestream": "South Pine Stream",
