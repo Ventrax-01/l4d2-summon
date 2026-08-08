@@ -1,0 +1,22 @@
+# Managed by Ansible. Do not edit by hand.
+#
+# El Dockerfile que publica SourceBans++ está pensado para desarrollo: trae composer, node,
+# git y opcache revalidando en cada petición. Aquí se parte del zip ya construido que
+# publican en cada release, así que no hace falta nada de eso.
+# 8.5 y no una versión menor: las dependencias de composer que vienen resueltas en el zip
+# declaran ">= 8.5.0", así que con 8.3 el panel arranca y muere en la primera petición.
+FROM php:8.5-apache
+
+# Las que pide el panel. libicu/libzip/libonig son las dependencias de compilación de
+# intl, zip y mbstring respectivamente.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libicu-dev libzip-dev libonig-dev unzip \
+ && docker-php-ext-install pdo_mysql intl zip mbstring \
+ && a2enmod rewrite \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# El zip `webpanel-only` YA es la raíz web: trae index.php en su primer nivel. El
+# subdirectorio web/ solo existe en el repositorio, que es a lo que apunta el Dockerfile de
+# desarrollo que ellos publican — seguirlo aquí deja Apache sirviendo un 404.
+COPY panel/ /var/www/html/
+RUN chown -R www-data:www-data /var/www/html

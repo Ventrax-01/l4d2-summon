@@ -35,3 +35,11 @@ admins:
 # plataforma". Déjalo en false para tener solo los servidores, encendidos siempre.
 with_summon: false
 summon_token: ""          # /l4d2-summon/agent-token en el Parameter Store
+
+# --- SourceBans (opcional) --------------------------------------------------
+# Baneos en una base de datos compartida por la flota, en vez del fichero que los cuatro
+# servidores se pisan entre ellos. Levanta dos contenedores (MariaDB + panel web).
+# Genera las contraseñas con: openssl rand -base64 24
+with_sourcebans: false
+sourcebans_db_pass: ""
+sourcebans_db_root_pass: ""

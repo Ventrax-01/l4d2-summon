@@ -1,0 +1,6 @@
+---
+- name: reiniciar sourcebans
+  ansible.builtin.command:
+    cmd: docker compose up -d --build
+    chdir: "{{ sourcebans_dir }}"
+  changed_when: true

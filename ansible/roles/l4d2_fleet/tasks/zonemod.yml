@@ -1,4 +1,18 @@
 ---
+# Más abajo (fleet.yml) hay que darle permiso de ejecución a spcomp, que ZoneMod publica
+# como 0644. Ese chmod deja el checkout "modificado" a ojos de git y hace que el clon de la
+# siguiente ejecución se niegue a actualizar. El síntoma solo aparece a la SEGUNDA pasada,
+# que es lo peor que puede hacer un playbook.
+#
+# core.fileMode le dice a git que ignore los permisos, que es justamente para esto. Va antes
+# del clon y tolera que el directorio no exista todavía.
+- name: Let git ignore permission changes in the ZoneMod checkout
+  ansible.builtin.command:
+    cmd: git config core.fileMode false
+    chdir: /opt/l4d2-fleet/zonemod-src
+  failed_when: false
+  changed_when: false
+
 - name: Clone the ZoneMod (Competitive-Rework) source
   ansible.builtin.git:
     repo: https://github.com/SirPlease/L4D2-Competitive-Rework.git

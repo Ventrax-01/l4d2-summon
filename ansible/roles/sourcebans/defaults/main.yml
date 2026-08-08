@@ -1,0 +1,23 @@
+---
+# SourceBans++ va en contenedores y no sobre el host. Dos razones: esta máquina ya usa
+# Docker para otro proyecto, y el panel necesita PHP con extensiones que no queremos
+# instalar al lado de un servidor de juego.
+sourcebans_dir: /opt/sourcebans
+sourcebans_version: "2.0.2"
+
+# Puertos, solo en loopback por defecto. El panel tiene su propio login, pero exponerlo a
+# la red es una decisión aparte y explícita: ver `sourcebans_bind`.
+sourcebans_bind: "127.0.0.1"
+sourcebans_web_port: 8081
+sourcebans_db_port: 3308
+
+sourcebans_db_name: sourcebans
+sourcebans_db_user: sourcebans
+# Sin valor por defecto A PROPÓSITO: una contraseña de ejemplo en un repo público acaba en
+# producción. Se genera al desplegar y se guarda en el .env del host.
+sourcebans_db_pass: ""
+sourcebans_db_root_pass: ""
+
+# La imagen de MariaDB se fija por versión: un `latest` convierte cualquier despliegue
+# futuro en una migración de base de datos no planeada.
+sourcebans_mariadb_image: "mariadb:10.11"

@@ -1,0 +1,176 @@
+---
+# Por qué SourceBans y no los bans que trae SourceMod: `basebans` guarda los baneos en
+# `banned_user.cfg`, un fichero del install. Los cuatro servidores comparten ese install, así
+# que se pisan entre ellos, y srcds solo lo escribe cuando alguien llama a `writeid` — un
+# reinicio se lleva por delante lo que no se hubiera volcado. Con la base de datos el baneo
+# es uno solo, compartido por la flota, y sobrevive a los reinicios.
+
+- name: Fail early when the database password is missing
+  ansible.builtin.assert:
+    that:
+      - sourcebans_db_pass | length >= 16
+      - sourcebans_db_root_pass | length >= 16
+    fail_msg: >-
+      Faltan sourcebans_db_pass y/o sourcebans_db_root_pass en group_vars/all.yml
+      (gitignorado). Genéralas con `openssl rand -base64 24`. No hay valor por defecto a
+      propósito: una contraseña de ejemplo en un repo público acaba en producción.
+
+# El panel se publica en zip y Ubuntu Server no trae unzip de serie. Sin esto la tarea de
+# descomprimir falla con un mensaje que culpa al archivo, no a la herramienta que falta.
+- name: Install unzip
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create the sourcebans directory
+  ansible.builtin.file:
+    path: "{{ sourcebans_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Check whether the web panel is already unpacked
+  ansible.builtin.stat:
+    path: "{{ sourcebans_dir }}/panel/index.php"
+  register: panel_presente
+
+# Se descarga el paquete ya construido de la release, no el repositorio: el zip
+# `webpanel-only` trae las dependencias de composer resueltas, así que la imagen no necesita
+# ni composer ni node.
+- name: Download the SourceBans++ web panel
+  ansible.builtin.get_url:
+    url: >-
+      https://github.com/sbpp/sourcebans-pp/releases/download/{{ sourcebans_version }}/sourcebans-pp-{{ sourcebans_version }}.webpanel-only.zip
+    dest: "{{ sourcebans_dir }}/panel.zip"
+    mode: "0640"
+  when: not panel_presente.stat.exists
+
+- name: Unpack the web panel
+  ansible.builtin.unarchive:
+    src: "{{ sourcebans_dir }}/panel.zip"
+    dest: "{{ sourcebans_dir }}"
+    remote_src: true
+    creates: "{{ sourcebans_dir }}/panel"
+  when: not panel_presente.stat.exists
+  notify: reiniciar sourcebans
+
+# El zip descomprime en un nombre que cambia entre versiones; se normaliza a `panel/` para
+# que el Dockerfile no tenga que saberlo.
+- name: Normalise the unpacked directory name
+  ansible.builtin.shell: |
+    set -e
+    cd "{{ sourcebans_dir }}"
+    if [ ! -d panel ]; then
+      d=$(find . -maxdepth 1 -type d -name 'sourcebans*' | head -1)
+      [ -n "$d" ] && mv "$d" panel
+    fi
+  args:
+    creates: "{{ sourcebans_dir }}/panel"
+
+- name: Write the compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ sourcebans_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0640"
+  notify: reiniciar sourcebans
+
+- name: Write the image definition
+  ansible.builtin.template:
+    src: Dockerfile.j2
+    dest: "{{ sourcebans_dir }}/Dockerfile"
+    owner: root
+    group: root
+    mode: "0640"
+  notify: reiniciar sourcebans
+
+# 0600 y de root: lleva las contraseñas de la base. Va en un .env aparte y no dentro de la
+# compose para que el fichero que sí se puede leer no las contenga.
+- name: Write the database credentials
+  ansible.builtin.copy:
+    content: |
+      DB_PASS={{ sourcebans_db_pass }}
+      DB_ROOT_PASS={{ sourcebans_db_root_pass }}
+    dest: "{{ sourcebans_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  notify: reiniciar sourcebans
+
+- name: Bring the stack up
+  ansible.builtin.command:
+    cmd: docker compose up -d --build
+    chdir: "{{ sourcebans_dir }}"
+  register: compose_up
+  changed_when: "'Started' in compose_up.stderr or 'Created' in compose_up.stderr"
+
+- name: Wait for the panel to answer
+  ansible.builtin.uri:
+    url: "http://{{ sourcebans_bind }}:{{ sourcebans_web_port }}/"
+    status_code: [200, 302, 301]
+  register: panel_vivo
+  retries: 30
+  delay: 5
+  until: panel_vivo is succeeded
+
+# --- el lado del juego -------------------------------------------------------------
+
+# El tarball envuelve todo en `<nombre-release>/common/`, así que hay que descartar dos
+# niveles para que `addons/` caiga donde el juego lo busca. Sin esto se queda un directorio
+# suelto dentro de left4dead2/ y SourceMod no ve ningún plugin.
+- name: Install the SourceBans++ game plugins
+  ansible.builtin.unarchive:
+    src: >-
+      https://github.com/sbpp/sourcebans-pp/releases/download/{{ sourcebans_version }}/sourcebans-pp-{{ sourcebans_version }}.plugin-only.tar.gz
+    dest: "{{ install_dir }}/left4dead2"
+    remote_src: true
+    extra_opts: ["--strip-components=2"]
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    creates: "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/sbpp_main.smx"
+
+- name: Remove the leftover wrapper directory from an earlier attempt
+  ansible.builtin.file:
+    path: "{{ install_dir }}/left4dead2/sourcebans-pp-{{ sourcebans_version }}.plugin-only"
+    state: absent
+
+# SourceMod lee las conexiones de aquí. El servidor de juego corre en el host, así que
+# alcanza la base por el puerto que la compose publica en loopback.
+- name: Point SourceMod at the bans database
+  ansible.builtin.blockinfile:
+    path: "{{ install_dir }}/left4dead2/addons/sourcemod/configs/databases.cfg"
+    marker: '    // {mark} sourcebans (gestionado por Ansible)'
+    insertbefore: '^\}'
+    block: |2
+          "sourcebans"
+          {
+              "driver"    "mysql"
+              "host"      "127.0.0.1"
+              "database"  "{{ sourcebans_db_name }}"
+              "user"      "{{ sourcebans_db_user }}"
+              "pass"      "{{ sourcebans_db_pass }}"
+              "port"      "{{ sourcebans_db_port }}"
+          }
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0640"
+
+# Sin esto los baneos dejan de funcionar en cuanto alguien escribe !match — que es
+# justamente cuando hacen falta. confogl descarga TODO al entrar en matchmode y solo recarga
+# lo que sus cfg piden; ver roles/l4d2_fleet/files/fleet_plugins.cfg.
+- name: Keep the bans plugins loaded during a match
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/cfg/cfgogl/fleet_plugins.cfg"
+    line: "sm plugins load {{ item }}"
+    insertafter: EOF
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+  loop:
+    # sbpp_main aplica los baneos; sbpp_checker comprueba a quien entra contra la base.
+    # Son los dos que tienen que seguir vivos durante una partida competitiva.
+    - sbpp_main.smx
+    - sbpp_checker.smx

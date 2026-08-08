@@ -1,0 +1,7 @@
+---
+dependencies: []
+galaxy_info:
+  role_name: sourcebans
+  description: >-
+    SourceBans++ en contenedores: base de datos de baneos compartida por la flota y panel
+    web. Requiere el rol l4d2_fleet (usa install_dir, steam_user y su fleet_plugins.cfg).

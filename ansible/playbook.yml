@@ -9,3 +9,7 @@
     - l4d2_fleet
     - role: summon_agent
       when: with_summon | default(false) | bool
+    # Los baneos de SourceMod van a un fichero del install que los cuatro servidores
+    # comparten y se pisan entre ellos. Esto los lleva a una base de datos común.
+    - role: sourcebans
+      when: with_sourcebans | default(false) | bool

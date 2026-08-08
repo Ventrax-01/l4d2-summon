@@ -1,0 +1,48 @@
+# Managed by Ansible. Do not edit by hand.
+#
+# La compose que publica SourceBans++ es explícitamente de desarrollo: trae credenciales
+# fijas, adminer y un servidor de correo de pruebas. Esta es la versión mínima para servir:
+# la base de datos y el panel, nada más.
+
+services:
+  db:
+    image: {{ sourcebans_mariadb_image }}
+    container_name: sourcebans-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MARIADB_DATABASE: {{ sourcebans_db_name }}
+      MARIADB_USER: {{ sourcebans_db_user }}
+      MARIADB_PASSWORD: ${DB_PASS}
+    volumes:
+      - dbdata:/var/lib/mysql
+    # Los servidores de juego corren en el HOST, no aquí, y se conectan por este puerto.
+    # Va atado a loopback: nadie de fuera de la máquina tiene por qué alcanzar la base.
+    ports:
+      - "127.0.0.1:{{ sourcebans_db_port }}:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sourcebans-web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SBPP_DB_HOST: db
+      SBPP_DB_PORT: "3306"
+      SBPP_DB_NAME: {{ sourcebans_db_name }}
+      SBPP_DB_USER: {{ sourcebans_db_user }}
+      SBPP_DB_PASS: ${DB_PASS}
+    ports:
+      - "{{ sourcebans_bind }}:{{ sourcebans_web_port }}:80"
+
+volumes:
+  dbdata:
