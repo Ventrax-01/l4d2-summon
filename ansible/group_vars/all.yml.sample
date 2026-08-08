@@ -28,3 +28,10 @@ admins:
 # keep ZoneMod's defaults. The host_file is the smaller banner.
 # motd_file: "motd.local.html"
 # host_file: "host.local.html"
+
+# --- Plataforma de reservas (opcional) -------------------------------------
+# Conecta esta flota con l4d2-summon: los servidores pasan a levantarse bajo demanda y la
+# máquina se apaga sola cuando no la sostiene nadie. Ver el README, "Conectar con la
+# plataforma". Déjalo en false para tener solo los servidores, encendidos siempre.
+with_summon: false
+summon_token: ""          # /l4d2-summon/agent-token en el Parameter Store

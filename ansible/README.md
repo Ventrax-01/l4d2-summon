@@ -71,10 +71,43 @@ RCON con `sm_reloadadmins` (el archivo se relee al instante, sin reiniciar ni de
 
 ## Admins por servidor
 
-Lo anterior da admin en **toda** la flota. El sistema de reservas necesita algo distinto —que
-quien reserva sea admin solo en *su* servidor— y eso lo resolverá un plugin aparte
-(`fleet_admin.sp`), todavía sin implementar. Ver
-[`docs/tecnico/08-fleet-integracion.md`](../docs/tecnico/08-fleet-integracion.md).
+Lo anterior da admin en **toda** la flota, porque `admins_simple.ini` pertenece al install de
+SourceMod que los cuatro servidores comparten. Para que quien reserva mande solo en *su*
+servidor hace falta otra cosa: el plugin `summon_admin.sp`, que va en el rol `summon_agent`.
+
+Mantiene el permiso en memoria del proceso —nace cuando la nube lo pide por RCON y muere con
+el servidor—, así que no toca ningún archivo y no hay nada que limpiar después. Los permisos
+son cortos a propósito: echar a alguien, cambiar de mapa y votar. **No incluye banear**: un
+ban sobreviviría a la reserva y le caería al siguiente que use ese servidor.
+
+## Conectar con la plataforma (rol `summon_agent`)
+
+Opcional. Sin él la flota funciona igual, solo que sin reservas: los cuatro servidores
+encendidos todo el tiempo y administrados a mano.
+
+Con él, la máquina se comporta como un recurso bajo demanda. El agente pregunta a la nube
+cada 15 segundos, le cuenta lo que ve de cada servidor y ejecuta lo que le manden: levantar
+un servidor para quien lo reservó, pararlo al terminar, o apagar la máquina cuando ya no la
+sostiene nadie. La conversación va **siempre saliendo**, así que no hay que abrir ningún
+puerto en casa.
+
+Para activarlo, en `group_vars/all.yml`:
+
+```yaml
+with_summon: true
+summon_token: "..."   # el valor está en el Parameter Store, /l4d2-summon/agent-token
+```
+
+Y desplegar como siempre: `ansible-playbook playbook.yml`.
+
+Dos consecuencias que conviene tener claras antes de activarlo:
+
+- Los servidores **dejan de arrancar solos al encender**. Los levanta el agente cuando hay
+  una reserva. Si arrancaran solos siempre habría algo corriendo y la máquina no se apagaría
+  nunca.
+- La máquina **se apaga sola** en cuanto no queda nadie jugando, ninguna reserva en marcha,
+  nadie en la cola ni ninguna sesión SSH abierta. Para volver a encenderla, una reserva desde
+  la web (o Wake-on-LAN a mano).
 
 ## Estructura
 
@@ -86,11 +119,19 @@ ansible/
 ├── group_vars/
 │   ├── all.yml.sample      # plantilla versionada
 │   └── all.yml             # configuración real (ignorada por git)
-└── roles/l4d2_fleet/
-    ├── tasks/              # dependencias, juego, zonemod, flota, monitoreo
-    ├── templates/          # unit de systemd, fleet.env, promtail, loki
-    ├── files/              # launcher, exporter, plugins propios, MOTD
-    └── defaults/main.yml   # valores por defecto (versionado)
+├── roles/l4d2_fleet/
+│   ├── tasks/              # dependencias, juego, zonemod, flota, monitoreo
+│   ├── templates/          # unit de systemd, fleet.env, promtail, loki
+│   ├── files/              # launcher, exporter, plugins propios, MOTD
+│   └── defaults/main.yml   # valores por defecto (versionado)
+└── roles/summon_agent/     # opcional: conecta la flota con la plataforma
+    ├── files/              # el agente y el plugin de admin por servidor
+    ├── templates/          # unit de systemd y su archivo de entorno
+    └── defaults/main.yml
 ```
+
+> Los plugins propios se **compilan en el host** desde su `.sp`, con el compilador que trae
+> SourceMod. No se versionan los `.smx`: un binario en el repo se queda viejo en cuanto
+> alguien toca la fuente, y nada avisa de que dejaron de coincidir.
 
 Documentación de detalle en [`docs/`](docs/).
