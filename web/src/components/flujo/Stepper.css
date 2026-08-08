@@ -114,36 +114,6 @@
   animation: vxBar 1.6s ease-in-out infinite;
 }
 
-/* En pantallas anchas el stepper se tumba: las etapas caben en una fila y el progreso
-   se lee de un vistazo. */
-@media (min-width: 760px) {
-  .stp {
-    flex-direction: row;
-  }
-
-  .stp-paso {
-    flex: 1;
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
-  }
-
-  .stp-carril {
-    flex-direction: row;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .stp-linea {
-    width: auto;
-    flex: 1;
-    height: 2px;
-    min-height: 0;
-    margin: 0 8px;
-    align-self: center;
-  }
-
-  .stp-texto {
-    padding: 0 8px 8px;
-  }
-}
+/* El stepper NO se tumba en escritorio: vive en una columna de 560px como máximo, así
+   que una media query sobre el ancho de la ventana se dispararía siempre y lo rompería.
+   Vertical es lo correcto a este ancho. */

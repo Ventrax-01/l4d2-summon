@@ -72,11 +72,12 @@ test.describe('Reserva con el sistema dormido (~3 min)', () => {
     expect(cuerpo).not.toMatch(/\bPC\b|Wake-on-LAN|hardware|encender la máquina/i)
   })
 
-  test('avisa de que tardará más', async ({ page }) => {
+  test('avisa de que tardará, sin prometer un tiempo exacto', async ({ page }) => {
     await page.goto('/?host=down&vel=20&n=2')
     await page.getByRole('button', { name: /Reservar servidor/ }).click()
 
-    await expect(page.getByText(/3 minutos/)).toBeVisible()
+    // El copy del diseño no promete un número exacto de minutos, a propósito.
+    await expect(page.getByText(/Suele tardar unos minutos/)).toBeVisible()
   })
 })
 

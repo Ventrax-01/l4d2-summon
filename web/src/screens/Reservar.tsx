@@ -82,10 +82,10 @@ export default function Reservar() {
           <h1>Preparando tu servidor</h1>
           <p>
             {intent.profile === 'ASLEEP'
-              ? 'Está durmiendo, así que tarda un poco más. Suele estar listo en unos 3 minutos.'
-              : 'Suele estar listo en menos de un minuto.'}
+              ? 'Suele tardar unos minutos. '
+              : 'Menos de un minuto. '}
+            Puedes salir y volver: tu reserva sigue viva.
           </p>
-          <p className="rsv-persiste">Puedes salir y volver: tu reserva sigue viva.</p>
         </header>
 
         {intent.stepper && <Stepper datos={intent.stepper} fallido={fallido} />}
