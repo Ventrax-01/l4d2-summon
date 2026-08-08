@@ -172,7 +172,10 @@
 
 - name: Bring the stack up
   ansible.builtin.command:
-    cmd: docker compose up -d --build
+    # --remove-orphans: al caer a modo LAN, la compose deja de declarar el proxy y
+    # certbot. Sin esto se quedan corriendo —el proxy en bucle de reinicio, porque no
+    # hay certificado— y ocupan los puertos 80 y 443 de la máquina.
+    cmd: docker compose up -d --build --remove-orphans
     chdir: "{{ sourcebans_dir }}"
   register: compose_up
   changed_when: "'Started' in compose_up.stderr or 'Created' in compose_up.stderr"
