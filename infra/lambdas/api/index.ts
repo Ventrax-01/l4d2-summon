@@ -357,10 +357,10 @@ export async function handler(evento: Evento) {
 
   try {
     // El estado es público: sin sesión se ve la flota, solo que sin el bloque personal.
-    /* El panel de baneos va antes de la comprobación de sesión: tiene su propia respuesta
-       para cada caso (sin sesión, sin permiso, máquina apagada) y no es una ruta de API. */
+    /* El panel de baneos es público, así que esta ruta va ANTES de exigir sesión. Lo único
+       reservado al operador es encender la máquina; ver sourcebans.ts. */
     if (ruta.endsWith('/sourcebans') && metodo === 'GET') {
-      return puertaSourcebans(sesion, PANEL_BANS, `https://${process.env.domain}`, pedirEncendido)
+      return puertaSourcebans(sesion, PANEL_BANS, pedirEncendido)
     }
 
     if (ruta.endsWith('/api/state') && metodo === 'GET') return ok(await estado(sesion))

@@ -12,6 +12,7 @@ import { Datos } from './constructs/data'
 import { Secretos } from './constructs/secrets'
 import { Funciones } from './constructs/functions'
 import { SitioEstatico } from './constructs/static-site'
+import { IdentidadCertbot } from './constructs/certbot'
 import { CabecerasSeguridad } from './constructs/response-headers'
 import { Cdn } from './constructs/cdn'
 import { Horarios } from './constructs/scheduling'
@@ -46,6 +47,9 @@ export class AppStack extends Stack {
     })
 
     const sitio = new SitioEstatico(this, 'Sitio', config.account)
+
+    // Credencial mínima para que la máquina de casa renueve su certificado por DNS.
+    new IdentidadCertbot(this, 'Certbot', config)
     const cabeceras = new CabecerasSeguridad(this, 'Cabeceras')
 
     const cdn = new Cdn(this, 'Cdn', {
