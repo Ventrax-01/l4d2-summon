@@ -1,0 +1,96 @@
+#include <sourcemod>
+
+#pragma semicolon 1
+#pragma newdecls required
+
+/* Da el mando de ESTE servidor a quien lo reservó.
+ *
+ * Hace falta un plugin porque admins_simple.ini pertenece al install de SourceMod, que los
+ * cuatro servidores comparten: un admin escrito ahí lo sería en toda la flota a la vez, y lo
+ * que se quiere es justo lo contrario — que cada quien mande solo en el suyo.
+ *
+ * Aquí el permiso vive en memoria del proceso: nace cuando la nube lo pide por RCON y muere
+ * con el servidor. No toca ningún fichero, así que no hay nada que limpiar después.
+ *
+ * Los permisos son deliberadamente cortos: echar a alguien, cambiar de mapa y votar. NO se
+ * dan banear ni RCON. Un ban sobreviviría a la reserva y le caería al siguiente que use el
+ * servidor, y quien reserva manda durante su rato, no sobre la flota.
+ */
+
+#define TAG "\x04[Summon]\x01"
+
+char g_Duenio[32];   // SteamID64 de quien reservó, vacío si no hay nadie
+
+public Plugin myinfo =
+{
+    name        = "Summon Admin",
+    author      = "l4d2-summon",
+    description = "Admin por servidor para quien lo reserva",
+    version     = "1.0.0",
+    url         = "https://l4d2.ventrax.dev"
+};
+
+public void OnPluginStart()
+{
+    RegServerCmd("sm_summon_admin", CmdDarMando, "Da el mando de este servidor a un SteamID64");
+    RegServerCmd("sm_summon_clear", CmdQuitarMando, "Quita el mando concedido");
+}
+
+/* Se aplica aquí y no en OnClientAuthorized porque en este punto SourceMod ya resolvió su
+ * caché de admins: si se hiciera antes, la caché la sobrescribiría justo después. */
+public void OnClientPostAdminCheck(int client)
+{
+    AplicarSiEsElDuenio(client);
+}
+
+void AplicarSiEsElDuenio(int client)
+{
+    if (g_Duenio[0] == '\0') return;
+    if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client)) return;
+
+    char id[32];
+    if (!GetClientAuthId(client, AuthId_SteamID64, id, sizeof(id))) return;
+    if (!StrEqual(id, g_Duenio)) return;
+
+    AdminId adm = CreateAdmin("summon");
+    if (adm == INVALID_ADMIN_ID) return;
+
+    SetAdminFlag(adm, Admin_Generic, true);    // acceso a los comandos de admin
+    SetAdminFlag(adm, Admin_Kick, true);       // echar
+    SetAdminFlag(adm, Admin_Changemap, true);  // cambiar de mapa / campaña
+    SetAdminFlag(adm, Admin_Vote, true);       // forzar votaciones
+    SetAdminFlag(adm, Admin_Chat, true);
+    // Inmunidad media: por encima de los jugadores, por debajo del operador de la flota,
+    // que conserva el root y puede intervenir si hace falta.
+    SetAdminImmunityLevel(adm, 50);
+
+    SetUserAdmin(client, adm, true);
+    PrintToChat(client, "%s Este servidor es tuyo: puedes echar jugadores y cambiar de mapa.", TAG);
+}
+
+/* La nube lo llama por RCON en cuanto el servidor responde. Responde OK porque el agente
+ * espera esa palabra para dar la reserva por lista. */
+public Action CmdDarMando(int args)
+{
+    if (args < 1)
+    {
+        PrintToServer("ERROR falta el SteamID64");
+        return Plugin_Handled;
+    }
+
+    GetCmdArg(1, g_Duenio, sizeof(g_Duenio));
+
+    // Puede que ya esté dentro esperando: se le da el mando ahora mismo.
+    for (int i = 1; i <= MaxClients; i++)
+        AplicarSiEsElDuenio(i);
+
+    PrintToServer("OK admin de summon fijado en %s", g_Duenio);
+    return Plugin_Handled;
+}
+
+public Action CmdQuitarMando(int args)
+{
+    g_Duenio[0] = '\0';
+    PrintToServer("OK admin de summon retirado");
+    return Plugin_Handled;
+}

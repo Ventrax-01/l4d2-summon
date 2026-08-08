@@ -126,11 +126,6 @@ export class Funciones extends Construct {
       this.wol.grantInvoke(fn)
       fn.addEnvironment('wolFunction', this.wol.functionName)
     }
-
-    // Nadie más puede invocar estas funciones directamente.
-    for (const fn of [this.api, this.authSteam, this.agente]) {
-      fn.addPermission?.bind(fn)
-    }
   }
 
   /** Function URL abierta. NO queda desprotegida: CloudFront añade una cabecera con un

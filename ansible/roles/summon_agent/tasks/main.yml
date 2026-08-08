@@ -1,0 +1,79 @@
+---
+- name: Fail early when the agent token is missing
+  ansible.builtin.assert:
+    that: summon_token | length > 0
+    fail_msg: >-
+      summon_token está vacío. Ponlo en group_vars/all.yml (gitignorado); el valor está en
+      el Parameter Store, en /l4d2-summon/agent-token. Sin él el agente arranca y la nube
+      le devuelve 401 en cada latido.
+
+# El plugin se compila en el host desde su fuente, no se envía compilado: un .smx en el repo
+# se queda viejo en cuanto alguien toca el .sp, y nada avisa de que dejaron de coincidir.
+- name: Install the summon admin plugin source
+  ansible.builtin.copy:
+    src: scripting/summon_admin.sp
+    dest: "{{ install_dir }}/left4dead2/addons/sourcemod/scripting/summon_admin.sp"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+  register: fuente_plugin
+
+- name: Compile the summon admin plugin
+  ansible.builtin.command:
+    cmd: >-
+      {{ spcomp_dir }}/sourcemod/spcomp
+      -i{{ spcomp_dir }}/include
+      -i{{ spcomp_dir }}/sourcemod/include
+      {{ install_dir }}/left4dead2/addons/sourcemod/scripting/summon_admin.sp
+      -o{{ install_dir }}/left4dead2/addons/sourcemod/plugins/summon_admin.smx
+  become: true
+  become_user: "{{ steam_user }}"
+  when: fuente_plugin.changed
+  changed_when: true
+
+- name: Deploy the agent
+  ansible.builtin.copy:
+    src: summon_agent.py
+    dest: /opt/l4d2-fleet/summon_agent.py
+    owner: root
+    group: root
+    mode: "0755"
+  notify: restart summon-agent
+
+# 0600 y de root: lleva el token que autentica a esta máquina ante la nube. Quien lo lea
+# puede hacerse pasar por la flota entera.
+- name: Write the agent environment
+  ansible.builtin.template:
+    src: summon-agent.env.j2
+    dest: /etc/l4d2-fleet/summon-agent.env
+    owner: root
+    group: root
+    mode: "0600"
+  notify: restart summon-agent
+
+- name: Install the agent service
+  ansible.builtin.template:
+    src: summon-agent.service.j2
+    dest: /etc/systemd/system/summon-agent.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - reload systemd
+    - restart summon-agent
+
+- name: Enable and start the agent
+  ansible.builtin.systemd:
+    name: summon-agent
+    enabled: true
+    state: started
+    daemon_reload: true
+
+# Los servidores no arrancan solos al encender: es el agente quien los levanta cuando alguien
+# reserva. Dejarlos habilitados haría que la máquina despertara con los cuatro corriendo y
+# nunca se apagaría, porque siempre habría algo en marcha.
+- name: Stop the fleet from starting on boot
+  ansible.builtin.systemd:
+    name: "l4d2@{{ item }}"
+    enabled: false
+  loop: "{{ range(1, server_count + 1) | list }}"

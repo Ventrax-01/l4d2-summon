@@ -54,4 +54,6 @@ __pycache__/
 
 # CDK
 /infra/cdk.out/
+# `cdk deploy --output` escribe aquí; es lo mismo que cdk.out, salida de síntesis.
+/infra/cdk.out.deploy/
 /infra/.cdk.staging/

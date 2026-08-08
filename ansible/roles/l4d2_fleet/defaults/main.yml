@@ -43,3 +43,7 @@ grafana_port: 3000               # Grafana HTTP port (keep on the LAN; only chan
 # Label-driven, so it works for however many servers you run (no hardcoding).
 with_logs: true
 loki_retention: "168h"           # how long Loki keeps logs (7 days)
+
+# SourceMod's own compiler, unpacked with ZoneMod. Plugins are built from source on the host
+# so the .sp in the repo is always the thing that actually runs.
+spcomp_dir: /opt/l4d2-fleet/zonemod-src/addons/sourcemod/scripting

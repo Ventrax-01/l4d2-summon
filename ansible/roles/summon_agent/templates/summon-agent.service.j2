@@ -1,0 +1,19 @@
+[Unit]
+Description=l4d2-summon agent (habla con la nube y gobierna la flota)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Corre como root porque tiene que parar y arrancar unidades de systemd y, al final del
+# ciclo, apagar la máquina. Es el único proceso del sistema que necesita ese alcance.
+User=root
+EnvironmentFile=/etc/l4d2-fleet/summon-agent.env
+ExecStart=/usr/bin/python3 /opt/l4d2-fleet/summon_agent.py
+# Siempre, no on-failure: si el agente muere la máquina se queda encendida y sorda, sin
+# nadie que la apague ni que atienda reservas.
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

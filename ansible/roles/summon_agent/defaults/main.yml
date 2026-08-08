@@ -1,0 +1,18 @@
+---
+# Dónde vive la plataforma. El agente habla solo con esta URL, siempre saliendo.
+summon_url: "https://l4d2.ventrax.dev"
+
+# Token compartido con la nube. NO se pone aquí: va en group_vars/all.yml (gitignorado) o
+# por vault. El valor real está en el Parameter Store, en /l4d2-summon/agent-token.
+summon_token: ""
+
+# Cada cuánto pregunta el agente. Quince segundos es el equilibrio: la reserva avanza sin
+# que se note la espera, y son ~5.700 invocaciones al día, dentro del nivel gratuito.
+summon_poll_sec: 15
+
+# srcds NO escucha el RCON en 127.0.0.1 sino en 127.0.1.1 (lo que Debian/Ubuntu asignan al
+# nombre de la máquina en /etc/hosts). Apuntar al primero da "connection refused" a secas.
+summon_rcon_host: "127.0.1.1"
+
+# El compilador que trae SourceMod, para construir los plugins desde su fuente.
+spcomp_dir: /opt/l4d2-fleet/zonemod-src/addons/sourcemod/scripting

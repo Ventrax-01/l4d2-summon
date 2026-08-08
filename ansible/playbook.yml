@@ -1,6 +1,11 @@
 ---
+# La flota por sí sola es un despliegue completo y funciona sin la nube: cuatro servidores
+# ZoneMod y su monitorización. El agente es lo que la conecta con l4d2-summon, y se instala
+# aparte para que quien solo quiera los servidores no tenga que montar la plataforma.
 - name: Provision the L4D2 ZoneMod fleet
   hosts: l4d2
   become: true
   roles:
     - l4d2_fleet
+    - role: summon_agent
+      when: with_summon | default(false) | bool

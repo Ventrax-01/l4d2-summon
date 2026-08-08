@@ -1,0 +1,7 @@
+---
+dependencies: []
+galaxy_info:
+  role_name: summon_agent
+  description: >-
+    El lado de la casa de l4d2-summon: pregunta a la nube, reporta la flota y ejecuta
+    lo que le manden (levantar, parar, apagar). Requiere el rol l4d2_fleet instalado.

@@ -84,18 +84,6 @@
     - idle_hibernate.smx
     - chat_logger.smx
 
-# ZoneMod's pred_unload_plugins unloads EVERY plugin on matchmode transitions and relies on
-# a refresh to bring them back, which races with its load-lock — so our always-on plugins get
-# dropped during matches. This patched unloader reserves them (skips them in the unload). It
-# overwrites ZoneMod's copy, so it must run after the ZoneMod task.
-- name: Install the patched plugin unloader (reserves the fleet plugins across matchmode)
-  ansible.builtin.copy:
-    src: "custom-plugins/optional/predictable_unloader.smx"
-    dest: "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/optional/predictable_unloader.smx"
-    owner: "{{ steam_user }}"
-    group: "{{ steam_user }}"
-    mode: "0644"
-
 - name: Install custom plugin sources
   ansible.builtin.copy:
     src: "custom-plugins/scripting/{{ item }}"
@@ -108,6 +96,27 @@
     - idle_hibernate.sp
     - chat_logger.sp
     - predictable_unloader.sp
+  register: fuentes_plugins
+
+# ZoneMod's pred_unload_plugins unloads EVERY plugin on matchmode transitions and relies on a
+# refresh to bring them back, which races with its load-lock — so our always-on plugins get
+# dropped during matches. This patched fork reserves them (skips them in the unload). It
+# overwrites ZoneMod's own copy, so it must run after the ZoneMod task.
+#
+# It is compiled here rather than shipped as a .smx: a binary in the repo silently goes stale
+# the moment someone edits the .sp, and nothing tells you the two stopped matching.
+- name: Build the patched plugin unloader from source
+  ansible.builtin.command:
+    cmd: >-
+      {{ spcomp_dir }}/sourcemod/spcomp
+      -i{{ spcomp_dir }}/include
+      -i{{ spcomp_dir }}/sourcemod/include
+      {{ install_dir }}/left4dead2/addons/sourcemod/scripting/predictable_unloader.sp
+      -o{{ install_dir }}/left4dead2/addons/sourcemod/plugins/optional/predictable_unloader.smx
+  become: true
+  become_user: "{{ steam_user }}"
+  when: fuentes_plugins.changed
+  changed_when: true
 
 # Custom banners — opt-in. The HTML files are gitignored (see motd_file/host_file
 # in defaults). Runs after the zonemod role so it overrides ZoneMod's defaults.

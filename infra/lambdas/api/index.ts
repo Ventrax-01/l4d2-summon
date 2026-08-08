@@ -226,6 +226,21 @@ async function reservar(sesion: Sesion) {
   await m.guardarIntent(it)
   await m.fijarIntentActivo(sesion.steamId, id)
 
+  /* La orden de levantar se deja encolada AHORA, esté la máquina despierta o dormida. Si
+     está dormida se quedará esperando hasta que el agente arranque y pase a recogerla, que
+     es justo lo que se quiere: no hay que acordarse de mandarla después.
+
+     Va con el SteamID de quien reserva, porque levantar el servidor y darle el mando son la
+     misma operación desde fuera. */
+  await m.encolarOrden({
+    tipo: 'LEVANTAR',
+    slotIndex: reclamado.index,
+    adminSteamId: sesion.steamId,
+  })
+
+  // Si el barrido había decidido apagar y la orden sigue sin recoger, ya no vale.
+  await m.cancelarApagado()
+
   if (dormida) {
     await m.marcarDespertando()
     // El encendido se dispara sin esperar respuesta: la máquina tarda minutos y el
@@ -247,21 +262,27 @@ async function cerrar(sesion: Sesion) {
   const listaSlots = await m.slots(cfg.n)
   const mio = listaSlots.find((s) => s.ownerSteamId === sesion.steamId)
 
+  /* La reserva se marca terminal SIEMPRE, tenga slot o no. Si se dejara viva seguiría en el
+     índice de pendientes con su slotIndex apuntando a un servidor que ya no es suyo, y el
+     barrido acabaría liberándoselo a quien lo tenga entonces. */
+  const usuario = await obtener(sesion.steamId)
+  if (usuario?.intentActivo) {
+    const it = await m.intentDe(sesion.steamId, usuario.intentActivo)
+    if (it && !m.esTerminal(it.estado)) {
+      await m.guardarIntent({ ...it, estado: 'CANCELADO', updatedAt: Date.now() })
+    }
+  }
+
   if (mio) {
+    // Se para el servidor además de soltar el slot: si no, seguiría corriendo para nadie y
+    // la máquina no llegaría nunca a apagarse.
+    await m.encolarOrden({ tipo: 'PARAR', slotIndex: mio.index })
     await m.liberarSlot(mio.index)
     await m.fijarIntentActivo(sesion.steamId, null)
     return ok({ ok: true, closed: { slotIndex: mio.index } })
   }
 
-  const usuario = await obtener(sesion.steamId)
-  if (usuario?.intentActivo) {
-    const it = await m.intentDe(sesion.steamId, usuario.intentActivo)
-    if (it && !m.esTerminal(it.estado)) {
-      if (it.slotIndex) await m.liberarSlot(it.slotIndex)
-      await m.guardarIntent({ ...it, estado: 'CANCELADO', updatedAt: Date.now() })
-      await m.fijarIntentActivo(sesion.steamId, null)
-    }
-  }
+  await m.fijarIntentActivo(sesion.steamId, null)
 
   const laCola = await m.cola()
   const mia = laCola.find((e) => e.steamId === sesion.steamId)

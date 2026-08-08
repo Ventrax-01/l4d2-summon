@@ -1,23 +1,145 @@
-/* Endpoint del agente de la máquina anfitriona: heartbeat, estado y cola de órdenes.
+/* Endpoint del agente que corre en la máquina anfitriona.
 
-   PENDIENTE DE IMPLEMENTAR. El contrato está definido en
-   docs/tecnico/02-estados-api.md; este esqueleto existe para que la infraestructura sea
-   desplegable y verificable de punta a punta antes de escribir la lógica.
+   Es la ruta más frecuente del sistema: el agente consulta cada 15 segundos mientras la
+   máquina está encendida. Por eso hace lo mínimo — un latido, volcar lo que ve de cada
+   servidor, y llevarse las órdenes pendientes.
 
-   Responde 501 a propósito: es explícito y no simula un funcionamiento que no existe. */
+   El agente NO recibe órdenes por conexión entrante: es él quien pregunta. Así no hay que
+   abrir ningún puerto nuevo en la casa. */
 
-import { error } from '../shared/http'
+import { error, ok } from '../shared/http'
 import { vieneDeCloudFront } from '../shared/origen'
+import { secreto } from '../shared/ssm'
+import * as m from '../shared/modelo'
+import { timingSafeEqual } from 'node:crypto'
+
+const SSM_TOKEN = process.env.ssmAgentToken!
+const HOST_JUEGO = process.env.gameHost!
 
 interface Evento {
+  rawPath?: string
+  body?: string
   headers?: Record<string, string | undefined>
+  requestContext?: { http?: { method?: string; path?: string; sourceIp?: string } }
+}
+
+/** Comparación en tiempo constante: con `===` el tiempo de respuesta delata cuántos bytes
+    coinciden, y el token se puede ir adivinando. */
+async function tokenValido(cabeceras: Record<string, string | undefined>): Promise<boolean> {
+  const cabecera = cabeceras.authorization ?? cabeceras.Authorization ?? ''
+  const recibido = cabecera.replace(/^Bearer\s+/i, '')
+  if (!recibido) return false
+
+  const esperado = await secreto(SSM_TOKEN)
+  const a = Buffer.from(recibido)
+  const b = Buffer.from(esperado)
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
+}
+
+interface CuerpoLatido {
+  publicIp?: string
+  sshActive?: boolean
+  sourcebansLastUsed?: number
+  slots?: m.ReporteSlot[]
+  /** Órdenes ya ejecutadas, para que no se vuelvan a entregar. */
+  confirmadas?: string[]
+}
+
+/** Avanza las reservas que estén esperando a este servidor.
+
+   El agente no decide el estado de la reserva: solo cuenta lo que ve (si el proceso corre,
+   si responde, si los plugins están). El paso de una etapa a otra se decide aquí, para que
+   la lógica viva en un solo sitio. */
+async function avanzarReservas(reportes: m.ReporteSlot[]): Promise<void> {
+  const cfg = await m.config()
+  const listaSlots = await m.slots(cfg.n)
+
+  for (const r of reportes) {
+    const slot = listaSlots.find((s) => s.index === r.index)
+    if (!slot?.intentId || !slot.ownerSteamId) continue
+    if (slot.estado !== 'PREPARANDO') continue
+
+    const it = await m.intentDe(slot.ownerSteamId, slot.intentId)
+    if (!it || m.esTerminal(it.estado)) continue
+
+    const ahora = Date.now()
+    let siguiente = it.estado
+
+    // El servidor arrancó pero aún no responde consultas: sigue iniciando.
+    if (it.estado === 'DESPERTANDO' || it.estado === 'BOOTEANDO') {
+      if (r.corriendo) siguiente = 'INICIANDO'
+    }
+    // Ya responde con mapa cargado: falta comprobar plugins y sembrar el admin.
+    if (it.estado === 'INICIANDO' && r.map) {
+      siguiente = 'VERIFICANDO'
+    }
+    // Todo comprobado: se entrega.
+    if (it.estado === 'VERIFICANDO' && r.pluginsOk && r.adminSembrado) {
+      siguiente = 'LISTO'
+    }
+
+    if (siguiente === it.estado) continue
+
+    const connectUrl =
+      siguiente === 'LISTO' ? await m.entregarSlot(slot.index, slot.port, HOST_JUEGO) : null
+
+    await m.guardarIntent({
+      ...it,
+      estado: siguiente,
+      connectUrl: connectUrl ?? it.connectUrl,
+      updatedAt: ahora,
+      // Cada etapa tiene su propio plazo; el barrido caduca la que se atasque.
+      stateDeadline: ahora + (siguiente === 'LISTO' ? 0 : 120_000),
+    })
+  }
 }
 
 export async function handler(evento: Evento) {
-  // Primero: solo se atienden peticiones que vengan por CloudFront.
   if (!vieneDeCloudFront(evento.headers ?? {})) {
     return error('UNAUTHORIZED', 'Acceso no autorizado.')
   }
+  if (!(await tokenValido(evento.headers ?? {}))) {
+    return error('UNAUTHORIZED', 'Token de agente inválido.')
+  }
 
-  return error('UNKNOWN', 'Este endpoint todavía no está implementado.')
+  const ruta = evento.requestContext?.http?.path ?? evento.rawPath ?? ''
+  if (!ruta.endsWith('/agent/poll')) return error('NOT_FOUND', 'Ruta desconocida.')
+
+  let cuerpo: CuerpoLatido = {}
+  try {
+    cuerpo = evento.body ? (JSON.parse(evento.body) as CuerpoLatido) : {}
+  } catch {
+    return error('VALIDACION', 'El cuerpo no es JSON válido.')
+  }
+
+  try {
+    await m.guardarLatido({
+      publicIp: cuerpo.publicIp,
+      sshActive: cuerpo.sshActive,
+      sourcebansLastUsed: cuerpo.sourcebansLastUsed,
+    })
+
+    if (cuerpo.slots?.length) {
+      await Promise.all(cuerpo.slots.map((s) => m.actualizarSlotDesdeAgente(s)))
+      await avanzarReservas(cuerpo.slots)
+    }
+
+    // Lo ya ejecutado se retira antes de calcular lo pendiente.
+    if (cuerpo.confirmadas?.length) {
+      await Promise.all(cuerpo.confirmadas.map((id) => m.borrarOrden(id)))
+    }
+
+    const pendientes = await m.ordenesPendientes()
+    const cfg = await m.config()
+
+    return ok({
+      ordenes: pendientes,
+      config: { n: cfg.n, emptyCloseSec: cfg.emptyCloseSec },
+      ts: Date.now(),
+    })
+  } catch (e) {
+    console.error(JSON.stringify({ msg: 'fallo en el endpoint del agente', e: String(e) }))
+    return error('UNKNOWN', 'Algo salió mal por nuestro lado.')
+  }
 }

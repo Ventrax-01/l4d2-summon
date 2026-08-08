@@ -142,15 +142,16 @@ export async function slots(n: number): Promise<Slot[]> {
 
   return leidos.map((r, i) => {
     const index = i + 1
-    return (
-      (r.Item as Slot | undefined) ?? {
-        // Un slot del que aún no hay item es un slot libre: no hace falta sembrarlos.
-        index,
-        port: PUERTO_BASE + index,
-        estado: 'LIBRE' as EstadoSlot,
-        updatedAt: 0,
-      }
-    )
+    // Los valores base van SIEMPRE debajo del item, no solo cuando falta: un slot del que aún
+    // no hay item es un slot libre, y uno guardado a medias no debe llegar a la API sin
+    // identidad. La lista que se devuelve tiene siempre `n` slots completos.
+    return {
+      index,
+      port: PUERTO_BASE + index,
+      estado: 'LIBRE' as EstadoSlot,
+      updatedAt: 0,
+      ...((r.Item as Partial<Slot> | undefined) ?? {}),
+    } as Slot
   })
 }
 
@@ -169,7 +170,9 @@ export async function reclamarSlot(
         Key: clave(index),
         UpdateExpression: [
           'SET #e = :prep, intentId = :iid, ownerSteamId = :sid, ownerNick = :nick',
-          '#idx = :idx, port = :port, updatedAt = :ahora',
+          // El reloj de vacío se pone a cero al tomar el slot. Si se arrastrara el del
+          // inquilino anterior, el barrido cerraría esta reserva nada más entregarla.
+          '#idx = :idx, port = :port, updatedAt = :ahora REMOVE emptySince',
         ].join(', '),
         // Solo si sigue libre (o no existe todavía).
         ConditionExpression: 'attribute_not_exists(PK) OR #e = :libre OR (#e = :reservado AND claimSteamId = :sid)',
@@ -193,14 +196,43 @@ export async function reclamarSlot(
   }
 }
 
+/** Libera el slot SOLO si sigue siendo de ese intent.
+
+   La condición es lo que impide el peor error del sistema: una reserva vieja que caduca y,
+   al limpiar, le quita el servidor a quien lo tiene ahora. Entre que una reserva se abandona
+   y el barrido la caduca pueden pasar minutos, y en ese hueco el slot ya pudo pasar a otra
+   persona — liberarlo entonces sería echarla de su propia partida. */
+export async function liberarSlotDe(index: number, intentId: string): Promise<boolean> {
+  try {
+    await ddb.send(
+      new UpdateCommand({
+        TableName: TABLA,
+        Key: clave(index),
+        UpdateExpression:
+          'SET #e = :libre, updatedAt = :ahora REMOVE ownerSteamId, ownerNick, intentId, since, #conn, claimSteamId, claimDeadline, emptySince',
+        ConditionExpression: 'intentId = :iid',
+        ExpressionAttributeNames: { '#e': 'estado', '#conn': 'connect' },
+        ExpressionAttributeValues: { ':libre': 'LIBRE', ':ahora': Date.now(), ':iid': intentId },
+      }),
+    )
+    return true
+  } catch {
+    return false // ya no es suyo: se deja en paz
+  }
+}
+
 export async function liberarSlot(index: number): Promise<void> {
   await ddb.send(
     new UpdateCommand({
       TableName: TABLA,
       Key: clave(index),
       UpdateExpression:
-        'SET #e = :libre, updatedAt = :ahora REMOVE ownerSteamId, ownerNick, intentId, since, connect, claimSteamId, claimDeadline',
-      ExpressionAttributeNames: { '#e': 'estado' },
+        // emptySince entra en el REMOVE: si no, el siguiente en ocupar el slot heredaría el
+        // cronómetro de vacío del anterior y se le cerraría el servidor antes de tiempo.
+        'SET #e = :libre, updatedAt = :ahora REMOVE ownerSteamId, ownerNick, intentId, since, #conn, claimSteamId, claimDeadline, emptySince',
+      // `connect` es palabra reservada de DynamoDB: sin el alias, la expresión entera se
+      // rechaza y liberar un slot falla siempre.
+      ExpressionAttributeNames: { '#e': 'estado', '#conn': 'connect' },
       ExpressionAttributeValues: { ':libre': 'LIBRE', ':ahora': Date.now() },
     }),
   )
@@ -277,4 +309,219 @@ export async function entrarACola(steamId: string): Promise<EntradaCola> {
 
 export async function salirDeCola(sk: string): Promise<void> {
   await ddb.send(new DeleteCommand({ TableName: TABLA, Key: { PK: 'QUEUE', SK: sk } }))
+}
+
+// ---------------------------------------------------------------- órdenes para el agente
+
+export type TipoOrden = 'LEVANTAR' | 'PARAR' | 'APAGAR'
+
+export interface Orden {
+  id: string
+  tipo: TipoOrden
+  slotIndex?: number
+  /** SteamID de quien será admin en ese servidor. */
+  adminSteamId?: string
+  creadaEn: number
+  ttl: number
+}
+
+/** Las órdenes se apilan y el agente se las lleva al consultar. Llevan identificador para
+    que ejecutar dos veces la misma sea inofensivo: si el agente confirma tarde y vuelve a
+    recibirla, la reconoce y no repite el trabajo. */
+export async function encolarOrden(o: Omit<Orden, 'id' | 'creadaEn' | 'ttl'>): Promise<Orden> {
+  const ahora = Date.now()
+  const orden: Orden = {
+    ...o,
+    id: `cmd_${ahora.toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`,
+    creadaEn: ahora,
+    // Si nadie la recoge en una hora, sobra: la máquina estaba apagada o el agente muerto.
+    ttl: Math.floor(ahora / 1000) + 3600,
+  }
+  await ddb.send(
+    new PutCommand({ TableName: TABLA, Item: { PK: 'CMD', SK: `CMD#${orden.id}`, ...orden } }),
+  )
+  return orden
+}
+
+export async function ordenesPendientes(): Promise<Orden[]> {
+  const r = await ddb.send(
+    new QueryCommand({
+      TableName: TABLA,
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: { ':pk': 'CMD', ':sk': 'CMD#' },
+      ScanIndexForward: true,
+    }),
+  )
+  // Se devuelven solo los campos de la orden: las claves de la tabla y el TTL son cocina
+  // interna, y el agente no debe llegar a depender de ellas.
+  return (r.Items ?? []).map((i) => ({
+    id: i.id,
+    tipo: i.tipo,
+    slotIndex: i.slotIndex,
+    adminSteamId: i.adminSteamId,
+    creadaEn: i.creadaEn,
+    ttl: i.ttl,
+  })) as Orden[]
+}
+
+/** Retira las órdenes de apagado que sigan pendientes.
+
+   Se llama al reservar. Sin esto quedaría una carrera fea: el barrido decide apagar porque
+   no había nadie, y antes de que el agente recoja la orden llega una reserva. El agente
+   también se defiende por su cuenta, pero es mejor que la orden ni siquiera le llegue. */
+export async function cancelarApagado(): Promise<number> {
+  const pendientes = await ordenesPendientes()
+  const apagados = pendientes.filter((o) => o.tipo === 'APAGAR')
+  await Promise.all(apagados.map((o) => borrarOrden(o.id)))
+  return apagados.length
+}
+
+export async function borrarOrden(id: string): Promise<void> {
+  await ddb.send(new DeleteCommand({ TableName: TABLA, Key: { PK: 'CMD', SK: `CMD#${id}` } }))
+}
+
+/** Lo que el agente reporta de cada servidor en cada latido. */
+export interface ReporteSlot {
+  index: number
+  corriendo: boolean
+  map?: string
+  players?: number
+  bots?: number
+  maxPlayers?: number
+  pluginsOk?: boolean
+  adminSembrado?: boolean
+}
+
+export async function guardarLatido(datos: {
+  publicIp?: string
+  sshActive?: boolean
+  sourcebansLastUsed?: number
+}): Promise<void> {
+  const ahora = Date.now()
+  await ddb.send(
+    new UpdateCommand({
+      TableName: TABLA,
+      Key: CLAVE_HOST,
+      UpdateExpression:
+        'SET #s = :up, lastHeartbeat = :ahora, publicIp = :ip, sshActive = :ssh REMOVE wakeStartedAt',
+      ExpressionAttributeNames: { '#s': 'state' },
+      ExpressionAttributeValues: {
+        ':up': 'UP',
+        ':ahora': ahora,
+        ':ip': datos.publicIp ?? null,
+        ':ssh': datos.sshActive ?? false,
+      },
+    }),
+  )
+}
+
+/** Vuelca a la tabla lo que el agente ve de un servidor.
+
+   Los `if_not_exists` no son adorno. El caso normal es que el agente reporte un servidor que
+   nadie ha reservado, y como esto es un UPDATE, DynamoDB crea el item con SOLO lo que se
+   escriba aquí: sin ellos el slot nacería sin `index`, sin `port` y sin `estado`, y la API
+   devolvería tarjetas sin identidad. Con ellos un item nuevo nace completo, y uno que ya
+   existe conserva su estado real (PREPARANDO, ACTIVO…) sin que el agente lo pise.
+
+   `emptySince` es el reloj del cierre automático: se pone al ver el servidor vacío y se borra
+   en cuanto entra alguien, así que solo cuenta el vacío continuo. Si alguien entra y sale, el
+   reloj arranca de nuevo. */
+export async function actualizarSlotDesdeAgente(r: ReporteSlot): Promise<void> {
+  const ahora = Date.now()
+  const vacio = (r.players ?? 0) === 0
+
+  const asignaciones = [
+    '#m = :map, players = :pl, bots = :bots, maxPlayers = :mx, updatedAt = :ahora',
+    '#idx = if_not_exists(#idx, :idx)',
+    'port = if_not_exists(port, :port)',
+    '#e = if_not_exists(#e, :libre)',
+  ]
+  if (vacio) asignaciones.push('emptySince = if_not_exists(emptySince, :ahora)')
+
+  await ddb.send(
+    new UpdateCommand({
+      TableName: TABLA,
+      Key: clave(r.index),
+      UpdateExpression: `SET ${asignaciones.join(', ')}${vacio ? '' : ' REMOVE emptySince'}`,
+      ExpressionAttributeNames: { '#m': 'map', '#idx': 'index', '#e': 'estado' },
+      ExpressionAttributeValues: {
+        ':map': r.map ?? null,
+        ':pl': r.players ?? 0,
+        ':bots': r.bots ?? 0,
+        ':mx': r.maxPlayers ?? 8,
+        ':ahora': ahora,
+        ':idx': r.index,
+        ':port': PUERTO_BASE + r.index,
+        ':libre': 'LIBRE' as EstadoSlot,
+      },
+    }),
+  )
+}
+
+/** Marca el slot como entregado y devuelve la dirección de conexión. */
+export async function entregarSlot(index: number, port: number, hostJuego: string): Promise<string> {
+  const connect = `steam://connect/${hostJuego}:${port}`
+  await ddb.send(
+    new UpdateCommand({
+      TableName: TABLA,
+      Key: clave(index),
+      UpdateExpression: 'SET #e = :activo, since = :ahora, updatedAt = :ahora',
+      ExpressionAttributeNames: { '#e': 'estado' },
+      ExpressionAttributeValues: { ':activo': 'ACTIVO', ':ahora': Date.now() },
+    }),
+  )
+  return connect
+}
+
+/** Intents vivos cuyo plazo ya venció. El índice solo lleva los no terminados, así que
+    esta consulta es diminuta por diseño. */
+export async function intentsVencidos(): Promise<Intent[]> {
+  const r = await ddb.send(
+    new QueryCommand({
+      TableName: TABLA,
+      IndexName: 'GSI1',
+      KeyConditionExpression: 'GSI1PK = :pk AND GSI1SK < :ahora',
+      ExpressionAttributeValues: { ':pk': 'INTENT_ACTIVO', ':ahora': `${Date.now()}` },
+    }),
+  )
+  return (r.Items ?? []) as Intent[]
+}
+
+/** Promueve al primero de la cola: le guarda un slot y le da una ventana para entrar. */
+export async function promoverPrimero(
+  slotIndex: number,
+  ventanaSec: number,
+): Promise<EntradaCola | null> {
+  const laCola = await cola()
+  const primero = laCola.find((e) => e.estado === 'ESPERANDO')
+  if (!primero) return null
+
+  const deadline = Date.now() + ventanaSec * 1000
+
+  await ddb.send(
+    new UpdateCommand({
+      TableName: TABLA,
+      Key: { PK: 'QUEUE', SK: primero.sk },
+      UpdateExpression: 'SET estado = :prom, slotIndex = :idx, claimDeadline = :dl',
+      ExpressionAttributeValues: { ':prom': 'PROMOVIDO', ':idx': slotIndex, ':dl': deadline },
+    }),
+  )
+
+  await ddb.send(
+    new UpdateCommand({
+      TableName: TABLA,
+      Key: clave(slotIndex),
+      UpdateExpression:
+        'SET #e = :res, claimSteamId = :sid, claimDeadline = :dl, updatedAt = :ahora',
+      ExpressionAttributeNames: { '#e': 'estado' },
+      ExpressionAttributeValues: {
+        ':res': 'RESERVADO_COLA',
+        ':sid': primero.steamId,
+        ':dl': deadline,
+        ':ahora': Date.now(),
+      },
+    }),
+  )
+
+  return { ...primero, estado: 'PROMOVIDO', slotIndex, claimDeadline: deadline }
 }

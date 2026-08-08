@@ -16,7 +16,10 @@ char gKeep[][] =
 {
     "chat_logger.smx",
     "admin_manager.smx",
-    "idle_hibernate.smx"
+    "idle_hibernate.smx",
+    // summon_admin holds the reservation's admin rights in memory. Unloading it would strip
+    // the owner of their own server the moment a match starts — exactly when they need it.
+    "summon_admin.smx"
 };
 
 Handle aReservedPlugins;
