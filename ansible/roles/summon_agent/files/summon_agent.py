@@ -106,21 +106,45 @@ def unidad_activa(n: int) -> bool:
 
 
 def hay_sesion_ssh() -> bool:
-    """Si el operador está conectado, la máquina no se apaga: cortarle la sesión a media
-    faena es peor que tenerla encendida unos minutos de más.
+    """¿Hay una persona conectada? Si la hay, la máquina no se apaga: cortarle la sesión a
+    media faena es peor que tenerla encendida unos minutos de más.
 
-    NO se usa `who`: lee /var/run/utmp, y hay instalaciones donde nadie lo escribe — en esta
-    misma flota `who` sale vacío con sesiones SSH abiertas. Se pregunta a logind, que es
-    quien lleva la cuenta de verdad en un sistema con systemd, y si no contesta se miran los
-    procesos que sshd crea por sesión ("sshd: usuario@pts/0").
+    NO se usa `who`: lee /var/run/utmp y hay instalaciones donde nadie lo escribe — en esta
+    misma flota `who` sale vacío con sesiones SSH abiertas. Se pregunta a logind.
+
+    Pero NO vale contar las sesiones que lista logind, porque no todas son personas:
+
+      Class=manager  — el gestor de systemd del usuario (user@1000.service). Aparece solo,
+                       sobrevive a la desconexión y no corresponde a nadie conectado.
+                       Contarla equivale a decir "siempre hay alguien": la máquina no se
+                       apagaría jamás.
+      State=closing  — una sesión que ya se está yendo. Si se quedara atascada en ese
+                       estado bloquearía el apagado para siempre.
+
+    Así que solo cuentan las de Class=user que sigan activas. Se consulta sesión por sesión
+    en vez de leer las columnas de `list-sessions` porque ese formato cambia entre versiones
+    de systemd, y aquí equivocarse sale caro en las dos direcciones.
     """
     try:
         r = subprocess.run(
             ["/usr/bin/loginctl", "list-sessions", "--no-legend"],
             capture_output=True, text=True, timeout=5,
         )
-        if r.returncode == 0 and r.stdout.strip():
-            return True
+        if r.returncode == 0:
+            for linea in r.stdout.splitlines():
+                if not linea.strip():
+                    continue
+                sid = linea.split()[0]
+                p = subprocess.run(
+                    ["/usr/bin/loginctl", "show-session", sid, "-p", "Class", "-p", "State"],
+                    capture_output=True, text=True, timeout=5,
+                )
+                props = dict(
+                    l.split("=", 1) for l in p.stdout.splitlines() if "=" in l
+                )
+                if props.get("Class") == "user" and props.get("State") != "closing":
+                    return True
+            return False
     except Exception:
         pass
 
