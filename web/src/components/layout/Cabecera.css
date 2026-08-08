@@ -152,3 +152,10 @@
     padding: 0 9px;
   }
 }
+
+/* La foto ocupa exactamente el mismo hueco que las iniciales, para que la cabecera no
+   dé un salto cuando carga. */
+.cab-avatar--foto {
+  object-fit: cover;
+  background: #2e4a5c;
+}

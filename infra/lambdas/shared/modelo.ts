@@ -26,6 +26,9 @@ export interface Config {
   cooldownSec: number
   claimWindowSec: number
   emptyCloseSec: number
+  /** Mapa con el que arranca un servidor recién levantado. Es lo que de verdad le tocará
+     a quien reserve, y por tanto lo que debe decir la tarjeta de un slot libre. */
+  startMap: string
   /** Interruptor de seguridad: con false la máquina no se apaga sola nunca.
 
      Existe porque apagarse es lo único que este sistema hace y no puede deshacer por su
@@ -55,6 +58,7 @@ export interface Slot {
   estado: EstadoSlot
   ownerSteamId?: string | null
   ownerNick?: string | null
+  ownerAvatar?: string | null
   intentId?: string | null
   since?: number | null
   emptySince?: number | null
@@ -98,6 +102,7 @@ const CONFIG_POR_DEFECTO: Config = {
   cooldownSec: 20,
   claimWindowSec: 180,
   emptyCloseSec: 900,
+  startMap: 'c1m1_hotel',
   apagadoAutomatico: true,
 }
 
@@ -174,6 +179,7 @@ export async function reclamarSlot(
   intentId: string,
   steamId: string,
   nick: string,
+  avatar?: string,
 ): Promise<boolean> {
   try {
     await ddb.send(
@@ -181,7 +187,7 @@ export async function reclamarSlot(
         TableName: TABLA,
         Key: clave(index),
         UpdateExpression: [
-          'SET #e = :prep, intentId = :iid, ownerSteamId = :sid, ownerNick = :nick',
+          'SET #e = :prep, intentId = :iid, ownerSteamId = :sid, ownerNick = :nick, ownerAvatar = :av',
           // El reloj de vacío se pone a cero al tomar el slot. Si se arrastrara el del
           // inquilino anterior, el barrido cerraría esta reserva nada más entregarla.
           '#idx = :idx, port = :port, updatedAt = :ahora REMOVE emptySince',
@@ -196,6 +202,7 @@ export async function reclamarSlot(
           ':iid': intentId,
           ':sid': steamId,
           ':nick': nick,
+          ':av': avatar ?? null,
           ':idx': index,
           ':port': PUERTO_BASE + index,
           ':ahora': Date.now(),
@@ -221,7 +228,7 @@ export async function liberarSlotDe(index: number, intentId: string): Promise<bo
         TableName: TABLA,
         Key: clave(index),
         UpdateExpression:
-          'SET #e = :libre, updatedAt = :ahora REMOVE ownerSteamId, ownerNick, intentId, since, #conn, claimSteamId, claimDeadline, emptySince',
+          'SET #e = :libre, updatedAt = :ahora REMOVE ownerSteamId, ownerNick, ownerAvatar, intentId, since, #conn, claimSteamId, claimDeadline, emptySince',
         ConditionExpression: 'intentId = :iid',
         ExpressionAttributeNames: { '#e': 'estado', '#conn': 'connect' },
         ExpressionAttributeValues: { ':libre': 'LIBRE', ':ahora': Date.now(), ':iid': intentId },
@@ -241,7 +248,7 @@ export async function liberarSlot(index: number): Promise<void> {
       UpdateExpression:
         // emptySince entra en el REMOVE: si no, el siguiente en ocupar el slot heredaría el
         // cronómetro de vacío del anterior y se le cerraría el servidor antes de tiempo.
-        'SET #e = :libre, updatedAt = :ahora REMOVE ownerSteamId, ownerNick, intentId, since, #conn, claimSteamId, claimDeadline, emptySince',
+        'SET #e = :libre, updatedAt = :ahora REMOVE ownerSteamId, ownerNick, ownerAvatar, intentId, since, #conn, claimSteamId, claimDeadline, emptySince',
       // `connect` es palabra reservada de DynamoDB: sin el alias, la expresión entera se
       // rechaza y liberar un slot falla siempre.
       ExpressionAttributeNames: { '#e': 'estado', '#conn': 'connect' },
@@ -353,6 +360,9 @@ export interface Orden {
   id: string
   tipo: TipoOrden
   slotIndex?: number
+  /** Una parada FORZADA la pidió el dueño desde la web. A diferencia del cierre por
+     inactividad, esta no se cancela porque haya gente dentro: se les avisa y se les saca. */
+  forzado?: boolean
   /** SteamID de quien será admin en ese servidor. */
   adminSteamId?: string
   creadaEn: number
@@ -392,6 +402,7 @@ export async function ordenesPendientes(): Promise<Orden[]> {
     id: i.id,
     tipo: i.tipo,
     slotIndex: i.slotIndex,
+    forzado: i.forzado,
     adminSteamId: i.adminSteamId,
     creadaEn: i.creadaEn,
     ttl: i.ttl,

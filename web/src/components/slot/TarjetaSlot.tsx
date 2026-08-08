@@ -121,9 +121,13 @@ export default function TarjetaSlot({ slot, mio = false, onReservar, onGestionar
 
         {enJuego && slot.ownerNick && (
           <div className="tsl-dueno">
-            <span className="tsl-avatar" aria-hidden="true">
-              {iniciales(slot.ownerNick)}
-            </span>
+            {slot.ownerAvatar ? (
+              <img className="tsl-avatar tsl-avatar--foto" src={slot.ownerAvatar} alt="" />
+            ) : (
+              <span className="tsl-avatar" aria-hidden="true">
+                {iniciales(slot.ownerNick)}
+              </span>
+            )}
             <span className="tsl-dueno-nick">{slot.ownerNick}</span>
             {slot.since && <span className="tsl-dueno-desde">· {desdeHace(slot.since)}</span>}
           </div>

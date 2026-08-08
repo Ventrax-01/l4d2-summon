@@ -41,10 +41,16 @@ export default function Cabecera() {
 
           {me ? (
             <button className="cab-perfil" onClick={() => navegar('/perfil')} title="Perfil">
-              <span className="cab-nick">R4zor</span>
-              <span className="cab-avatar" aria-hidden="true">
-                {iniciales('R4zor')}
-              </span>
+              <span className="cab-nick">{me.nick}</span>
+              {/* Steam da la foto en el login y se guarda con la sesión. Las iniciales son
+                  solo el respaldo para cuentas sin foto o si la imagen no carga. */}
+              {me.avatar ? (
+                <img className="cab-avatar cab-avatar--foto" src={me.avatar} alt="" />
+              ) : (
+                <span className="cab-avatar" aria-hidden="true">
+                  {iniciales(me.nick)}
+                </span>
+              )}
             </button>
           ) : (
             <button className="cab-entrar" onClick={() => navegar('/entrar')}>

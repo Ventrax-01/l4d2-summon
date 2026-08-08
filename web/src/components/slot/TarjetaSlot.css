@@ -378,3 +378,10 @@
   font-size: 11px;
   color: var(--text-subtle);
 }
+
+/* El color de fondo hace de respaldo: si la foto de Steam no carga, se ve el mismo
+   círculo de siempre en vez del icono de imagen rota. */
+.tsl-avatar--foto {
+  object-fit: cover;
+  background: #2e4a5c;
+}

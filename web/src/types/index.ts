@@ -43,6 +43,7 @@ export interface Slot {
   index: number
   estado: EstadoSlot
   ownerNick?: string
+  ownerAvatar?: string
   map?: string
   players?: number
   maxPlayers?: number
@@ -84,6 +85,10 @@ export interface MiSlot {
 /** Bloque `me` de /api/state: presente solo con sesión válida. */
 export interface Yo {
   steamId: string
+  /** Nombre y foto tal como los tiene Steam; se recogen al iniciar sesión. La API ya los
+      mandaba, pero el tipo no los declaraba, así que la cabecera pintaba un nick fijo. */
+  nick: string
+  avatar?: string
   operador: boolean
   suspendido: boolean
   intent: Intent | null

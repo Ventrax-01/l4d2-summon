@@ -22,6 +22,8 @@ import type {
 import { obtenerEscenario, suscribirEscenario, type Escenario } from './escenarios'
 import {
   CAMPANIAS,
+  MI_AVATAR,
+  MI_NICK,
   MI_STEAM_ID,
   NICKS,
   connectDe,
@@ -258,6 +260,8 @@ export function leerEstado(): EstadoFlota {
     ...base,
     me: {
       steamId: MI_STEAM_ID,
+      nick: MI_NICK,
+      avatar: MI_AVATAR,
       operador: false,
       suspendido: false,
       // Se devuelve también el intent terminal (LISTO/FALLIDO): la UI necesita el

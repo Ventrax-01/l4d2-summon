@@ -84,7 +84,13 @@ async function estado(sesion: Sesion | null) {
     index: s.index,
     estado: s.estado,
     ownerNick: s.ownerNick ?? undefined,
-    map: s.map ?? undefined,
+    ownerAvatar: s.ownerAvatar ?? undefined,
+    /* En un slot libre la tarjeta anuncia "Próximo mapa", así que tiene que decir con qué
+       arranca de verdad al reservarlo — no el último que se jugó ahí, que es lo que quedaba
+       guardado y hacía que un slot libre prometiera un mapa que no iba a tocar. */
+    map: (s.estado === 'ACTIVO' || s.estado === 'VACIO' || s.estado === 'PREPARANDO'
+      ? s.map
+      : cfg.startMap) ?? undefined,
     players: s.players,
     maxPlayers: s.maxPlayers ?? 8,
     since: s.since ?? undefined,
@@ -213,7 +219,7 @@ async function reservar(sesion: Sesion) {
   // Se intenta reclamar en orden; si otro se adelantó, se prueba el siguiente.
   let reclamado: m.Slot | null = null
   for (const s of candidatos) {
-    if (await m.reclamarSlot(s.index, id, sesion.steamId, sesion.nick)) {
+    if (await m.reclamarSlot(s.index, id, sesion.steamId, sesion.nick, sesion.avatar)) {
       reclamado = s
       break
     }
@@ -313,7 +319,9 @@ async function cerrar(sesion: Sesion) {
   if (mio) {
     // Se para el servidor además de soltar el slot: si no, seguiría corriendo para nadie y
     // la máquina no llegaría nunca a apagarse.
-    await m.encolarOrden({ tipo: 'PARAR', slotIndex: mio.index })
+    // Forzada: la pidió el dueño. El agente avisa por el chat, espera unos segundos y saca
+    // a quien esté dentro, en vez de cancelar la parada por haber gente.
+    await m.encolarOrden({ tipo: 'PARAR', slotIndex: mio.index, forzado: true })
     await m.liberarSlot(mio.index)
     await m.fijarIntentActivo(sesion.steamId, null)
     return ok({ ok: true, closed: { slotIndex: mio.index } })

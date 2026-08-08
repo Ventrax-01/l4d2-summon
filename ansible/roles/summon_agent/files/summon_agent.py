@@ -370,17 +370,42 @@ def levantar(n: int, admin_steam_id: str) -> bool:
     return True
 
 
-def parar(n: int) -> bool:
-    """Para un servidor, salvo que haya gente dentro.
+AVISO_CIERRE_S = int(os.environ.get("CLOSE_WARNING_SEC", "10"))
 
-    La orden pudo decidirse hace rato con datos que ya no valen; si entretanto entró alguien,
-    pararlo sería echarlo de su partida. Se deja sin confirmar para que la nube la reevalúe.
+
+def parar(n: int, forzado: bool = False) -> bool:
+    """Para un servidor.
+
+    Hay dos maneras de llegar aquí y NO se tratan igual:
+
+      · Cierre por inactividad (forzado=False). La orden se decidió hace rato con datos que
+        pueden haber caducado; si entretanto entró alguien, pararlo sería echarlo de su
+        partida. Se deja sin confirmar para que la nube lo reevalúe.
+
+      · Cierre pedido por el dueño (forzado=True). Aquí no hay nada que reevaluar: alguien
+        pulsó "cerrar" hace segundos sabiendo lo que hacía. Antes esto caía en la guarda de
+        arriba y el servidor seguía vivo con la gente dentro pese a que la web decía que se
+        había cerrado. Ahora se avisa por el chat, se da un margen para despedirse y se
+        desaloja.
     """
+    puerto = PORT_BASE + n
+
     if unidad_activa(n):
-        info = consultar_a2s(PORT_BASE + n)
-        if info.get("players", 0) > 0:
-            log("parada cancelada: hay gente dentro", slot=n, jugadores=info["players"])
+        info = consultar_a2s(puerto)
+        jugadores = info.get("players", 0)
+
+        if jugadores > 0 and not forzado:
+            log("parada cancelada: hay gente dentro", slot=n, jugadores=jugadores)
             return False
+
+        if jugadores > 0 and forzado:
+            # Cortar de golpe deja a la gente con un "conexión perdida" sin explicación.
+            rcon(puerto, 'sm_say [Summon] El dueno cerro el servidor. Se apaga en %d segundos.'
+                 % AVISO_CIERRE_S)
+            log("cierre forzado avisado", slot=n, jugadores=jugadores, enSegundos=AVISO_CIERRE_S)
+            time.sleep(AVISO_CIERRE_S)
+            rcon(puerto, 'sm_kick @all "El dueno cerro este servidor"')
+            time.sleep(1)
 
     subprocess.run(["/usr/bin/systemctl", "stop", "l4d2@%d.service" % n], timeout=60)
     estado["pendiente_admin"].pop(str(n), None)
@@ -471,7 +496,7 @@ def ejecutar(orden: dict) -> bool:
         if tipo == "LEVANTAR" and slot:
             hecho = levantar(int(slot), orden.get("adminSteamId", ""))
         elif tipo == "PARAR" and slot:
-            hecho = parar(int(slot))
+            hecho = parar(int(slot), bool(orden.get("forzado")))
         elif tipo == "APAGAR":
             # No pasa por el registro de ejecutadas: si el apagado se cancela hay que poder
             # reintentarlo, y si se lleva a cabo esta máquina ya no está para recordarlo.

@@ -42,7 +42,10 @@ export const NICKS = [
 
 export const MI_STEAM_ID = '76561198012348231'
 export const MI_NICK = 'R4zor'
-export const MI_AVATAR = 'https://avatars.steamstatic.com/placeholder_full.jpg'
+// Un data: URI en vez de una URL de Steam inventada: aquella daba 404 y el mock
+// mostraba el icono de imagen rota en vez de un avatar.
+export const MI_AVATAR =
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%232e4a5c'/><circle cx='32' cy='25' r='12' fill='%238fd4ec'/><ellipse cx='32' cy='58' rx='20' ry='16' fill='%238fd4ec'/></svg>"
 
 /** Host al que se conectan los jugadores. Los servidores de juego NO van por CloudFront:
     tienen su propio registro A hacia la IP fija de casa. */

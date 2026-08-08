@@ -7,7 +7,21 @@
   padding: 14px 20px 6px;
   display: flex;
   flex-direction: column;
+  /* El `gap` es solo el MÍNIMO: `space-evenly` reparte entre los bloques todo lo que sobre.
+
+     Antes ese sobrante se acumulaba en los bordes —la página va centrada— y el resultado era
+     lo peor de ambos mundos: los bloques apretados entre sí y hueco desaprovechado arriba y
+     abajo. Ahora el contenido usa el alto que hay; si no cabe, el gap sostiene el mínimo y
+     la página se desplaza como siempre. */
   gap: 12px;
+  flex: 1;
+}
+
+/* `.home` ES el <main>, así que la regla global `.pagina > main` (centrado vertical) le
+   gana por especificidad a `.home` a secas. Hay que subir un escalón para que este reparto
+   mande sobre el centrado — solo en la portada; el resto de pantallas siguen centradas. */
+.pagina > main.home {
+  justify-content: space-evenly;
 }
 
 /* --- Hero --- */
