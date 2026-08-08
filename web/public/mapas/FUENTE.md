@@ -6,9 +6,16 @@ código. Si falta el archivo, la tarjeta cae al degradado de la campaña y no se
 
 ## Qué imágenes son
 
-Son las **miniaturas oficiales que el propio juego usa** en su selector de mapas: 256×128 en los
-archivos de Left 4 Dead 2. Se obtienen del wiki de Left 4 Dead mediante su API de MediaWiki (el
-HTML del wiki está tras un desafío de Cloudflare; la API es la interfaz pública).
+Son las **miniaturas oficiales que el propio juego usa** en su selector de mapas: 256×128, y ahora
+salen **directamente de los archivos del juego**, no del wiki.
+
+Están en los VPK como `materials/vgui/maps/<mapa>.vtf`, en DXT1 con mipmaps. Las extrae
+`tools/extraer-mapas-del-juego.py`, que hay que ejecutar en una máquina con el juego instalado
+(el servidor dedicado vale) y copiar el resultado aquí.
+
+Antes se bajaban del wiki con `tools/descargar-mapas.py`. Se cambió porque aquellas venían
+recomprimidas y con marcas del sitio encima: mismo tamaño, peor material. Estas son el original
+de Valve sin intermediarios.
 
 Se eligieron frente a las capturas de jugadores que también hay en el wiki —bastante más grandes,
 hasta 1440×900— por **consistencia**: las oficiales son todas del mismo estilo y encuadre,
