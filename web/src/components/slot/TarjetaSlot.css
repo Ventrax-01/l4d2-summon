@@ -33,22 +33,11 @@
 .tsl-mapa {
   height: 110px;
   position: relative;
+  overflow: hidden;
   background-color: var(--grad, #233041);
   background-image: var(--img, none), linear-gradient(135deg, var(--grad, #233041), #141920);
   background-size: cover, auto;
   background-position: center, center;
-}
-
-.tsl-mapa-trama {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 12px,
-    rgb(255 255 255 / 0.025) 12px,
-    rgb(255 255 255 / 0.025) 24px
-  );
 }
 
 .tsl-enjuego {
@@ -272,11 +261,23 @@
 }
 
 /* Un servidor libre enseña su próximo mapa, pero atenuado: todavía no hay partida. */
-.tsl-mapa--atenuado::after {
+/* Un slot libre lleva la miniatura ligeramente desenfocada. Distingue de un vistazo lo
+   disponible de lo que está en juego sin apagar la imagen, que es lo que hacía el velo
+   oscuro de antes: se puso cuando las miniaturas eran pequeñas y blandas, y disimularlas
+   ayudaba. Con material nítido solo estorbaba.
+
+   Va en una capa propia y no en un `filter` sobre el bloque porque un filtro alcanza
+   también a los hijos, y el nombre del mapa y el chip tienen que quedar limpios. */
+.tsl-mapa--atenuado::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: rgb(16 17 20 / 0.5);
+  /* Se desborda el recuadro a propósito: al desenfocar, los bordes se irían a transparente
+     y se vería una orla clara alrededor. */
+  inset: -8px;
+  background-image: var(--img, none), linear-gradient(135deg, var(--grad, #233041), #141920);
+  background-size: cover, auto;
+  background-position: center, center;
+  filter: blur(1.5px);
 }
 
 .tsl-mapa--prep::after {

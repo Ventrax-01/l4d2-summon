@@ -48,7 +48,6 @@ export default function TarjetaSlot({ slot, mio = false, onReservar, onGestionar
           role="img"
           aria-label={mapa ? `Mapa ${mapa}` : 'Servidor sin partida'}
         >
-          <span className="tsl-mapa-trama" aria-hidden="true" />
           {v.etiqueta && (
             <span
               className="tsl-badge"
