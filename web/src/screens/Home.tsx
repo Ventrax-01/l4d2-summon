@@ -116,7 +116,6 @@ export default function Home() {
                   disabled={reservando}
                   aria-busy={reservando}
                 >
-                  <span aria-hidden="true">⚡</span>{' '}
                   {reservando ? 'Reservando…' : 'Reservar servidor'}
                 </button>
               </div>

@@ -32,7 +32,7 @@ export default function MiServidor() {
           <h1>No tienes servidor ahora</h1>
           <p>Reserva uno y en unos minutos estás jugando. Recuerda: 1 servidor por persona.</p>
           <button className="mis-reservar" onClick={() => navegar('/')}>
-            <span aria-hidden="true">⚡</span> Reservar servidor
+            Reservar servidor
           </button>
         </main>
       </>

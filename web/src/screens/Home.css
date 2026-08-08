@@ -10,6 +10,11 @@
 
 /* --- Hero --- */
 .hero {
+  /* El contenedor se ensanchó a 1200px para que entren cuatro tarjetas, pero el hero
+     se queda en su ancho de antes: estirado se ve desangelado. */
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -134,8 +139,8 @@
    a 3, 2 y 1 columna segun se estrecha la pantalla. */
 .home-rejilla {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 20px;
 }
 
 @media (max-width: 639px) {
