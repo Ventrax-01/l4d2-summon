@@ -8,7 +8,7 @@ import { clienteApi } from '@/api'
 import { useFlota } from '@/context/FlotaContext'
 import Cabecera from '@/components/layout/Cabecera'
 import Modal from '@/components/ui/Modal'
-import { comandoConnect, desdeHace, nombreDeMapa } from '@/lib/formato'
+import { comandoConnect, desdeHace, gradienteMapa, imagenDeMapa, nombreDeMapa } from '@/lib/formato'
 import './MiServidor.css'
 
 export default function MiServidor() {
@@ -71,7 +71,17 @@ export default function MiServidor() {
         </div>
 
         <section className="mis-tarjeta">
-          <div className="mis-mapa" role="img" aria-label={`Mapa ${nombreDeMapa(slot.map)}`}>
+          <div
+            className="mis-mapa"
+            style={
+              {
+                '--grad': gradienteMapa(slot.map),
+                '--img': imagenDeMapa(slot.map) ? `url(${imagenDeMapa(slot.map)})` : 'none',
+              } as React.CSSProperties
+            }
+            role="img"
+            aria-label={`Mapa ${nombreDeMapa(slot.map)}`}
+          >
             <span className="mis-mapa-trama" aria-hidden="true" />
             <span className="mis-mapa-nombre">{nombreDeMapa(slot.map)}</span>
           </div>

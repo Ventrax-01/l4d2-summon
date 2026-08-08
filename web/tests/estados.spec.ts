@@ -64,6 +64,21 @@ test.describe('Mi servidor', () => {
     await expect(page.getByRole('dialog')).toBeHidden()
   })
 
+  test('muestra la imagen del mapa', async ({ page }) => {
+    // Se olvidó conectarla aquí cuando se añadieron las miniaturas a las tarjetas.
+    await page.goto('/?host=up&vel=20&n=2')
+    await page.getByRole('button', { name: /Reservar servidor/ }).click()
+    await expect(page.getByRole('heading', { name: '¡Tu servidor está listo!' })).toBeVisible({
+      timeout: ESPERA_ENTREGA,
+    })
+    await page.getByRole('button', { name: 'Ir a Mi servidor' }).click()
+
+    const fondo = await page.locator('.mis-mapa').evaluate(
+      (el) => getComputedStyle(el).backgroundImage,
+    )
+    expect(fondo).toContain('/mapas/')
+  })
+
   test('cerrar de verdad libera el servidor', async ({ page }) => {
     await page.goto('/?host=up&vel=20&n=2')
     await page.getByRole('button', { name: /Reservar servidor/ }).click()
