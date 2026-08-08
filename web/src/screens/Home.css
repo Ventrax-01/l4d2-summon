@@ -139,11 +139,13 @@
    a 3, 2 y 1 columna segun se estrecha la pantalla. */
 .home-rejilla {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-  gap: 20px;
+  /* El minimo baja a 260px para que las cuatro columnas sigan entrando con mas
+     separacion: (1160 - 3*24) / 4 = 272px por tarjeta. */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
   /* Se suma al gap del contenedor: separa el bloque de servidores del hero y de
      la sección de abajo, para que respire como bloque propio. */
-  margin: 16px 0 24px;
+  margin: 28px 0 38px;
 }
 
 @media (max-width: 639px) {
