@@ -3,6 +3,10 @@
 # La configuración real se copia de los .sample y se rellena en cada despliegue.
 ansible/group_vars/all.yml
 ansible/group_vars/*secret*
+# Respaldos de la configuración: contienen lo mismo que el original
+*.bak
+*.bak-*
+*.orig
 *vault*
 *.pem
 agent-token*
