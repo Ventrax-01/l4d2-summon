@@ -1,10 +1,15 @@
+.cf {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 /* Valores tomados literalmente del prototipo (design/Prototipo.dc.html). */
 
 .cf-divisor {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-top: 28px;
 }
 
 .cf-linea {

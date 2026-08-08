@@ -24,13 +24,13 @@ const VISUALES: Record<EstadoSlot, Visual> = {
   },
   PREPARANDO: {
     etiqueta: 'PREPARANDO',
-    icono: '◐',
+    icono: '●',
     color: '--prep',
     descripcion: 'Servidor preparándose',
   },
   ACTIVO: {
-    etiqueta: null,
-    icono: '▶',
+    etiqueta: 'EN JUEGO',
+    icono: '●',
     color: '--accent',
     descripcion: 'Servidor en juego',
   },

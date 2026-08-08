@@ -62,17 +62,17 @@
 /* Animaciones nombradas por el Board */
 @keyframes vxPulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+  50% { opacity: 0.35; }
 }
 
 @keyframes vxShimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes vxBar {
   0% { transform: translateX(-100%); }
-  100% { transform: translateX(400%); }
+  100% { transform: translateX(260%); }
 }
 
 @keyframes vxSpin {
@@ -80,12 +80,12 @@
 }
 
 @keyframes vxToast {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes vxPop {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.85); }
   to { opacity: 1; transform: scale(1); }
 }
 

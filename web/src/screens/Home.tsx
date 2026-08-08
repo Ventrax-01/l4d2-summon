@@ -106,6 +106,7 @@ export default function Home() {
                     <span>EN JUEGO</span>
                   </li>
                 </ul>
+                {!me && <p className="home-aviso-login">Te pediremos entrar con Steam primero.</p>}
               </div>
 
               <div className="hero-accion">
@@ -118,7 +119,6 @@ export default function Home() {
                   <span aria-hidden="true">⚡</span>{' '}
                   {reservando ? 'Reservando…' : 'Reservar servidor'}
                 </button>
-                {!me && <p className="home-aviso-login">Te pediremos entrar con Steam primero.</p>}
               </div>
             </section>
 
@@ -133,8 +133,6 @@ export default function Home() {
                     onGestionar={() =>
                       navegar(me?.slot?.index === s.index ? '/mi-servidor' : '/reservar')
                     }
-                    onReintentar={() => void refrescar()}
-                    onAvisar={() => mostrar('Aviso enviado al operador. Gracias.', 'ok')}
                   />
                 ))}
               </div>
@@ -145,9 +143,6 @@ export default function Home() {
                 </span>
                 <h2>No hay servidores ahora mismo</h2>
                 <p>El operador aún no ha publicado ninguno. Vuelve en un rato.</p>
-                <button className="home-cta home-cta--chico" onClick={() => void refrescar()}>
-                  <span aria-hidden="true">↻</span> Actualizar
-                </button>
               </section>
             )}
 

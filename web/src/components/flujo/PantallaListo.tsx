@@ -43,7 +43,7 @@ export default function PantallaListo({
         </span>
         <h1>¡Tu servidor está listo!</h1>
         <p>
-          El servidor {slotIndex != null ? `#${slotIndex}` : ''} está arriba y es tuyo. A jugar.
+          El Servidor #{slotIndex ?? '?'} está arriba y es tuyo. A jugar.
         </p>
       </header>
 

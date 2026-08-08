@@ -107,7 +107,7 @@ export default function MiServidor() {
               <span aria-hidden="true">🛡</span> Tus poderes de admin
               <small>kick · mapa · partida</small>
             </span>
-            <span aria-hidden="true">{abriendoAdmin ? '▲' : '▼'}</span>
+            <span aria-hidden="true">{abriendoAdmin ? '▴' : '▾'}</span>
           </button>
           {abriendoAdmin && (
             <ul className="mis-admin-lista">

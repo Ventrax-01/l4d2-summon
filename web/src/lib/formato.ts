@@ -1,6 +1,6 @@
 /* Utilidades de presentación compartidas. */
 
-import { CAMPANIAS } from '@/api/mock/datos'
+import { CAMPANIAS, gradienteDeMapa } from '@/api/mock/datos'
 
 /** "hace 24 min" / "hace 3 h". Entrada en epoch-ms. */
 export function desdeHace(epoch?: number): string {
@@ -31,4 +31,9 @@ export function iniciales(nick?: string): string {
 export function comandoConnect(url?: string | null): string {
   if (!url) return ''
   return `connect ${url.replace('steam://connect/', '')}`
+}
+
+/** Degradado de la miniatura del mapa (uno por campaña, como en el diseño). */
+export function gradienteMapa(map?: string): string {
+  return gradienteDeMapa(map)
 }

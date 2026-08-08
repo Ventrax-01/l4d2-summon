@@ -74,7 +74,7 @@ export default function Perfil() {
               <span className="prf-rotulo prf-rotulo--cola">⧗ EN COLA</span>
               <p className="prf-detalle">
                 Posición #{me?.queue.position ?? 1}
-                {estado?.queue.length ? ` · ${estado.queue.length} en total` : ''}
+                {estado?.queue.length ? ` · ${estado.queue.length} personas esperan` : ''}
               </p>
             </div>
             <button className="prf-btn prf-btn--cola" onClick={() => navegar('/cola')}>

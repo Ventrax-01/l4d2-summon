@@ -34,10 +34,11 @@ export default function App() {
   // app sin forma de desactivarlo.
   if (error?.codigo === 'BACKEND_DOWN') {
     return (
-      <>
+      <div className="pagina">
         <ServicioCaido />
+        <PieGlobal />
         <PanelEscenarios />
-      </>
+      </div>
     )
   }
 

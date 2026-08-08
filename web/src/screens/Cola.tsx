@@ -141,8 +141,8 @@ export default function Cola() {
         <p className="cola-texto">
           Ahora mismo todos los servidores están ocupados.{' '}
           {esperando > 0 &&
-            `${esperando} ${esperando === 1 ? 'persona espera' : 'personas esperan'} también. `}
-          En cuanto se libere uno y te toque, te avisamos aquí mismo.
+            `${esperando} ${esperando === 1 ? 'persona espera' : 'personas esperan'}; `}
+          en cuanto se libere uno y te toque, te avisamos aquí mismo.
         </p>
 
         <p className="cola-pista">

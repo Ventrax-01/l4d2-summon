@@ -25,9 +25,9 @@ interface Toast {
 
 const ICONO: Record<TipoToast, string> = {
   ok: '✓',
-  info: 'ⓘ',
-  warn: '⚠',
-  error: '✕',
+  info: 'ℹ',
+  warn: '⏱',
+  error: '⚠',
 }
 
 const DURACION = 3200

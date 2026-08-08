@@ -55,7 +55,7 @@ export default function Login() {
           ) : (
             <>
               <SteamIcono />
-              Entrar con Steam
+              {error ? 'Reintentar con Steam' : 'Entrar con Steam'}
             </>
           )}
         </button>

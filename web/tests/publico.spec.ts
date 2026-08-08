@@ -42,7 +42,7 @@ test.describe('Home pública', () => {
     await page.goto('/?anon=1&n=2')
 
     const primera = page.getByRole('article').first()
-    await expect(primera.getByText('LIBRE')).toBeVisible()
+    await expect(primera.locator('.tsl-badge')).toContainText('LIBRE')
     await expect(primera.getByText(/Disponible/)).toBeVisible()
   })
 
@@ -51,7 +51,7 @@ test.describe('Home pública', () => {
 
     const primera = page.getByRole('article').first()
     // exact para no chocar con el texto alternativo de lectores ("Servidor en juego").
-    await expect(primera.getByText('EN JUEGO', { exact: true })).toBeVisible()
+    await expect(primera.locator('.tsl-badge')).toContainText('EN JUEGO')
     await expect(primera.getByRole('link', { name: 'Entrar a jugar' })).toBeVisible()
     // El contador de jugadores tiene la forma N/M.
     await expect(primera.getByText(/\d+\/\d+/)).toBeVisible()

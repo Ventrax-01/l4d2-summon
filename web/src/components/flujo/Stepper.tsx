@@ -11,7 +11,7 @@ import './Stepper.css'
 
 /** Microcopy por etapa. La clave es la etiqueta que manda el backend. */
 const MICRO: Record<string, string> = {
-  Despertando: 'Encendiendo el servidor…',
+  Despertando: 'Encendiendo tu servidor…',
   Iniciando: 'Arrancando y cargando el mapa…',
   Verificando: 'Comprobando que todo responde y dándote tus permisos…',
   '¡Listo!': 'Tu servidor está arriba.',
@@ -54,16 +54,25 @@ export default function Stepper({ datos, fallido = false }: Props) {
               {!ultimo && (
                 <span
                   className="stp-linea"
-                  style={{ background: hecho ? 'var(--accent)' : 'var(--border-muted)' }}
+                  style={{ background: hecho ? 'var(--accent)' : 'var(--border)' }}
                   aria-hidden="true"
                 />
               )}
             </div>
 
             <div className="stp-texto">
-              <p className={'stp-label ' + (hecho || actual ? 'stp-label--on' : '')}>{label}</p>
-              {(actual || hecho) && MICRO[label] && (
-                <p className="stp-micro">{MICRO[label]}</p>
+              <p
+                className={
+                  'stp-label ' +
+                  (falla ? 'stp-label--falla' : actual ? 'stp-label--actual' : hecho ? 'stp-label--hecho' : '')
+                }
+              >
+                {label}
+              </p>
+              {MICRO[label] && (
+                <p className={'stp-micro ' + (hecho ? 'stp-micro--hecho' : actual ? '' : 'stp-micro--pend')}>
+                  {hecho ? MICRO[label].replace('…', '… hecho') : MICRO[label]}
+                </p>
               )}
               {actual && !fallido && (
                 <div className="stp-barra" aria-hidden="true">
