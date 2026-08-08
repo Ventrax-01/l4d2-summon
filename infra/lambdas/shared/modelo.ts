@@ -44,6 +44,9 @@ export interface Host {
   lastWolSentAt?: number | null
   sourcebansLastUsed?: number
   sshActive?: boolean
+  /** Modo Wake-on-LAN que reporta la tarjeta: 'g' = escuchando el paquete mágico, 'd' =
+     desactivada. Si al apagarse no era 'g', la máquina no va a poder despertar. */
+  wolArmado?: string
 }
 
 export interface Slot {
@@ -452,6 +455,7 @@ export async function guardarLatido(datos: {
   publicIp?: string
   sshActive?: boolean
   sourcebansLastUsed?: number
+  wolArmado?: string
 }): Promise<void> {
   const ahora = Date.now()
   await ddb.send(
@@ -459,13 +463,14 @@ export async function guardarLatido(datos: {
       TableName: TABLA,
       Key: CLAVE_HOST,
       UpdateExpression:
-        'SET #s = :up, lastHeartbeat = :ahora, publicIp = :ip, sshActive = :ssh REMOVE wakeStartedAt',
+        'SET #s = :up, lastHeartbeat = :ahora, publicIp = :ip, sshActive = :ssh, wolArmado = :wol REMOVE wakeStartedAt',
       ExpressionAttributeNames: { '#s': 'state' },
       ExpressionAttributeValues: {
         ':up': 'UP',
         ':ahora': ahora,
         ':ip': datos.publicIp ?? null,
         ':ssh': datos.sshActive ?? false,
+        ':wol': datos.wolArmado ?? null,
       },
     }),
   )
@@ -534,14 +539,15 @@ export async function actualizarSlotDesdeAgente(r: ReporteSlot): Promise<void> {
 /** El agente avisa justo antes de apagarse. Sin esto, la nube seguiría viendo la máquina
     encendida durante minuto y medio (hasta que caduque el latido) y una reserva hecha en esa
     ventana no mandaría el paquete de encendido: creería que ya está despierta. */
-export async function marcarApagada(): Promise<void> {
+export async function marcarApagada(wolArmado?: string): Promise<void> {
   await ddb.send(
     new UpdateCommand({
       TableName: TABLA,
       Key: CLAVE_HOST,
-      UpdateExpression: 'SET #s = :down, lastHeartbeat = :cero REMOVE wakeStartedAt',
+      // Se guarda como quedó la tarjeta: si no era 'g', ya sabemos por qué no despierta.
+      UpdateExpression: 'SET #s = :down, lastHeartbeat = :cero, wolArmado = :wol REMOVE wakeStartedAt',
       ExpressionAttributeNames: { '#s': 'state' },
-      ExpressionAttributeValues: { ':down': 'DOWN', ':cero': 0 },
+      ExpressionAttributeValues: { ':down': 'DOWN', ':cero': 0, ':wol': wolArmado ?? null },
     }),
   )
 }

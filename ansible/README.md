@@ -105,31 +105,42 @@ Y desplegar como siempre: `ansible-playbook playbook.yml`.
 Esto no se configura desde el repo y sin ello el sistema no funciona: la plataforma apaga la
 máquina y luego no puede volver a encenderla.
 
-La Lambda de encendido manda el paquete mágico a la IP pública de casa. El router lo reenvía
-al equipo… mientras el equipo esté encendido. **Apagado, el router ya no tiene su entrada ARP
-y no sabe a qué tarjeta entregar el paquete: lo tira.** Y es justo cuando hace falta.
+La Lambda de encendido manda el paquete mágico a la IP pública de casa, y el router lo tiene
+que reenviar al equipo. **Con el equipo apagado el router no siempre sabe a qué tarjeta
+entregarlo, y entonces lo tira.** Justo cuando hace falta.
 
-Comprobado en esta instalación, y el patrón depende de **cuánto lleve apagada**:
+Medido en esta instalación, en 11 intentos: **funciona una de cada tres o cuatro veces**. No
+es un umbral de tiempo — hubo aciertos a los 66 s de apagarse y también tras varias horas, y
+fallos en ambos extremos. Es sencillamente poco fiable.
 
-| tiempo apagada | encendido desde internet |
-|---|---|
-| 66 s | ✅ despertó |
-| 120 s | ✅ |
-| 201 s | ✅ |
-| 6 h | ❌ (dos intentos seguidos, y el barrido reintentando cada 60 s) |
+Lo que sí está descartado:
 
-Los paquetes llegan de verdad al equipo —se ven entrar por `udp/9` con el equipo encendido— y
-desde la LAN despierta siempre. O sea que la tarjeta y la BIOS están bien: recién apagada el
-router todavía la recuerda y entrega, y cuando esa entrada caduca deja de saber a quién
-entregar. Insistir no sirve: el barrido manda un paquete por minuto y ninguno llega.
+- **La tarjeta y la BIOS.** Desde la LAN, mandando a la difusión, despierta **siempre**.
+- **Que los paquetes no salgan o no lleguen a la red.** Con el equipo encendido se ven entrar
+  por `udp/9` los cuatro que manda la Lambda.
+- **Que sea cuestión de insistir.** El barrido manda un paquete por minuto; en los intentos
+  fallidos no despertó con ninguno.
 
-En el router hace falta **una** de estas dos cosas:
+Encaja con la entrada ARP del router: cuando conserva la que aprendió mientras el equipo
+estaba encendido, el reenvío tiene destino y funciona; cuando la ha desalojado, tiene que
+preguntar por ARP, la tarjeta en modo espera no contesta, y el paquete se pierde. Cuándo la
+desaloja no es predecible desde fuera.
 
-- **Enlace fijo IP↔MAC** (suele llamarse *static ARP*, *IP-MAC binding* o *ARP estático*):
-  se ata `192.168.18.100` a la MAC de la tarjeta, y así el reenvío tiene destino aunque el
-  equipo esté apagado. Es la opción limpia.
+En el router hace falta **una** de estas cosas, en orden de preferencia:
+
+- **Enlace fijo IP↔MAC** (*static ARP*, *IP-MAC binding*, *ARP estático*): se ata la IP del
+  equipo a la MAC de su tarjeta, y así el reenvío tiene destino aunque esté apagado. Es la
+  opción limpia, pero no todos los routers domésticos la traen.
+- **Reserva DHCP** para esa MAC. Ojo: solo sirve si el equipo coge la IP **por DHCP**. Aquí
+  la tiene configurada a mano (`proto static`), así que el router nunca se la asignó y no
+  guarda ninguna asociación. Pasar el equipo a DHCP con reserva hace que el router mantenga
+  él la relación IP↔MAC, que es justo lo que falta.
 - **Reenviar UDP/9 a la dirección de difusión** de la red (`…​.255`) en vez de a la IP del
-  equipo. Más simple, pero muchos routers no aceptan una dirección de difusión como destino.
+  equipo. Lo más simple de entender, pero muchos routers rechazan una difusión como destino.
+
+Lo que **no** funciona desde fuera: mandar el paquete a `255.255.255.255`. Esa difusión es
+local y ningún router de internet la reenvía; solo sirve estando ya dentro de la red (que es
+lo que hace `tools/despertar.sh`).
 
 Y en el equipo, que la tarjeta quede armada en cada arranque (`ethtool <iface> wol g`). Aquí
 ya lo hace un `wol-enable.service` propio; si montas esto en otra máquina, tendrás que

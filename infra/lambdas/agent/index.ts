@@ -46,6 +46,8 @@ interface CuerpoLatido {
   confirmadas?: string[]
   /** Última señal antes del apagado: la máquina se va AHORA. */
   apagando?: boolean
+  /** Cómo quedó la tarjeta de red: 'g' = puede despertar, cualquier otra cosa = no. */
+  wolArmado?: string
 }
 
 /** Avanza las reservas que estén esperando a este servidor.
@@ -126,10 +128,16 @@ export async function handler(evento: Evento) {
        después, y una reserva hecha en ese hueco no mandaría el paquete de encendido. */
     if (cuerpo.apagando) {
       await Promise.all([
-        m.marcarApagada(),
+        m.marcarApagada(cuerpo.wolArmado),
         ...(cuerpo.confirmadas ?? []).map((id) => m.borrarOrden(id)),
       ])
-      console.info(JSON.stringify({ msg: 'la máquina avisa de que se apaga' }))
+      console.info(
+        JSON.stringify({ msg: 'la máquina avisa de que se apaga', wolArmado: cuerpo.wolArmado }),
+      )
+      if (cuerpo.wolArmado && cuerpo.wolArmado !== 'g') {
+        // Queda dicho a gritos: se está apagando algo que no vamos a poder encender.
+        console.warn(JSON.stringify({ msg: 'se apaga SIN wake-on-lan armado', modo: cuerpo.wolArmado }))
+      }
       return ok({ ok: true, ts: Date.now() })
     }
 
@@ -137,6 +145,7 @@ export async function handler(evento: Evento) {
       publicIp: cuerpo.publicIp,
       sshActive: cuerpo.sshActive,
       sourcebansLastUsed: cuerpo.sourcebansLastUsed,
+      wolArmado: cuerpo.wolArmado,
     })
 
     if (cuerpo.slots?.length) {

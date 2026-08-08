@@ -161,6 +161,43 @@ def consultar_a2s(puerto: int, intentos: int = 3) -> dict:
     return {}
 
 
+def interfaz_principal() -> str:
+    """La tarjeta por la que sale el tráfico, que es la que tiene que despertar."""
+    try:
+        r = subprocess.run(["/usr/sbin/ip", "route", "get", "8.8.8.8"],
+                           capture_output=True, text=True, timeout=5)
+        partes = r.stdout.split()
+        return partes[partes.index("dev") + 1]
+    except Exception:
+        return ""
+
+
+def armar_wol() -> str:
+    """Deja la tarjeta escuchando el paquete mágico y devuelve el modo resultante.
+
+    Se llama en dos momentos, y el que importa es el segundo: al arrancar el agente, por si
+    el servicio de arranque perdió su carrera con la red, y **justo antes de apagar**, que
+    es el último instante en que alguien puede comprobarlo. Una máquina que se apaga con la
+    tarjeta sin armar no vuelve hasta que alguien va a pulsar el botón.
+
+    Devuelve el modo tal como lo reporta la tarjeta: 'g' es lo que se quiere (magic packet),
+    'd' significa desactivado.
+    """
+    iface = interfaz_principal()
+    if not iface:
+        return "?"
+    try:
+        subprocess.run(["/usr/sbin/ethtool", "-s", iface, "wol", "g"], timeout=10,
+                       capture_output=True)
+        r = subprocess.run(["/usr/sbin/ethtool", iface], capture_output=True, text=True, timeout=10)
+        for linea in r.stdout.splitlines():
+            if "Wake-on:" in linea and "Supports" not in linea:
+                return linea.split(":", 1)[1].strip()
+    except Exception as e:
+        log("no se pudo armar el wake-on-lan", iface=iface, error=str(e))
+    return "?"
+
+
 def unidad_activa(n: int) -> bool:
     try:
         r = subprocess.run(
@@ -395,18 +432,26 @@ def apagar(orden_id: str) -> bool:
     if not nada_sostiene_la_maquina():
         return False
 
+    # Antes de nada, asegurar el camino de vuelta. Apagarse con la tarjeta sin armar deja la
+    # máquina fuera de alcance hasta que alguien vaya a pulsar el botón.
+    modo = armar_wol()
+    if modo != "g":
+        log("AVISO: la tarjeta no quedó armada; se apaga igual pero puede no despertar",
+            modo=modo)
+
     try:
         hablar_con_la_nube({
             "sshActive": False,
             "slots": [],
             "confirmadas": [orden_id],
             "apagando": True,
+            "wolArmado": modo,
         })
     except Exception as e:
         log("no se pudo avisar del apagado; se pospone", error=str(e))
         return False
 
-    log("apagando la máquina")
+    log("apagando la máquina", wolArmado=modo)
     subprocess.Popen(["/usr/bin/systemctl", "poweroff"])
     return True
 
@@ -501,12 +546,15 @@ def ordenar(ordenes: list) -> list:
     return sorted(ordenes, key=lambda o: peso.get(o.get("tipo"), 1))
 
 
-def vuelta(confirmadas: list) -> list:
+def vuelta(confirmadas: list, wol_armado: str) -> list:
     respuesta = hablar_con_la_nube(
         {
             "sshActive": hay_sesion_ssh(),
             "slots": reportar_slots(),
             "confirmadas": confirmadas,
+            # Viaja en cada latido para poder verlo desde la nube sin entrar a la maquina.
+            # Es el dato que dice si el camino de vuelta existe.
+            "wolArmado": wol_armado,
         }
     )
 
@@ -531,7 +579,12 @@ def main():
         sys.exit(1)
 
     cargar_estado()
-    log("agente en marcha", url=URL, servidores=SERVER_COUNT, periodo=PERIODO_S)
+
+    # Se arma al arrancar ademas de antes de apagar: si el servicio de arranque perdio su
+    # carrera con la red, aqui se corrige, y de paso queda anotado como llego la tarjeta.
+    modo_previo = armar_wol()
+    log("agente en marcha", url=URL, servidores=SERVER_COUNT, periodo=PERIODO_S,
+        wolArmado=modo_previo)
 
     confirmadas: list = []
     fallos = 0
@@ -539,7 +592,7 @@ def main():
 
     while True:
         try:
-            confirmadas = vuelta(confirmadas)
+            confirmadas = vuelta(confirmadas, modo_previo)
             ultimo_contacto = time.time()
             fallos = 0
         except urllib.error.HTTPError as e:
