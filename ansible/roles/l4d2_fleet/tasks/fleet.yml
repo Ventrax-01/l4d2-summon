@@ -98,6 +98,11 @@
     - predictable_unloader.sp
   register: fuentes_plugins
 
+- name: Check whether the unloader is already built
+  ansible.builtin.stat:
+    path: "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/optional/predictable_unloader.smx"
+  register: unloader_smx
+
 # ZoneMod's pred_unload_plugins unloads EVERY plugin on matchmode transitions and relies on a
 # refresh to bring them back, which races with its load-lock — so our always-on plugins get
 # dropped during matches. This patched fork reserves them (skips them in the unload). It
@@ -105,6 +110,15 @@
 #
 # It is compiled here rather than shipped as a .smx: a binary in the repo silently goes stale
 # the moment someone edits the .sp, and nothing tells you the two stopped matching.
+
+# ZoneMod ships spcomp as 0644, so it cannot be executed — not even by root, since Linux
+# needs at least one x bit. Without this the compile step dies with "Permission denied" and
+# takes the whole play down with it, before the fleet is even configured.
+- name: Make SourceMod's compiler executable
+  ansible.builtin.file:
+    path: "{{ spcomp_dir }}/sourcemod/spcomp"
+    mode: "0755"
+
 - name: Build the patched plugin unloader from source
   ansible.builtin.command:
     cmd: >-
@@ -115,7 +129,10 @@
       -o{{ install_dir }}/left4dead2/addons/sourcemod/plugins/optional/predictable_unloader.smx
   become: true
   become_user: "{{ steam_user }}"
-  when: fuentes_plugins.changed
+  # Se compila cuando cambia la fuente O cuando el .smx no está. Condicionarlo solo al
+  # cambio dejaba el plugin sin construir para siempre si la primera vez falló: la fuente ya
+  # coincidía, la tarea se saltaba, y el playbook terminaba en verde sin el artefacto.
+  when: fuentes_plugins is changed or not unloader_smx.stat.exists
   changed_when: true
 
 # Custom banners — opt-in. The HTML files are gitignored (see motd_file/host_file

@@ -175,6 +175,18 @@ async function reservar(sesion: Sesion) {
   const ahora = Date.now()
   const id = `int_${ahora.toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`
 
+  /* Un servidor por persona, y la reserva entregada NO cuenta como cerrada.
+
+     La comprobación de arriba mira si el intent sigue vivo, pero LISTO es un estado
+     terminal —la reserva se cumplió—, así que quien ya tiene su servidor caía por el hueco
+     y podía pedir un segundo. El candado de verdad es el slot: si ya hay uno a su nombre,
+     ese es el suyo. */
+  const yaTengo = listaSlots.find((s) => s.ownerSteamId === sesion.steamId)
+  if (yaTengo?.intentId) {
+    const suyo = await m.intentDe(sesion.steamId, yaTengo.intentId)
+    if (suyo) return ok(intentPublico(suyo))
+  }
+
   // Un slot guardado para mí por la cola tiene prioridad sobre los libres.
   const candidatos = [
     ...listaSlots.filter((s) => s.estado === 'RESERVADO_COLA' && s.claimSteamId === sesion.steamId),
@@ -210,7 +222,23 @@ async function reservar(sesion: Sesion) {
     return error('CONFLICTO', 'Alguien se adelantó. Vuelve a intentarlo.')
   }
 
-  const dormida = h.state !== 'UP'
+  /* Quien ya tiene slot no sigue en la cola. Olvidar esto tenía una consecuencia que no se
+     ve a simple vista: el apagado automático exige la cola vacía, así que una entrada
+     abandonada ahí lo desactivaba PARA SIEMPRE — desde la primera reserva servida desde la
+     cola, la máquina no se volvía a apagar sola nunca. */
+  const laCola = await m.cola()
+  const miEntrada = laCola.find((e) => e.steamId === sesion.steamId)
+  if (miEntrada) await m.salirDeCola(miEntrada.sk)
+
+  /* "Dormida" se decide por la FRESCURA DEL LATIDO, no por el `state` guardado.
+
+     Nadie escribe nunca 'DOWN' en la tabla: el estado solo lo ponen el latido ('UP') y el
+     encendido ('WAKING'), y la caída se deduce al leer. Eso deja una ventana —desde que la
+     máquina se apaga hasta que su último latido caduca— en la que el campo dice 'UP' y es
+     mentira. Reservar ahí daba por despierta una máquina apagada: no se mandaba el paquete
+     de encendido y la reserva moría de plazo sin que nadie hubiera intentado nada. Y es
+     justo cuando el usuario reserva, porque la web también la muestra encendida. */
+  const dormida = !m.despiertaDeVerdad(h)
   const it: m.Intent = {
     id,
     steamId: sesion.steamId,
@@ -243,12 +271,21 @@ async function reservar(sesion: Sesion) {
 
   if (dormida) {
     await m.marcarDespertando()
-    // El encendido se dispara sin esperar respuesta: la máquina tarda minutos y el
-    // navegador no debe quedarse colgado por eso. El barrido periódico reintenta.
+
+    /* El await NO es opcional aunque la invocación sea asíncrona. Lambda congela el proceso
+       en cuanto el handler devuelve, y una promesa suelta se queda a medias: la petición a
+       la API de Lambda puede no haber salido siquiera. El resultado sería el peor posible —
+       el paquete de encendido no se manda y en los registros no aparece ningún error.
+
+       Esperar cuesta unos milisegundos: InvocationType 'Event' solo encola, no espera a que
+       el WoL termine. Quien tarda minutos es la máquina, no esta llamada. */
     if (FN_WOL) {
-      lambda
-        .send(new InvokeCommand({ FunctionName: FN_WOL, InvocationType: 'Event' }))
-        .catch((e) => console.warn(JSON.stringify({ msg: 'no se pudo pedir el encendido', e: String(e) })))
+      try {
+        await lambda.send(new InvokeCommand({ FunctionName: FN_WOL, InvocationType: 'Event' }))
+      } catch (e) {
+        // No se aborta la reserva: el barrido reintenta el encendido cada minuto.
+        console.warn(JSON.stringify({ msg: 'no se pudo pedir el encendido', e: String(e) }))
+      }
     }
   }
 

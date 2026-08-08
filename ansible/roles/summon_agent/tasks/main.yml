@@ -18,6 +18,11 @@
     mode: "0644"
   register: fuente_plugin
 
+- name: Check whether the summon admin plugin is already built
+  ansible.builtin.stat:
+    path: "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/summon_admin.smx"
+  register: summon_smx
+
 - name: Compile the summon admin plugin
   ansible.builtin.command:
     cmd: >-
@@ -28,7 +33,11 @@
       -o{{ install_dir }}/left4dead2/addons/sourcemod/plugins/summon_admin.smx
   become: true
   become_user: "{{ steam_user }}"
-  when: fuente_plugin.changed
+  # Se compila cuando cambia la fuente O cuando falta el artefacto. Condicionarlo solo al
+  # cambio dejaba el plugin sin construir para siempre si la primera vez falló: la fuente ya
+  # coincidía, la tarea se saltaba y el playbook terminaba en verde sin el plugin — y sin él,
+  # quien reserva nunca recibe el mando de su servidor.
+  when: fuente_plugin is changed or not summon_smx.stat.exists
   changed_when: true
 
 - name: Deploy the agent
@@ -66,8 +75,31 @@
   ansible.builtin.systemd:
     name: summon-agent
     enabled: true
-    state: started
+    state: restarted
     daemon_reload: true
+
+# El módulo de systemd da la tarea por buena en cuanto systemd acepta el arranque, no cuando
+# el proceso sobrevive. Con Restart=always, un agente que muere al segundo entra en un bucle
+# de reinicios y la tarea seguiría en verde. Eso importa mucho aquí: el paso siguiente quita
+# los servidores del arranque, así que un despliegue "correcto" con el agente muerto deja la
+# máquina sin nadie que levante nada y sin nadie que la apague.
+- name: Give the agent a moment to prove it stays up
+  ansible.builtin.pause:
+    seconds: 12
+
+- name: Verify the agent is actually running
+  ansible.builtin.command: systemctl is-active summon-agent
+  register: agente_vivo
+  changed_when: false
+  failed_when: agente_vivo.stdout.strip() != "active"
+
+- name: Verify the agent is talking to the cloud
+  ansible.builtin.command: journalctl -u summon-agent -n 40 --no-pager
+  register: agente_log
+  changed_when: false
+  failed_when: >-
+    'la nube rechazó el latido' in agente_log.stdout
+    or 'no se pudo hablar con la nube' in agente_log.stdout
 
 # Los servidores no arrancan solos al encender: es el agente quien los levanta cuando alguien
 # reserva. Dejarlos habilitados haría que la máquina despertara con los cuatro corriendo y
@@ -76,4 +108,14 @@
   ansible.builtin.systemd:
     name: "l4d2@{{ item }}"
     enabled: false
-  loop: "{{ range(1, server_count + 1) | list }}"
+  loop: "{{ range(1, server_count | int + 1) | list }}"
+
+# Y se paran los que quedaron corriendo del despliegue de la flota. Si no, el sistema arranca
+# desde un estado que no contempla: cuatro servidores en marcha que nadie reservó, ocupando
+# los slots y estorbando a la primera prueba de apagado.
+- name: Stop servers nobody reserved
+  ansible.builtin.systemd:
+    name: "l4d2@{{ item }}"
+    state: stopped
+  loop: "{{ range(1, server_count | int + 1) | list }}"
+  when: stop_unreserved_servers | bool

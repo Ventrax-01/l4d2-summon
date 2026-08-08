@@ -16,3 +16,8 @@ summon_rcon_host: "127.0.1.1"
 
 # El compilador que trae SourceMod, para construir los plugins desde su fuente.
 spcomp_dir: /opt/l4d2-fleet/zonemod-src/addons/sourcemod/scripting
+
+# Al desplegar, parar los servidores que quedaron corriendo sin reserva. Es lo correcto en
+# una flota bajo demanda —los levanta el agente cuando alguien reserva—, pero echa a quien
+# esté jugando en ese momento. Ponlo en false para desplegar sin tocar partidas en curso.
+stop_unreserved_servers: true

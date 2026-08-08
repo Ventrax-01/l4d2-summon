@@ -13,6 +13,11 @@ En cada vuelta hace tres cosas:
 
 Sin dependencias externas a propósito: solo la biblioteca estándar. Este proceso tiene que
 arrancar antes que nada y sobrevivir a que el resto del sistema esté a medio instalar.
+
+Todo lo que este agente hace mal es caro de arreglar: si se apaga cuando no debía, alguien
+se queda sin partida; si no se apaga, la factura de la luz corre; y si se apaga mal, la
+máquina puede quedar fuera de alcance. Por eso casi cada decisión se vuelve a comprobar
+aquí, con los hechos delante, en vez de fiarse de lo que la nube decidió hace un rato.
 """
 import json
 import os
@@ -34,9 +39,18 @@ RCON_PASSWORD = os.environ.get("RCON_PASSWORD", "")
 PERIODO_S = int(os.environ.get("POLL_SEC", "15"))
 
 # srcds NO escucha el RCON en 127.0.0.1 sino en 127.0.1.1, que es lo que Debian y Ubuntu
-# ponen en /etc/hosts para el nombre de la máquina. Conectarse al primero da "connection
-# refused" sin más explicación; es el fallo que más tiempo cuesta encontrar.
+# ponen en /etc/hosts para el nombre de la máquina. Apuntar al primero da "connection
+# refused" a secas; es el fallo que más tiempo cuesta encontrar.
 RCON_HOST = os.environ.get("RCON_HOST", "127.0.1.1")
+
+# Si la nube lleva tanto tiempo incomunicada, la máquina se apaga por su cuenta. Sin esto,
+# un fallo de red o de DNS la dejaría encendida indefinidamente sin que nadie —ni la web ni
+# el barrido— pudiera hacer nada, porque desde fuera parecería apagada.
+INCOMUNICADO_MAX_S = int(os.environ.get("OFFLINE_SHUTDOWN_SEC", "900"))
+
+# El estado que debe sobrevivir a un reinicio del agente. Sin él, reiniciar el servicio
+# reejecutaría órdenes ya hechas y olvidaría a quién le tocaba ser admin.
+ESTADO = os.environ.get("STATE_FILE", "/var/lib/summon-agent/estado.json")
 
 A2S_INFO = b"\xFF\xFF\xFF\xFF\x54Source Engine Query\x00"
 
@@ -61,37 +75,89 @@ def ip_principal() -> str:
 
 GAME_IP = os.environ.get("GAME_IP") or ip_principal()
 
+# ---------------------------------------------------------------- estado en disco
+
+estado = {
+    "hechas": {},           # id de orden -> cuándo se ejecutó
+    "pendiente_admin": {},  # slot -> steamid al que hay que dar el mando cuando cargue
+    "sembrado": {},         # slot -> steamid que ya lo tiene
+}
+
+
+def cargar_estado():
+    global estado
+    try:
+        with open(ESTADO) as f:
+            guardado = json.load(f)
+        for k in estado:
+            if isinstance(guardado.get(k), dict):
+                estado[k] = guardado[k]
+        # Las órdenes viejas se olvidan: solo interesan para no repetir lo reciente.
+        limite = time.time() - 7200
+        estado["hechas"] = {k: v for k, v in estado["hechas"].items() if v > limite}
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        log("no se pudo leer el estado guardado; se empieza de cero", error=str(e))
+
+
+def guardar_estado():
+    try:
+        os.makedirs(os.path.dirname(ESTADO), exist_ok=True)
+        tmp = ESTADO + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(estado, f)
+        os.replace(tmp, ESTADO)  # atómico: nunca se lee un archivo a medio escribir
+    except Exception as e:
+        log("no se pudo guardar el estado", error=str(e))
+
+
 # ---------------------------------------------------------------- mirar
 
-def consultar_a2s(puerto: int) -> dict:
-    """Jugadores y mapa de un servidor. Devuelve {} si no contesta."""
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.settimeout(2)
-    try:
-        s.sendto(A2S_INFO, (GAME_IP, puerto))
-        datos, _ = s.recvfrom(4096)
-        if datos[4:5] == b"\x41":  # el servidor pide repetir con su token
-            s.sendto(A2S_INFO + datos[5:9], (GAME_IP, puerto))
+def consultar_a2s(puerto: int, intentos: int = 3) -> dict:
+    """Jugadores y mapa de un servidor.
+
+    Devuelve {} SOLO si no contestó, y eso NO es lo mismo que estar vacío: un datagrama
+    perdido o los segundos de una transición de campaña dejarían un servidor lleno como
+    desierto, y sobre "desierto" se decide cerrar servidores y apagar la máquina. Por eso
+    se reintenta antes de darlo por mudo, y quien lea esto debe distinguir {} de players=0.
+    """
+    for intento in range(intentos):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(2)
+        try:
+            s.sendto(A2S_INFO, (GAME_IP, puerto))
             datos, _ = s.recvfrom(4096)
-        if datos[4:5] == b"\x49":
-            resto = datos[6:]
+            if datos[4:5] == b"\x41":  # el servidor pide repetir con su token
+                s.sendto(A2S_INFO + datos[5:9], (GAME_IP, puerto))
+                datos, _ = s.recvfrom(4096)
+            if datos[4:5] == b"\x49":
+                resto = datos[6:]
 
-            def leer(buf):
-                i = buf.index(0)
-                return buf[:i].decode("utf-8", "replace"), buf[i + 1:]
+                def leer(buf):
+                    i = buf.index(0)
+                    return buf[:i].decode("utf-8", "replace"), buf[i + 1:]
 
-            _nombre, resto = leer(resto)
-            mapa, resto = leer(resto)
-            _carpeta, resto = leer(resto)
-            _juego, resto = leer(resto)
-            # players incluye a los bots; se restan para contar personas de verdad, que es
-            # lo que decide si el servidor está vacío y hay que cerrarlo.
-            total, maximo, bots = resto[2], resto[3], resto[4]
-            return {"map": mapa, "players": max(0, total - bots), "bots": bots, "maxPlayers": maximo}
-    except Exception:
-        pass
-    finally:
-        s.close()
+                _nombre, resto = leer(resto)
+                mapa, resto = leer(resto)
+                _carpeta, resto = leer(resto)
+                _juego, resto = leer(resto)
+                # `total` incluye a los bots; se restan para contar personas de verdad, que
+                # es lo que decide si un servidor está vacío.
+                total, maximo, bots = resto[2], resto[3], resto[4]
+                return {
+                    "respondio": True,
+                    "map": mapa,
+                    "players": max(0, total - bots),
+                    "bots": bots,
+                    "maxPlayers": maximo,
+                }
+        except Exception:
+            pass
+        finally:
+            s.close()
+        if intento + 1 < intentos:
+            time.sleep(0.3)
     return {}
 
 
@@ -118,8 +184,8 @@ def hay_sesion_ssh() -> bool:
                        sobrevive a la desconexión y no corresponde a nadie conectado.
                        Contarla equivale a decir "siempre hay alguien": la máquina no se
                        apagaría jamás.
-      State=closing  — una sesión que ya se está yendo. Si se quedara atascada en ese
-                       estado bloquearía el apagado para siempre.
+      State=closing  — una sesión que ya se está yendo. Medido en esta flota, puede quedarse
+                       así más de dos minutos; contarla bloquearía el apagado.
 
     Así que solo cuentan las de Class=user que sigan activas. Se consulta sesión por sesión
     en vez de leer las columnas de `list-sessions` porque ese formato cambia entre versiones
@@ -139,17 +205,21 @@ def hay_sesion_ssh() -> bool:
                     ["/usr/bin/loginctl", "show-session", sid, "-p", "Class", "-p", "State"],
                     capture_output=True, text=True, timeout=5,
                 )
-                props = dict(
-                    l.split("=", 1) for l in p.stdout.splitlines() if "=" in l
-                )
+                props = dict(l.split("=", 1) for l in p.stdout.splitlines() if "=" in l)
                 if props.get("Class") == "user" and props.get("State") != "closing":
                     return True
             return False
     except Exception:
         pass
 
+    # Respaldo por si logind no contesta. El patrón cubre las dos formas de nombrar los
+    # procesos de sesión: OpenSSH < 9.8 usa "sshd: usuario@pts/0" y desde 9.8 el binario se
+    # partió y son "sshd-session: usuario@pts/0". Este servidor corre OpenSSH 10, así que
+    # con el patrón antiguo el respaldo no habría visto ninguna sesión.
     try:
-        r = subprocess.run(["/usr/bin/pgrep", "-f", r"sshd: .*@"], capture_output=True, timeout=5)
+        r = subprocess.run(
+            ["/usr/bin/pgrep", "-f", r"sshd(-session)?: .*@"], capture_output=True, timeout=5
+        )
         return r.returncode == 0
     except Exception:
         # Ante la duda se declara ocupada: quedarse encendida de más cuesta unos céntimos,
@@ -245,43 +315,46 @@ def sembrar_admin(puerto: int, steam_id: str) -> bool:
     escrito ahí lo sería en los cuatro servidores a la vez. El plugin summon_admin mantiene
     el permiso en memoria y solo para esta instancia.
     """
-    salida = rcon(puerto, "sm_summon_admin %s" % steam_id)
-    return "OK" in salida
+    return "OK" in rcon(puerto, "sm_summon_admin %s" % steam_id)
 
 
 # ---------------------------------------------------------------- órdenes
 
 def levantar(n: int, admin_steam_id: str) -> bool:
-    puerto = PORT_BASE + n
     subprocess.run(["/usr/bin/systemctl", "restart", "l4d2@%d.service" % n], timeout=60)
     if admin_steam_id:
-        # El servidor tarda en cargar; el admin se siembra en la vuelta siguiente cuando ya
-        # responda el RCON. Aquí solo se deja anotado.
-        PENDIENTE_ADMIN[n] = admin_steam_id
-    log("servidor levantado", slot=n, puerto=puerto)
+        # El servidor tarda en cargar; el admin se siembra en la vuelta siguiente, cuando ya
+        # responda el RCON. Aquí solo queda anotado —y en disco, para que un reinicio del
+        # agente no entregue el servidor sin admin.
+        estado["pendiente_admin"][str(n)] = admin_steam_id
+        estado["sembrado"].pop(str(n), None)
+        guardar_estado()
+    log("servidor levantado", slot=n, puerto=PORT_BASE + n)
     return True
 
 
 def parar(n: int) -> bool:
+    """Para un servidor, salvo que haya gente dentro.
+
+    La orden pudo decidirse hace rato con datos que ya no valen; si entretanto entró alguien,
+    pararlo sería echarlo de su partida. Se deja sin confirmar para que la nube la reevalúe.
+    """
+    if unidad_activa(n):
+        info = consultar_a2s(PORT_BASE + n)
+        if info.get("players", 0) > 0:
+            log("parada cancelada: hay gente dentro", slot=n, jugadores=info["players"])
+            return False
+
     subprocess.run(["/usr/bin/systemctl", "stop", "l4d2@%d.service" % n], timeout=60)
-    PENDIENTE_ADMIN.pop(n, None)
-    SEMBRADO.pop(n, None)
+    estado["pendiente_admin"].pop(str(n), None)
+    estado["sembrado"].pop(str(n), None)
+    guardar_estado()
     log("servidor parado", slot=n)
     return True
 
 
-def apagar() -> bool:
-    """Apaga la máquina. Es el final del ciclo: nadie juega, nadie espera.
-
-    Las condiciones se vuelven a comprobar AQUÍ, aunque la nube ya las mirara, porque una
-    orden puede pasar hasta una hora en la cola antes de que alguien la recoja. En ese hueco
-    perfectamente pudo entrar el operador por SSH o llenarse un servidor de gente; apagar
-    entonces sería obedecer una decisión que ya no vale. El agente es quien tiene los hechos
-    delante, así que es quien manda sobre la orden.
-
-    Devolver False la deja sin confirmar: la nube la sigue teniendo pendiente, pero la
-    volverá a evaluar y la retirará cuando toque.
-    """
+def nada_sostiene_la_maquina() -> bool:
+    """Comprueba, con los hechos delante, que de verdad no queda nadie."""
     if hay_sesion_ssh():
         log("apagado cancelado: hay una sesión abierta")
         return False
@@ -290,31 +363,82 @@ def apagar() -> bool:
         if not unidad_activa(n):
             continue
         info = consultar_a2s(PORT_BASE + n)
+        if not info:
+            # Corriendo pero mudo tras varios intentos: pudo quedarse colgado. No se
+            # bloquea el apagado por esto —si no, un servidor zombi dejaría la máquina
+            # encendida para siempre—, pero queda dicho en el registro.
+            log("servidor activo que no responde; se cuenta como vacío", slot=n)
+            continue
         if info.get("players", 0) > 0:
             log("apagado cancelado: hay gente jugando", slot=n, jugadores=info["players"])
             return False
+    return True
+
+
+def apagar(orden_id: str) -> bool:
+    """Apaga la máquina. Es el final del ciclo: nadie juega, nadie espera.
+
+    Lo delicado no es apagar, es AVISAR ANTES. Si la máquina se fuera sin decir nada:
+
+      · La orden quedaría sin confirmar en la cola de la nube, y al siguiente arranque —el
+        manual, el que uno hace para averiguar por qué no despertó— el agente se la
+        encontraría y volvería a apagar la máquina a los segundos. En bucle, y sin forma de
+        ganarle la carrera desde fuera.
+      · La nube seguiría viendo el host como encendido durante minuto y medio (hasta que
+        caduque el latido), y una reserva hecha en esa ventana NO mandaría el paquete de
+        encendido, porque creería que la máquina ya está despierta. La reserva moriría por
+        plazo sin haber intentado nada.
+
+    Así que primero se avisa —de forma síncrona, esperando la respuesta— y solo después se
+    apaga. Si el aviso falla, no se apaga: se deja para la vuelta siguiente.
+    """
+    if not nada_sostiene_la_maquina():
+        return False
+
+    try:
+        hablar_con_la_nube({
+            "sshActive": False,
+            "slots": [],
+            "confirmadas": [orden_id],
+            "apagando": True,
+        })
+    except Exception as e:
+        log("no se pudo avisar del apagado; se pospone", error=str(e))
+        return False
 
     log("apagando la máquina")
     subprocess.Popen(["/usr/bin/systemctl", "poweroff"])
     return True
 
 
-PENDIENTE_ADMIN: dict = {}   # slot -> steamid al que hay que dar el mando cuando cargue
-SEMBRADO: dict = {}          # slot -> steamid que ya tiene el mando
-
-
 def ejecutar(orden: dict) -> bool:
     tipo = orden.get("tipo")
     slot = orden.get("slotIndex")
+    ident = orden.get("id", "")
+
+    # Una orden ya ejecutada no se repite. La confirmación viaja en el POST siguiente, así
+    # que siempre hay una vuelta en la que la nube nos la vuelve a entregar; sin esta
+    # comprobación, un LEVANTAR reentregado reiniciaría un servidor con gente dentro.
+    if ident and ident in estado["hechas"]:
+        return True
+
     try:
         if tipo == "LEVANTAR" and slot:
-            return levantar(int(slot), orden.get("adminSteamId", ""))
-        if tipo == "PARAR" and slot:
-            return parar(int(slot))
-        if tipo == "APAGAR":
-            return apagar()
-        log("orden desconocida", tipo=tipo)
-        return True  # se confirma igual: reintentarla eternamente no la haría válida
+            hecho = levantar(int(slot), orden.get("adminSteamId", ""))
+        elif tipo == "PARAR" and slot:
+            hecho = parar(int(slot))
+        elif tipo == "APAGAR":
+            # No pasa por el registro de ejecutadas: si el apagado se cancela hay que poder
+            # reintentarlo, y si se lleva a cabo esta máquina ya no está para recordarlo.
+            return apagar(ident)
+        else:
+            log("orden desconocida", tipo=tipo)
+            return True  # se confirma igual: repetirla no la haría válida
+
+        if hecho and ident:
+            estado["hechas"][ident] = time.time()
+            guardar_estado()
+        return hecho
     except Exception as e:
         log("la orden falló", tipo=tipo, slot=slot, error=str(e))
         return False
@@ -325,11 +449,11 @@ def ejecutar(orden: dict) -> bool:
 def reportar_slots() -> list:
     reportes = []
     for n in range(1, SERVER_COUNT + 1):
-        puerto = PORT_BASE + n
         corriendo = unidad_activa(n)
         r = {"index": n, "corriendo": corriendo}
 
         if corriendo:
+            puerto = PORT_BASE + n
             r.update(consultar_a2s(puerto))
             # Solo se pregunta por los plugins si el servidor ya responde al juego: si no,
             # es RCON al vacío en cada vuelta.
@@ -337,13 +461,18 @@ def reportar_slots() -> list:
                 r["pluginsOk"] = plugins_cargados(puerto)
 
             # El admin se siembra en cuanto el servidor puede recibirlo.
-            esperando = PENDIENTE_ADMIN.get(n)
+            esperando = estado["pendiente_admin"].get(str(n))
             if esperando and r.get("pluginsOk"):
                 if sembrar_admin(puerto, esperando):
-                    SEMBRADO[n] = esperando
-                    PENDIENTE_ADMIN.pop(n, None)
+                    estado["sembrado"][str(n)] = esperando
+                    estado["pendiente_admin"].pop(str(n), None)
+                    guardar_estado()
                     log("admin sembrado", slot=n, steamId=esperando)
-            r["adminSembrado"] = bool(SEMBRADO.get(n)) or not esperando
+            # Solo se declara sembrado si de verdad se sembró, o si nunca hubo nada que
+            # sembrar. Antes bastaba con no tener nada pendiente, y como lo pendiente vivía
+            # en memoria, un reinicio del agente entregaba el servidor sin admin diciendo
+            # que sí lo tenía.
+            r["adminSembrado"] = bool(estado["sembrado"].get(str(n))) or not esperando
 
         reportes.append(r)
     return reportes
@@ -360,10 +489,21 @@ def hablar_con_la_nube(cuerpo: dict) -> dict:
         return json.loads(r.read().decode("utf-8"))
 
 
+def ordenar(ordenes: list) -> list:
+    """LEVANTAR y PARAR antes que APAGAR.
+
+    Si llegan juntas —la nube decidió apagar y, antes de que recogiéramos la orden, entró
+    una reserva—, apagar primero dejaría la máquina muerta con una reserva recién concedida.
+    Ejecutando en este orden, el LEVANTAR se hace y el APAGAR se encuentra la máquina
+    ocupada y se cancela solo.
+    """
+    peso = {"LEVANTAR": 0, "PARAR": 1, "APAGAR": 2}
+    return sorted(ordenes, key=lambda o: peso.get(o.get("tipo"), 1))
+
+
 def vuelta(confirmadas: list) -> list:
     respuesta = hablar_con_la_nube(
         {
-            "publicIp": None,
             "sshActive": hay_sesion_ssh(),
             "slots": reportar_slots(),
             "confirmadas": confirmadas,
@@ -371,24 +511,36 @@ def vuelta(confirmadas: list) -> list:
     )
 
     hechas = []
-    for orden in respuesta.get("ordenes", []):
+    levanto_algo = False
+    for orden in ordenar(respuesta.get("ordenes", [])):
+        # Si en este mismo lote se acaba de levantar un servidor, el apagado que venía
+        # detrás se descarta sin más: se decidió antes de que existiera esa reserva.
+        if orden.get("tipo") == "APAGAR" and levanto_algo:
+            log("apagado descartado: en este lote venía un LEVANTAR")
+            continue
         if ejecutar(orden):
             hechas.append(orden["id"])
+            if orden.get("tipo") == "LEVANTAR":
+                levanto_algo = True
     return hechas
 
 
 def main():
     if not URL or not TOKEN:
-        log("falta SUMMON_URL o SUMMON_TOKEN; revisa /etc/summon-agent.env")
+        log("falta SUMMON_URL o SUMMON_TOKEN; revisa /etc/l4d2-fleet/summon-agent.env")
         sys.exit(1)
 
+    cargar_estado()
     log("agente en marcha", url=URL, servidores=SERVER_COUNT, periodo=PERIODO_S)
+
     confirmadas: list = []
     fallos = 0
+    ultimo_contacto = time.time()
 
     while True:
         try:
             confirmadas = vuelta(confirmadas)
+            ultimo_contacto = time.time()
             fallos = 0
         except urllib.error.HTTPError as e:
             # 401 es de configuración, no de red: insistir no lo arregla, pero tampoco se
@@ -398,6 +550,15 @@ def main():
         except Exception as e:
             log("no se pudo hablar con la nube", error=str(e))
             fallos += 1
+
+        incomunicado = time.time() - ultimo_contacto
+        if incomunicado > INCOMUNICADO_MAX_S and nada_sostiene_la_maquina():
+            # Sin línea con la nube nadie puede apagar esta máquina desde fuera: la web la
+            # ve caída y el barrido no tiene a quién mandarle la orden. Se apaga sola para
+            # no quedarse encendida indefinidamente por un fallo de red.
+            log("apagado por incomunicación", segundos=int(incomunicado))
+            subprocess.Popen(["/usr/bin/systemctl", "poweroff"])
+            return
 
         # Con la red caída se espacian los intentos hasta un minuto: la máquina puede estar
         # arrancando y el DNS aún no responder.

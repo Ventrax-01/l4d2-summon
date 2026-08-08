@@ -277,6 +277,28 @@ export async function fijarIntentActivo(steamId: string, id: string | null): Pro
   )
 }
 
+/** Suelta el intent activo SOLO si sigue siendo el que se cree.
+
+   El barrido limpia reservas viejas, y entre que una caduca y le llega el turno de limpiarla
+   el usuario pudo hacer otra. Borrar el puntero a ciegas dejaba la reserva NUEVA huérfana:
+   existía, tenía su slot y su orden encolada, pero /api/state la devolvía como si no hubiera
+   nada — invisible en la pantalla mientras ocupaba un servidor. */
+export async function soltarIntentActivo(steamId: string, id: string): Promise<void> {
+  try {
+    await ddb.send(
+      new UpdateCommand({
+        TableName: TABLA,
+        Key: { PK: `USER#${steamId}`, SK: 'PROFILE' },
+        UpdateExpression: 'REMOVE intentActivo',
+        ConditionExpression: 'intentActivo = :id',
+        ExpressionAttributeValues: { ':id': id },
+      }),
+    )
+  } catch {
+    // Ya apunta a otra cosa: es de otra reserva, no se toca.
+  }
+}
+
 // ---------------------------------------------------------------- cola
 
 /** FIFO por orden de llegada: la clave lleva el instante, así la consulta ya sale ordenada. */
@@ -366,9 +388,10 @@ export async function ordenesPendientes(): Promise<Orden[]> {
 
 /** Retira las órdenes de apagado que sigan pendientes.
 
-   Se llama al reservar. Sin esto quedaría una carrera fea: el barrido decide apagar porque
-   no había nadie, y antes de que el agente recoja la orden llega una reserva. El agente
-   también se defiende por su cuenta, pero es mejor que la orden ni siquiera le llegue. */
+   Se llama al reservar y en cada barrido que encuentre algo sosteniendo la máquina. Sin
+   esto quedaría una carrera fea: el barrido decide apagar porque no había nadie, y antes de
+   que el agente recoja la orden llega una reserva. El agente también se defiende por su
+   cuenta, pero es mejor que la orden ni siquiera le llegue. */
 export async function cancelarApagado(): Promise<number> {
   const pendientes = await ordenesPendientes()
   const apagados = pendientes.filter((o) => o.tipo === 'APAGAR')
@@ -376,14 +399,38 @@ export async function cancelarApagado(): Promise<number> {
   return apagados.length
 }
 
+/** Vida máxima de una orden en la cola. El TTL de DynamoDB no sirve para esto: borra los
+    items cuando le viene bien —puede tardar días— y mientras tanto los sigue devolviendo en
+    las consultas. Así que la caducidad se aplica al leer. */
+const VIDA_ORDEN_MS = 30 * 60_000
+
+/** Tira las órdenes que llevan demasiado tiempo sin que nadie las recoja.
+
+   Importa por dos motivos: una orden vieja describe una situación que ya no existe, y
+   mientras siga en la cola bloquea el apagado automático —que exige la cola vacía para no
+   apagar la máquina con trabajo pendiente. Sin esta limpieza, una sola orden atascada
+   desactiva el apagado para siempre y sin dejar rastro. */
+export async function caducarOrdenes(): Promise<number> {
+  const pendientes = await ordenesPendientes()
+  const limite = Date.now() - VIDA_ORDEN_MS
+  const viejas = pendientes.filter((o) => o.creadaEn < limite)
+  await Promise.all(viejas.map((o) => borrarOrden(o.id)))
+  return viejas.length
+}
+
 export async function borrarOrden(id: string): Promise<void> {
   await ddb.send(new DeleteCommand({ TableName: TABLA, Key: { PK: 'CMD', SK: `CMD#${id}` } }))
 }
 
-/** Lo que el agente reporta de cada servidor en cada latido. */
+/** Lo que el agente reporta de cada servidor en cada latido.
+
+   `respondio` distingue "contesté y no hay nadie" de "no contestó". Parece un matiz y no lo
+   es: sobre "no hay nadie" se cierran servidores y se apaga la máquina, así que confundir
+   un datagrama perdido con un servidor desierto echa a la gente de su partida. */
 export interface ReporteSlot {
   index: number
   corriendo: boolean
+  respondio?: boolean
   map?: string
   players?: number
   bots?: number
@@ -428,34 +475,75 @@ export async function guardarLatido(datos: {
    reloj arranca de nuevo. */
 export async function actualizarSlotDesdeAgente(r: ReporteSlot): Promise<void> {
   const ahora = Date.now()
-  const vacio = (r.players ?? 0) === 0
+
+  /* Si el servidor corre pero no contestó, NO se toca nada de lo que se decide con ello:
+     ni el número de jugadores ni el reloj de vacío. Escribir players=0 ahí convertiría un
+     paquete perdido en "está desierto", y sobre eso se cierra el servidor y se apaga la
+     máquina. Se prefiere el dato viejo —que al menos fue cierto— a uno inventado. */
+  const mudo = r.corriendo && r.respondio === false
 
   const asignaciones = [
-    '#m = :map, players = :pl, bots = :bots, maxPlayers = :mx, updatedAt = :ahora',
+    'updatedAt = :ahora',
     '#idx = if_not_exists(#idx, :idx)',
     'port = if_not_exists(port, :port)',
     '#e = if_not_exists(#e, :libre)',
   ]
-  if (vacio) asignaciones.push('emptySince = if_not_exists(emptySince, :ahora)')
+  const valores: Record<string, unknown> = {
+    ':ahora': ahora,
+    ':idx': r.index,
+    ':port': PUERTO_BASE + r.index,
+    ':libre': 'LIBRE' as EstadoSlot,
+  }
+  const nombres: Record<string, string> = { '#idx': 'index', '#e': 'estado' }
+  let quitar = ''
+
+  if (!mudo) {
+    asignaciones.push('#m = :map, players = :pl, bots = :bots, maxPlayers = :mx')
+    nombres['#m'] = 'map'
+    valores[':map'] = r.map ?? null
+    valores[':pl'] = r.players ?? 0
+    valores[':bots'] = r.bots ?? 0
+    valores[':mx'] = r.maxPlayers ?? 8
+
+    // El reloj de vacío se pone al ver el servidor sin gente y se borra en cuanto entra
+    // alguien, así que solo cuenta el vacío continuo.
+    if ((r.players ?? 0) === 0) asignaciones.push('emptySince = if_not_exists(emptySince, :ahora)')
+    else quitar = ' REMOVE emptySince'
+  }
 
   await ddb.send(
     new UpdateCommand({
       TableName: TABLA,
       Key: clave(r.index),
-      UpdateExpression: `SET ${asignaciones.join(', ')}${vacio ? '' : ' REMOVE emptySince'}`,
-      ExpressionAttributeNames: { '#m': 'map', '#idx': 'index', '#e': 'estado' },
-      ExpressionAttributeValues: {
-        ':map': r.map ?? null,
-        ':pl': r.players ?? 0,
-        ':bots': r.bots ?? 0,
-        ':mx': r.maxPlayers ?? 8,
-        ':ahora': ahora,
-        ':idx': r.index,
-        ':port': PUERTO_BASE + r.index,
-        ':libre': 'LIBRE' as EstadoSlot,
-      },
+      UpdateExpression: `SET ${asignaciones.join(', ')}${quitar}`,
+      ExpressionAttributeNames: nombres,
+      ExpressionAttributeValues: valores,
     }),
   )
+}
+
+/** El agente avisa justo antes de apagarse. Sin esto, la nube seguiría viendo la máquina
+    encendida durante minuto y medio (hasta que caduque el latido) y una reserva hecha en esa
+    ventana no mandaría el paquete de encendido: creería que ya está despierta. */
+export async function marcarApagada(): Promise<void> {
+  await ddb.send(
+    new UpdateCommand({
+      TableName: TABLA,
+      Key: CLAVE_HOST,
+      UpdateExpression: 'SET #s = :down, lastHeartbeat = :cero REMOVE wakeStartedAt',
+      ExpressionAttributeNames: { '#s': 'state' },
+      ExpressionAttributeValues: { ':down': 'DOWN', ':cero': 0 },
+    }),
+  )
+}
+
+/** ¿Está la máquina despierta de verdad, según el último latido?
+
+   NO vale mirar `state` a secas: ese campo solo lo escriben el latido ('UP') y el encendido
+   ('WAKING'), nadie escribe nunca 'DOWN' — la caída se deduce al leer. Así que un 'UP'
+   guardado puede llevar horas siendo mentira. */
+export function despiertaDeVerdad(h: Host): boolean {
+  return h.state === 'UP' && Date.now() - (h.lastHeartbeat ?? 0) <= MARGEN_LATIDO_MS
 }
 
 /** Marca el slot como entregado y devuelve la dirección de conexión. */

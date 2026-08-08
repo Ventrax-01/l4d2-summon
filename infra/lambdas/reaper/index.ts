@@ -35,9 +35,14 @@ async function caducarReservasColgadas(): Promise<number> {
       errorCode: `TIMEOUT_${it.estado}`,
       updatedAt: Date.now(),
     })
-    // Condicional a propósito: si el slot ya pasó a otra persona, no se toca.
-    if (it.slotIndex) await m.liberarSlotDe(it.slotIndex, it.id)
-    await m.fijarIntentActivo(it.steamId, null)
+    if (it.slotIndex) {
+      // Condicional a propósito: si el slot ya pasó a otra persona, no se toca.
+      const eraSuyo = await m.liberarSlotDe(it.slotIndex, it.id)
+      // Y se manda pararlo: sin esto queda un srcds huérfano corriendo para nadie, que
+      // además cuenta como "algo en marcha" y estorba al apagado.
+      if (eraSuyo) await m.encolarOrden({ tipo: 'PARAR', slotIndex: it.slotIndex })
+    }
+    await m.soltarIntentActivo(it.steamId, it.id)
     n++
     console.info(JSON.stringify({ msg: 'reserva caducada', id: it.id, estaba: it.estado }))
   }
@@ -72,6 +77,11 @@ async function expirarTurnos(cfg: m.Config): Promise<number> {
    `emptySince`, que el agente refresca en cada latido: se pone al ver el servidor vacío y se
    borra en cuanto entra alguien, así que solo cuenta el vacío continuo. */
 async function cerrarVacios(cfg: m.Config, pendientes: m.Orden[]): Promise<number> {
+  // Sin agente al otro lado, `emptySince` es una foto vieja que no deja de envejecer sola.
+  // Cerrar por ella sería cerrar por una ausencia que nadie ha comprobado.
+  const h = await m.host()
+  if (!m.despiertaDeVerdad(h)) return 0
+
   const listaSlots = await m.slots(cfg.n)
   const ahora = Date.now()
   let n = 0
@@ -118,16 +128,29 @@ async function cerrarVacios(cfg: m.Config, pendientes: m.Orden[]): Promise<numbe
    partida en curso. Mirar solo el estado apagaría la máquina en mitad de esa partida. */
 async function apagarSiNadieSostiene(cfg: m.Config, pendientes: m.Orden[]): Promise<boolean> {
   const h = await m.host()
-  if (h.state !== 'UP') return false
-  if (h.sshActive) return false
-  // Con órdenes sin recoger la máquina todavía tiene trabajo: apagarla las perdería. Y si ya
-  // hay un APAGAR en la cola, no se apila otro.
-  if (pendientes.length > 0) return false
+  if (!m.despiertaDeVerdad(h)) return false
 
   const [listaSlots, laCola] = await Promise.all([m.slots(cfg.n), m.cola()])
-  if (listaSlots.some((s) => (s.players ?? 0) > 0)) return false
-  if (listaSlots.some((s) => s.estado !== 'LIBRE')) return false
-  if (laCola.length > 0) return false
+  const sostenida =
+    Boolean(h.sshActive) ||
+    listaSlots.some((s) => (s.players ?? 0) > 0) ||
+    listaSlots.some((s) => s.estado !== 'LIBRE') ||
+    laCola.length > 0
+
+  if (sostenida) {
+    /* Algo la sostiene AHORA. Si quedaba un apagado decidido cuando no era así, se retira:
+       una orden vieja describe una situación que ya no existe, y el agente podría recogerla
+       minutos después y apagar la máquina con alguien dentro. */
+    const retiradas = await m.cancelarApagado()
+    if (retiradas) {
+      console.info(JSON.stringify({ msg: 'apagado retirado: algo volvió a sostener la máquina' }))
+    }
+    return false
+  }
+
+  // Con órdenes sin recoger todavía hay trabajo pendiente: apagar ahora las perdería. Y si
+  // ya hay un APAGAR en la cola, no se apila otro. Las que se atascan las caduca el barrido.
+  if (pendientes.length > 0) return false
 
   await m.encolarOrden({ tipo: 'APAGAR' })
   console.info(JSON.stringify({ msg: 'apagado pedido: nada sostiene la máquina' }))
@@ -150,11 +173,24 @@ async function promoverSiHaySitio(cfg: m.Config): Promise<number> {
   return 0
 }
 
-/** Si hay alguien esperando a que la máquina despierte y no da señales, se reintenta.
-    El primer paquete se pudo enviar antes de que la tarjeta estuviera lista. */
-async function reintentarEncendido(): Promise<boolean> {
+/** Si alguien espera a que la máquina despierte y no da señales, se manda otro paquete.
+
+   La condición NO es "está en WAKING". Ese estado solo lo pone `marcarDespertando()`, y hay
+   un camino entero que no pasa por ahí: cuando la máquina se apaga, su `state` guardado
+   sigue diciendo 'UP' hasta que el latido caduca, así que una reserva hecha en esa ventana
+   la daba por despierta y nunca llamaba al encendido. Con la condición vieja, el reintento
+   tampoco entraba —el estado saltaba de 'UP' a 'DOWN' sin tocar 'WAKING'— y la reserva moría
+   de plazo sin que se hubiera emitido un solo paquete.
+
+   Lo que de verdad importa es esto: hay alguien esperando y la máquina no contesta. */
+async function reintentarEncendido(cfg: m.Config): Promise<boolean> {
   const h = await m.host()
-  if (h.state !== 'WAKING') return false
+  if (m.despiertaDeVerdad(h)) return false
+
+  // ¿Espera alguien? Un slot tomado significa reserva en marcha.
+  const listaSlots = await m.slots(cfg.n)
+  const esperando = listaSlots.some((s) => s.estado === 'PREPARANDO')
+  if (!esperando && h.state !== 'WAKING') return false
 
   const desdeUltimo = Date.now() - (h.lastWolSentAt ?? 0)
   if (desdeUltimo < ESPERA_REINTENTO_WOL_MS) return false
@@ -168,26 +204,31 @@ async function reintentarEncendido(): Promise<boolean> {
 
 export async function handler() {
   const cfg = await m.config()
+
+  /* Lo primero, tirar las órdenes viejas. Una que nadie recogió describe una situación que
+     ya no existe, y mientras siga en la cola bloquea el apagado automático —que exige la
+     cola vacía. Sin esta limpieza, una sola orden atascada lo desactivaba para siempre. */
+  const ordenesViejas = await m.caducarOrdenes()
   const pendientes = await m.ordenesPendientes()
 
-  /* El orden importa: primero se libera todo lo caducado, y solo después se reparte, para que
-     un slot que acaba de quedar libre pueda ir al siguiente de la cola en esta misma pasada.
-     El apagado va el último: necesita ver el resultado de todo lo anterior para saber si de
-     verdad no queda nadie. */
+  /* El resto va en este orden: primero se libera todo lo caducado, y solo después se
+     reparte, para que un slot que acaba de quedar libre pueda ir al siguiente de la cola en
+     esta misma pasada. El apagado va el último: necesita ver el resultado de todo lo
+     anterior para saber si de verdad no queda nadie. */
   const caducadas = await caducarReservasColgadas()
   const expirados = await expirarTurnos(cfg)
   const vacios = await cerrarVacios(cfg, pendientes)
   const promovidos = await promoverSiHaySitio(cfg)
-  const reintento = await reintentarEncendido()
+  const reintento = await reintentarEncendido(cfg)
   const apagado = await apagarSiNadieSostiene(cfg, await m.ordenesPendientes())
 
   // Solo se deja rastro si hubo algo que hacer: con un minuto de cadencia, registrar cada
   // pasada vacía serían 43.000 líneas al mes que no dicen nada.
-  if (caducadas || expirados || vacios || promovidos || reintento || apagado) {
+  if (caducadas || expirados || vacios || promovidos || reintento || apagado || ordenesViejas) {
     console.info(
-      JSON.stringify({ msg: 'barrido', caducadas, expirados, vacios, promovidos, reintento, apagado }),
+      JSON.stringify({ msg: 'barrido', ordenesViejas, caducadas, expirados, vacios, promovidos, reintento, apagado }),
     )
   }
 
-  return { caducadas, expirados, vacios, promovidos, reintento, apagado }
+  return { ordenesViejas, caducadas, expirados, vacios, promovidos, reintento, apagado }
 }

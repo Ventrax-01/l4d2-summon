@@ -44,6 +44,8 @@ interface CuerpoLatido {
   slots?: m.ReporteSlot[]
   /** Órdenes ya ejecutadas, para que no se vuelvan a entregar. */
   confirmadas?: string[]
+  /** Última señal antes del apagado: la máquina se va AHORA. */
+  apagando?: boolean
 }
 
 /** Avanza las reservas que estén esperando a este servidor.
@@ -66,20 +68,22 @@ async function avanzarReservas(reportes: m.ReporteSlot[]): Promise<void> {
     const ahora = Date.now()
     let siguiente = it.estado
 
-    // El servidor arrancó pero aún no responde consultas: sigue iniciando.
-    if (it.estado === 'DESPERTANDO' || it.estado === 'BOOTEANDO') {
+    /* Las condiciones se encadenan sobre `siguiente`, no sobre `it.estado`, para que una
+       reserva pueda subir varios escalones en la misma vuelta. Mirando el estado guardado
+       solo se avanzaba uno cada 15 segundos: un servidor que ya estaba en marcha, con sus
+       plugins cargados y el admin puesto, tardaba tres vueltas en darse por listo — y con
+       el plazo de cada etapa corriendo, podía morir por tiempo estando ya perfecto. */
+    if (siguiente === 'DESPERTANDO' || siguiente === 'BOOTEANDO') {
       if (r.corriendo) siguiente = 'INICIANDO'
     }
-    // Ya responde con mapa cargado: falta comprobar plugins y sembrar el admin.
-    if (it.estado === 'INICIANDO' && r.map) {
-      siguiente = 'VERIFICANDO'
-    }
-    // Todo comprobado: se entrega.
-    if (it.estado === 'VERIFICANDO' && r.pluginsOk && r.adminSembrado) {
-      siguiente = 'LISTO'
-    }
+    if (siguiente === 'INICIANDO' && r.map) siguiente = 'VERIFICANDO'
+    if (siguiente === 'VERIFICANDO' && r.pluginsOk && r.adminSembrado) siguiente = 'LISTO'
 
-    if (siguiente === it.estado) continue
+    // Aunque no cambie de etapa, hay progreso mientras el servidor responda: el plazo se
+    // renueva para no matar una reserva que va bien pero lenta (un arranque en frío con la
+    // caché fría puede pasarse del minuto).
+    const hayProgreso = r.corriendo && (r.respondio !== false || Boolean(r.map))
+    if (siguiente === it.estado && !hayProgreso) continue
 
     const connectUrl =
       siguiente === 'LISTO' ? await m.entregarSlot(slot.index, slot.port, HOST_JUEGO) : null
@@ -89,7 +93,7 @@ async function avanzarReservas(reportes: m.ReporteSlot[]): Promise<void> {
       estado: siguiente,
       connectUrl: connectUrl ?? it.connectUrl,
       updatedAt: ahora,
-      // Cada etapa tiene su propio plazo; el barrido caduca la que se atasque.
+      // Cada etapa tiene su propio plazo; el barrido caduca la que se atasque de verdad.
       stateDeadline: ahora + (siguiente === 'LISTO' ? 0 : 120_000),
     })
   }
@@ -114,6 +118,21 @@ export async function handler(evento: Evento) {
   }
 
   try {
+    /* El aviso de apagado se atiende ANTES que nada y corta aquí.
+
+       Es la última vez que se sabrá de esta máquina, así que lo que importa es dejar la
+       tabla coherente de inmediato: host abajo y la orden de apagado retirada. Si en vez de
+       eso se guardara un latido normal, la nube la daría por encendida hasta minuto y medio
+       después, y una reserva hecha en ese hueco no mandaría el paquete de encendido. */
+    if (cuerpo.apagando) {
+      await Promise.all([
+        m.marcarApagada(),
+        ...(cuerpo.confirmadas ?? []).map((id) => m.borrarOrden(id)),
+      ])
+      console.info(JSON.stringify({ msg: 'la máquina avisa de que se apaga' }))
+      return ok({ ok: true, ts: Date.now() })
+    }
+
     await m.guardarLatido({
       publicIp: cuerpo.publicIp,
       sshActive: cuerpo.sshActive,
