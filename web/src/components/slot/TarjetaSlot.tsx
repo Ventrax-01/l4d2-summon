@@ -9,6 +9,7 @@
 import type { Slot } from '@/types'
 import { visualDe } from './estadoVisual'
 import { desdeHace, gradienteMapa, imagenDeMapa, iniciales, nombreDeMapa } from '@/lib/formato'
+import { capituloDe } from '@/lib/mapas'
 import './TarjetaSlot.css'
 
 interface Props {
@@ -91,6 +92,13 @@ export default function TarjetaSlot({ slot, mio = false, onReservar, onGestionar
         {/* El chip sobre la miniatura vive dentro de un role="img": los lectores de
             pantalla no leen su contenido, así que ahí hace falta el texto alternativo. */}
         {conMiniatura && <span className="solo-lectores">{v.descripcion}</span>}
+
+        {slot.map && (
+          <p className="tsl-mapa-linea">
+            <span className="tsl-capitulo">{capituloDe(slot.map)}</span>
+            <code className="tsl-codigo">{slot.map}</code>
+          </p>
+        )}
 
         {libre && <p className="tsl-sub">Disponible — resérvalo y juega.</p>}
 

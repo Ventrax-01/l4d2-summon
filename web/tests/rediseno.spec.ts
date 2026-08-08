@@ -46,6 +46,25 @@ test.describe('Reservar desde la tarjeta', () => {
   })
 })
 
+test.describe('Datos del mapa en la tarjeta', () => {
+  test('muestra el capítulo y el código del mapa', async ({ page }) => {
+    await page.goto('/?anon=1&ocupados=1&n=2')
+
+    const primera = page.getByRole('article').first()
+    // Campaña sobre la imagen, capítulo y código debajo del nombre del servidor.
+    await expect(primera.locator('.tsl-mapa-nombre')).toHaveText('Dark Carnival')
+    await expect(primera.locator('.tsl-capitulo')).toHaveText('The Highway')
+    await expect(primera.locator('.tsl-codigo')).toHaveText('c2m1_highway')
+  })
+
+  test('un mapa de la comunidad no rompe nada', async ({ page }) => {
+    // Los códigos desconocidos se muestran tal cual, sin capítulo ni campaña inventados.
+    await page.goto('/?anon=1&ocupados=1&n=2')
+    const codigos = await page.locator('.tsl-codigo').allTextContents()
+    expect(codigos.every((c) => /^c\d+m\d+_/.test(c))).toBe(true)
+  })
+})
+
 test.describe('Cómo funciona', () => {
   test('explica los tres pasos a quien llega por primera vez', async ({ page }) => {
     await page.goto('/?anon=1&n=2')

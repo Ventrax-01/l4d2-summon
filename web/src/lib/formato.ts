@@ -1,6 +1,7 @@
 /* Utilidades de presentación compartidas. */
 
-import { CAMPANIAS, gradienteDeMapa } from '@/api/mock/datos'
+import { gradienteDeMapa } from '@/api/mock/datos'
+import { campaniaDe } from './mapas'
 
 /** "hace 24 min" / "hace 3 h". Entrada en epoch-ms. */
 export function desdeHace(epoch?: number): string {
@@ -12,11 +13,10 @@ export function desdeHace(epoch?: number): string {
   return h < 24 ? `${h} h` : `${Math.floor(h / 24)} d`
 }
 
-/** Nombre legible de la campaña a partir del código de mapa que reporta el servidor.
-    Si es un mapa desconocido (personalizado), se muestra el código tal cual. */
+/** Campaña a la que pertenece el mapa. Si es uno de la comunidad, se muestra su código. */
 export function nombreDeMapa(map?: string): string {
   if (!map) return ''
-  return CAMPANIAS.find((c) => c.map === map)?.nombre ?? map
+  return campaniaDe(map) || map
 }
 
 /** Iniciales para el avatar de texto. */
