@@ -127,6 +127,8 @@ async function cerrarVacios(cfg: m.Config, pendientes: m.Orden[]): Promise<numbe
    con jugadores dentro después de que su reserva se cerró: el slot dice LIBRE y aun así hay
    partida en curso. Mirar solo el estado apagaría la máquina en mitad de esa partida. */
 async function apagarSiNadieSostiene(cfg: m.Config, pendientes: m.Orden[]): Promise<boolean> {
+  if (!cfg.apagadoAutomatico) return false
+
   const h = await m.host()
   if (!m.despiertaDeVerdad(h)) return false
 

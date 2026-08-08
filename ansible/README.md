@@ -100,7 +100,32 @@ summon_token: "..."   # el valor está en el Parameter Store, /l4d2-summon/agent
 
 Y desplegar como siempre: `ansible-playbook playbook.yml`.
 
-Dos consecuencias que conviene tener claras antes de activarlo:
+### El router tiene que saber despertar la máquina
+
+Esto no se configura desde el repo y sin ello el sistema no funciona: la plataforma apaga la
+máquina y luego no puede volver a encenderla.
+
+La Lambda de encendido manda el paquete mágico a la IP pública de casa. El router lo reenvía
+al equipo… mientras el equipo esté encendido. **Apagado, el router ya no tiene su entrada ARP
+y no sabe a qué tarjeta entregar el paquete: lo tira.** Y es justo cuando hace falta.
+
+Comprobado en esta instalación: los paquetes llegan de verdad al equipo (se ven en `udp/9`
+cuando está encendido), y aun así, apagado, no despierta desde internet — pero sí desde la
+LAN. O sea que la tarjeta y la BIOS están bien; el eslabón que falla es el router.
+
+En el router hace falta **una** de estas dos cosas:
+
+- **Enlace fijo IP↔MAC** (suele llamarse *static ARP*, *IP-MAC binding* o *ARP estático*):
+  se ata `192.168.18.100` a la MAC de la tarjeta, y así el reenvío tiene destino aunque el
+  equipo esté apagado. Es la opción limpia.
+- **Reenviar UDP/9 a la dirección de difusión** de la red (`…​.255`) en vez de a la IP del
+  equipo. Más simple, pero muchos routers no aceptan una dirección de difusión como destino.
+
+Y en el equipo, que la tarjeta quede armada en cada arranque (`ethtool <iface> wol g`). Aquí
+ya lo hace un `wol-enable.service` propio; si montas esto en otra máquina, tendrás que
+añadirlo.
+
+### Dos consecuencias que conviene tener claras antes de activarlo:
 
 - Los servidores **dejan de arrancar solos al encender**. Los levanta el agente cuando hay
   una reserva. Si arrancaran solos siempre habría algo corriendo y la máquina no se apagaría

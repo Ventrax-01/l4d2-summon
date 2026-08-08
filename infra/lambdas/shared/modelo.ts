@@ -26,6 +26,14 @@ export interface Config {
   cooldownSec: number
   claimWindowSec: number
   emptyCloseSec: number
+  /** Interruptor de seguridad: con false la máquina no se apaga sola nunca.
+
+     Existe porque apagarse es lo único que este sistema hace y no puede deshacer por su
+     cuenta: si el router no sabe entregar el paquete de encendido con el equipo apagado
+     —le falta el enlace fijo IP↔MAC—, la máquina se apaga y ya no vuelve sin que alguien
+     esté delante. Poniéndolo a false se conserva todo lo demás (reservas, cola, cierre de
+     servidores vacíos) mientras se arregla la red. */
+  apagadoAutomatico: boolean
 }
 
 export interface Host {
@@ -87,6 +95,7 @@ const CONFIG_POR_DEFECTO: Config = {
   cooldownSec: 20,
   claimWindowSec: 180,
   emptyCloseSec: 900,
+  apagadoAutomatico: true,
 }
 
 /** La N viva la decide el operador y vive aquí, NO en la configuración del despliegue.
