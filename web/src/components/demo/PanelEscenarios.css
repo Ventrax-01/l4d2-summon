@@ -1,0 +1,128 @@
+/* Panel flotante de escenarios. Discreto a propósito: es una herramienta de desarrollo,
+   no parte del producto. */
+
+.pe-abrir {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 90;
+  padding: 6px 10px;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.65;
+}
+
+.pe-abrir:hover {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.pe {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 90;
+  width: min(280px, calc(100vw - 24px));
+  max-height: min(80vh, 560px);
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: var(--r-modal);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.5);
+  font-size: 13px;
+  animation: vxPop 0.14s ease-out;
+}
+
+.pe-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+  font-family: var(--font-display);
+}
+
+.pe-cab button {
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.pe-fila {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-2);
+}
+
+.pe-fila > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.pe-fila input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.pe-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pe-grupo button {
+  flex: 1 1 auto;
+  padding: 5px 8px;
+  border-radius: var(--r-chip);
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.pe-grupo button.act {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgb(40 216 255 / 0.08);
+}
+
+.pe-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.pe-check input {
+  accent-color: var(--accent);
+}
+
+.pe-reset {
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.pe-reset:hover {
+  color: var(--danger-text);
+  border-color: var(--danger);
+}

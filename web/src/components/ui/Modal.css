@@ -1,0 +1,60 @@
+.mod-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  background: rgb(8 9 12 / 0.6);
+}
+
+.mod {
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 24px;
+  border-radius: var(--r-modal);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: vxPop 0.25s ease-out;
+}
+
+.mod h2 {
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.mod-cuerpo {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.mod-confirmar {
+  height: 52px;
+  border: 0;
+  border-radius: var(--r);
+  background: var(--danger);
+  color: #2b0606;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.mod-confirmar:hover {
+  background: #ff7a7a;
+}
+
+.mod-cancelar {
+  height: 46px;
+  border-radius: var(--r);
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+}

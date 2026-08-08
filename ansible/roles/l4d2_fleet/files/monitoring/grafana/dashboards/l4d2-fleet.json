@@ -1,0 +1,134 @@
+{
+  "uid": "l4d2-fleet",
+  "title": "L4D2 Fleet — Operations",
+  "schemaVersion": 39,
+  "version": 3,
+  "refresh": "10s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "server",
+        "label": "Server",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(l4d2_up, instance)",
+        "refresh": 2,
+        "multi": true,
+        "includeAll": true,
+        "current": { "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    { "id": 100, "type": "row", "title": "Fleet overview", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 } },
+
+    { "id": 1, "type": "stat", "title": "Servers online", "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "sum(l4d2_up)" } ],
+      "fieldConfig": { "defaults": { "unit": "none", "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }, "color": { "mode": "thresholds" } } },
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "value" } },
+
+    { "id": 2, "type": "stat", "title": "Players online", "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "sum(l4d2_players)" } ],
+      "fieldConfig": { "defaults": { "unit": "none", "color": { "mode": "fixed", "fixedColor": "blue" } } },
+      "options": { "colorMode": "value", "graphMode": "area" } },
+
+    { "id": 3, "type": "gauge", "title": "Fleet utilization", "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "sum(l4d2_players) / clamp_min(sum(l4d2_max_players), 1) * 100" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 } ] } } } },
+
+    { "id": 4, "type": "gauge", "title": "Host CPU", "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 } ] } } } },
+
+    { "id": 5, "type": "gauge", "title": "Host RAM", "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 75 }, { "color": "red", "value": 90 } ] } } } },
+
+    { "id": 6, "type": "gauge", "title": "Host disk (/)", "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "(1 - node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}) * 100" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 75 }, { "color": "red", "value": 90 } ] } } } },
+
+    { "id": 101, "type": "row", "title": "Players & activity", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 } },
+
+    { "id": 10, "type": "timeseries", "title": "Players per server", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "l4d2_players{instance=~\"$server\"}", "legendFormat": "#{{instance}} :{{port}}" } ],
+      "fieldConfig": { "defaults": { "unit": "none", "custom": { "drawStyle": "line", "fillOpacity": 10 } } } },
+
+    { "id": 11, "type": "timeseries", "title": "Total players vs capacity", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(l4d2_players)", "legendFormat": "players" },
+        { "refId": "B", "expr": "sum(l4d2_max_players)", "legendFormat": "capacity" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none", "custom": { "drawStyle": "line", "fillOpacity": 10 } } } },
+
+    { "id": 102, "type": "row", "title": "Per-server resources (systemd accounting)", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 } },
+
+    { "id": 20, "type": "timeseries", "title": "CPU per server (% of one core)", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "rate(l4d2_cpu_seconds_total{instance=~\"$server\"}[5m]) * 100", "legendFormat": "#{{instance}}" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "fillOpacity": 10 } } } },
+
+    { "id": 21, "type": "timeseries", "title": "Memory per server", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "l4d2_memory_bytes{instance=~\"$server\"}", "legendFormat": "#{{instance}}" } ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "min": 0, "custom": { "drawStyle": "line", "fillOpacity": 10 } } } },
+
+    { "id": 103, "type": "row", "title": "Host resources", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 } },
+
+    { "id": 30, "type": "timeseries", "title": "CPU per core", "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "100 - (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]) * 100)", "legendFormat": "core {{cpu}}" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "custom": { "drawStyle": "line", "fillOpacity": 10 } } } },
+
+    { "id": 31, "type": "timeseries", "title": "Memory used", "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes", "legendFormat": "used" } ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "fillOpacity": 10 } } } },
+
+    { "id": 32, "type": "timeseries", "title": "Network throughput", "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(node_network_transmit_bytes_total{device!~\"lo|docker.*|veth.*|br.*\"}[5m]) * 8", "legendFormat": "out {{device}}" },
+        { "refId": "B", "expr": "rate(node_network_receive_bytes_total{device!~\"lo|docker.*|veth.*|br.*\"}[5m]) * 8", "legendFormat": "in {{device}}" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bps", "custom": { "drawStyle": "line", "fillOpacity": 10 } } } },
+
+    { "id": 104, "type": "row", "title": "Availability", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 } },
+
+    { "id": 40, "type": "bargauge", "title": "Uptime % (selected range)", "gridPos": { "h": 7, "w": 12, "x": 0, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "avg_over_time(l4d2_service_up{instance=~\"$server\"}[$__range]) * 100", "legendFormat": "#{{instance}} :{{port}}" } ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 95 }, { "color": "green", "value": 99 } ] } } },
+      "options": { "orientation": "horizontal", "displayMode": "gradient" } },
+
+    { "id": 41, "type": "table", "title": "Current map per server", "gridPos": { "h": 7, "w": 12, "x": 12, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "l4d2_map_info{instance=~\"$server\"}", "format": "table", "instant": true } ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "Value": true, "__name__": true, "job": true }, "renameByName": { "instance": "server", "port": "port", "map": "map" } } }
+      ] },
+
+    { "id": 105, "type": "row", "title": "Logs", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 40 } },
+
+    { "id": 50, "type": "logs", "title": "Server logs (journald via Loki)", "gridPos": { "h": 12, "w": 24, "x": 0, "y": 41 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [ { "refId": "A", "expr": "{job=\"l4d2\", instance=~\"$server\"} | line_format \"#{{.instance}} {{__line__}}\"" } ],
+      "options": { "showTime": true, "showLabels": false, "wrapLogMessage": true, "prettifyLogMessage": false, "enableLogDetails": true, "dedupStrategy": "none", "sortOrder": "Descending" } },
+
+    { "id": 106, "type": "row", "title": "Game chat", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 } },
+
+    { "id": 51, "type": "logs", "title": "Game chat", "gridPos": { "h": 12, "w": 24, "x": 0, "y": 54 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [ { "refId": "A", "expr": "{job=\"l4d2_chat\", instance=~\"$server\"} | line_format `#{{.instance}} {{__line__}}`" } ],
+      "options": { "showTime": true, "showLabels": false, "wrapLogMessage": true, "prettifyLogMessage": false, "enableLogDetails": true, "dedupStrategy": "none", "sortOrder": "Descending" } }
+  ]
+}

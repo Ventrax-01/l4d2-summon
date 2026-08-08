@@ -1,0 +1,19 @@
+[Unit]
+Description=L4D2 ZoneMod server #%i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ steam_user }}
+Group={{ steam_user }}
+ExecStart=/opt/l4d2-fleet/l4d2-run.sh %i
+Restart=on-failure
+RestartSec=15
+KillSignal=SIGINT
+# Chat logs the server writes must be group-readable so the promtail user (added to this
+# server's group) can tail them.
+UMask=0022
+
+[Install]
+WantedBy=multi-user.target

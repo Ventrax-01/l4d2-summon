@@ -1,0 +1,14 @@
+[Unit]
+Description=L4D2 fleet Prometheus exporter (A2S)
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/l4d2-fleet/fleet.env
+ExecStart=/usr/bin/python3 /opt/l4d2-fleet/l4d2_exporter.py
+Restart=on-failure
+RestartSec=5
+User=nobody
+Group=nogroup
+
+[Install]
+WantedBy=multi-user.target

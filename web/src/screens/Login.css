@@ -1,0 +1,126 @@
+.login {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(
+    ellipse 120% 50% at 50% -10%,
+    rgb(40 216 255 / 0.08),
+    transparent 60%
+  );
+}
+
+.login-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 32px 0;
+  text-align: center;
+}
+
+.login-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-modal);
+  background: var(--accent);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  box-shadow: 0 0 40px rgb(40 216 255 / 0.3);
+}
+
+.login-marca {
+  margin-top: 18px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.login-sub {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.28em;
+}
+
+.login-claim {
+  margin-top: 28px;
+  max-width: 300px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.login-acc {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  border: 1px solid rgb(255 92 92 / 0.3);
+  background: rgb(255 92 92 / 0.08);
+  color: var(--danger-text);
+  font-size: 13.5px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.login-btn {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 0;
+  border-radius: var(--r);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  box-shadow: 0 0 28px rgb(40 216 255 / 0.22);
+  transition: background 0.14s;
+}
+
+.login-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.login-btn:disabled {
+  background: #1e5f73;
+  color: #9fd8e8;
+  box-shadow: none;
+}
+
+.login-spin {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgb(159 216 232 / 0.4);
+  border-top-color: #9fd8e8;
+  border-radius: var(--r-round);
+  animation: vxSpin 0.8s linear infinite;
+}
+
+.login-nota {
+  margin: 0;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-subtle);
+}

@@ -1,0 +1,266 @@
+.tsl {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 5px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tsl[data-estado='LIBRE'] {
+  border-color: rgb(61 220 145 / 0.28);
+}
+
+.tsl[data-estado='ACTIVO'] {
+  border-color: rgb(40 216 255 / 0.28);
+}
+
+.tsl[data-estado='PREPARANDO'] {
+  border-color: rgb(255 178 36 / 0.3);
+}
+
+.tsl[data-estado='RESERVADO_COLA'] {
+  border-color: rgb(139 124 255 / 0.32);
+}
+
+.tsl--error {
+  border-color: rgb(255 92 92 / 0.32);
+  background: rgb(255 92 92 / 0.04);
+}
+
+/* --- Cabecera con el mapa --- */
+
+.tsl-mapa {
+  height: 96px;
+  position: relative;
+  background: linear-gradient(135deg, #1d3a46, #141920);
+}
+
+.tsl-mapa-trama {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 12px,
+    rgb(255 255 255 / 0.025) 12px,
+    rgb(255 255 255 / 0.025) 24px
+  );
+}
+
+.tsl-enjuego {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: rgb(9 42 52 / 0.85);
+  border: 1px solid rgb(40 216 255 / 0.4);
+  border-radius: var(--r-chip);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+}
+
+.tsl-punto {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-round);
+  background: var(--accent);
+  animation: vxPulse 1.4s infinite;
+}
+
+.tsl-mapa-nombre {
+  position: absolute;
+  left: 12px;
+  bottom: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: #e5eaf2;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.6);
+}
+
+/* --- Cuerpo --- */
+
+.tsl-cuerpo {
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 1;
+}
+
+.tsl-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tsl-nombre {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.tsl-tuyo {
+  margin-left: 8px;
+  padding: 2px 6px;
+  border-radius: var(--r-mini);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  vertical-align: 2px;
+}
+
+.tsl-jugadores {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.tsl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--r-chip);
+  border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  background: color-mix(in srgb, var(--c) 10%, transparent);
+  color: var(--c);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.tsl-chip--error {
+  --c: var(--danger);
+  border-color: rgb(255 92 92 / 0.4);
+  background: rgb(255 92 92 / 0.1);
+  color: var(--danger-text);
+}
+
+.tsl-sub {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.tsl-barra {
+  height: 4px;
+  margin-top: auto;
+  border-radius: 2px;
+  background: var(--border-faint);
+  overflow: hidden;
+  position: relative;
+}
+
+.tsl-barra span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  border-radius: 2px;
+  background: var(--prep);
+  animation: vxBar 1.6s ease-in-out infinite;
+}
+
+.tsl-dueno {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.tsl-avatar {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--r-round);
+  background: #2e4a5c;
+  color: #8fd4ec;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 9px;
+}
+
+/* Los nicks de Steam pueden ser larguísimos: se recortan en vez de romper la tarjeta. */
+.tsl-dueno-nick {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tsl-dueno-desde {
+  font-size: 11px;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+/* --- Acciones --- */
+
+.tsl-btn {
+  height: 40px;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r);
+  border: 1px solid var(--border-muted);
+  background: transparent;
+  color: var(--text-disabled);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+.tsl-btn--contorno {
+  border-color: rgb(40 216 255 / 0.45);
+  color: var(--accent);
+}
+
+.tsl-btn--contorno:hover {
+  background: rgb(40 216 255 / 0.08);
+}
+
+.tsl-btn--mio {
+  background: rgb(40 216 255 / 0.1);
+  border-color: rgb(40 216 255 / 0.45);
+  color: var(--accent);
+}
+
+.tsl-btn--texto {
+  height: 36px;
+  border: 0;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.tsl-btn--texto:hover {
+  color: var(--text-2);
+}
+
+.tsl-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}

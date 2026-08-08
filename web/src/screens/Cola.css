@@ -1,0 +1,186 @@
+.cola {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 70vh;
+  padding: 48px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.cola--vacia {
+  gap: 16px;
+  color: var(--text-muted);
+}
+
+.cola--turno {
+  gap: 18px;
+  padding: 40px 24px;
+  animation: vxPop 0.35s ease-out;
+}
+
+.cola-badge {
+  padding: 5px 12px;
+  border-radius: var(--r-chip);
+  border: 1px solid rgb(139 124 255 / 0.35);
+  background: rgb(139 124 255 / 0.1);
+  color: var(--reserved);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+}
+
+.cola-badge-turno {
+  padding: 6px 14px;
+  border-radius: var(--r-chip);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  animation: vxPulse 1.2s infinite;
+}
+
+.cola--turno h1 {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cola-pos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cola-pos-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 72px;
+  line-height: 1;
+}
+
+.cola-pos-rot {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+.cola-anillo {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+}
+
+.cola-anillo svg {
+  transform: rotate(-90deg);
+}
+
+.cola-anillo circle:last-child {
+  transition: stroke-dashoffset 1s linear;
+}
+
+.cola-reloj {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cola-reloj-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+}
+
+.cola-reloj-rot {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+}
+
+.cola-texto {
+  margin: 0;
+  max-width: 300px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.cola-pista {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-subtle);
+}
+
+.cola-punto {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-round);
+  background: var(--reserved);
+  animation: vxPulse 1.4s infinite;
+}
+
+.cola-cta {
+  width: 100%;
+  max-width: 380px;
+  height: 60px;
+  border: 0;
+  border-radius: var(--r);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  box-shadow: 0 0 32px var(--accent-glow-strong);
+}
+
+.cola-cta:disabled {
+  background: #1e5f73;
+  color: #9fd8e8;
+  box-shadow: none;
+}
+
+.cola-sec {
+  width: 100%;
+  max-width: 380px;
+  height: 44px;
+  border-radius: var(--r);
+  border: 1px solid var(--border-muted);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.cola-salir {
+  width: 100%;
+  max-width: 340px;
+  height: 48px;
+  border-radius: var(--r);
+  border: 1px solid rgb(255 92 92 / 0.35);
+  background: transparent;
+  color: #ff8a8a;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.cola-salir:hover {
+  background: rgb(255 92 92 / 0.06);
+}

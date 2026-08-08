@@ -1,0 +1,6 @@
+---
+- name: Provision the L4D2 ZoneMod fleet
+  hosts: l4d2
+  become: true
+  roles:
+    - l4d2_fleet

@@ -1,0 +1,184 @@
+---
+- name: server.cfg — let the launcher own the hostname
+  ansible.builtin.replace:
+    path: "{{ install_dir }}/left4dead2/cfg/server.cfg"
+    regexp: '^hostname '
+    replace: '//hostname '
+
+- name: server.cfg — rcon password
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/cfg/server.cfg"
+    regexp: '^rcon_password '
+    line: 'rcon_password "{{ rcon_password }}"'
+
+- name: server.cfg — public-server toggles
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/cfg/server.cfg"
+    regexp: "^{{ item.key }} "
+    line: '{{ item.key }} "{{ item.value }}"'
+  loop:
+    - { key: sv_pure, value: "0" }
+    - { key: sv_pure_kick_clients, value: "0" }
+    # ZoneMod ships sv_steamgroup_exclusive 1 (group-only when empty) — open it up
+    - { key: sv_steamgroup_exclusive, value: "0" }
+  when: public | int == 1
+
+- name: server.cfg — Steam group listing
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/cfg/server.cfg"
+    regexp: "^{{ item.key }} "
+    line: '{{ item.key }} "{{ item.value }}"'
+  loop:
+    - { key: sv_steamgroup, value: "{{ steam_group }}" }
+    - { key: sv_steamgroup_exclusive, value: "{{ steam_group_exclusive }}" }
+  when: steam_group | length > 0
+
+- name: server.cfg — ZoneMod autoload (versus only; coop leaves it off)
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/cfg/server.cfg"
+    regexp: "^{{ item.key }} "
+    line: "{{ item.key }} {{ item.value }}"
+  loop:
+    - { key: confogl_match_autoload, value: "{{ '1' if gamemode == 'versus' else '0' }}" }
+    - { key: confogl_match_autoconfig, value: '"zonemod"' }
+
+- name: server.cfg — keep the verbose log echo off
+  # This server's competitive plugins log every player command; echoing the log to the
+  # console (sv_logecho 1) floods journald/Loki. Chat is captured separately by the
+  # chat_logger plugin (which writes a clean per-server file Promtail tails), so there's
+  # no reason to echo the log — keep it off.
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/cfg/server.cfg"
+    regexp: "^{{ item.key }} "
+    line: "{{ item.key }} {{ item.value }}"
+  loop:
+    - { key: sv_logecho, value: "0" }
+
+- name: Seed server admins (admins_simple.ini)
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/addons/sourcemod/configs/admins_simple.ini"
+    regexp: '^"{{ item.steamid }}"'
+    line: '"{{ item.steamid }}" "{{ item.flags }}"'
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+  loop: "{{ admins }}"
+  when: admins | length > 0
+
+- name: Remove the old tcn_admin plugin (renamed to admin_manager)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/tcn_admin.smx"
+    - "{{ install_dir }}/left4dead2/addons/sourcemod/scripting/tcn_admin.sp"
+
+- name: Install custom SourceMod plugins (compiled)
+  ansible.builtin.copy:
+    src: "custom-plugins/{{ item }}"
+    dest: "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/{{ item }}"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+  loop:
+    - admin_manager.smx
+    - idle_hibernate.smx
+    - chat_logger.smx
+
+# ZoneMod's pred_unload_plugins unloads EVERY plugin on matchmode transitions and relies on
+# a refresh to bring them back, which races with its load-lock — so our always-on plugins get
+# dropped during matches. This patched unloader reserves them (skips them in the unload). It
+# overwrites ZoneMod's copy, so it must run after the ZoneMod task.
+- name: Install the patched plugin unloader (reserves the fleet plugins across matchmode)
+  ansible.builtin.copy:
+    src: "custom-plugins/optional/predictable_unloader.smx"
+    dest: "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/optional/predictable_unloader.smx"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+
+- name: Install custom plugin sources
+  ansible.builtin.copy:
+    src: "custom-plugins/scripting/{{ item }}"
+    dest: "{{ install_dir }}/left4dead2/addons/sourcemod/scripting/{{ item }}"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+  loop:
+    - admin_manager.sp
+    - idle_hibernate.sp
+    - chat_logger.sp
+    - predictable_unloader.sp
+
+# Custom banners — opt-in. The HTML files are gitignored (see motd_file/host_file
+# in defaults). Runs after the zonemod role so it overrides ZoneMod's defaults.
+- name: Install a custom MOTD (optional; HTML is gitignored)
+  ansible.builtin.copy:
+    src: "{{ motd_file }}"
+    dest: "{{ install_dir }}/left4dead2/{{ item }}"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+  loop:
+    - motd.txt
+    - mymotd.txt
+  when: motd_file | length > 0
+
+- name: Install a custom host banner (optional; the smaller banner, gitignored)
+  ansible.builtin.copy:
+    src: "{{ host_file }}"
+    dest: "{{ install_dir }}/left4dead2/{{ item }}"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+  loop:
+    - host.txt
+    - myhost.txt
+  when: host_file | length > 0
+
+- name: Create fleet directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /opt/l4d2-fleet
+    - /etc/l4d2-fleet
+
+- name: Create the chat log directory (chat_logger writes here; promtail reads it)
+  # Inside the game tree because SourceMod's OpenFile can only write under the game dir.
+  # 0755 + group {{ steam_user }} so promtail (added to that group) can read the files.
+  ansible.builtin.file:
+    path: "{{ install_dir }}/left4dead2/addons/sourcemod/logs/chat"
+    state: directory
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0755"
+
+- name: Install fleet configuration
+  ansible.builtin.template:
+    src: fleet.env.j2
+    dest: /etc/l4d2-fleet/fleet.env
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0640"
+
+- name: Install the launcher
+  ansible.builtin.copy:
+    src: l4d2-run.sh
+    dest: /opt/l4d2-fleet/l4d2-run.sh
+    mode: "0755"
+
+- name: Install the systemd template unit
+  ansible.builtin.template:
+    src: l4d2@.service.j2
+    dest: /etc/systemd/system/l4d2@.service
+    mode: "0644"
+  notify: reload systemd
+
+- name: Start and enable the servers
+  ansible.builtin.systemd:
+    name: "l4d2@{{ item }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  loop: "{{ range(1, server_count | int + 1) | list }}"

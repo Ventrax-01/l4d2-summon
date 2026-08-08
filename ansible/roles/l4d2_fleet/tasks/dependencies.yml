@@ -1,0 +1,25 @@
+---
+- name: Read enabled foreign architectures
+  ansible.builtin.command: dpkg --print-foreign-architectures
+  register: foreign_arch
+  changed_when: false
+
+- name: Enable the i386 architecture (srcds is 32-bit)
+  ansible.builtin.command: dpkg --add-architecture i386
+  when: "'i386' not in foreign_arch.stdout"
+  changed_when: true
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - libc6:i386
+      - lib32z1
+      - lib32gcc-s1
+      - lib32stdc++6
+      - libsdl2-2.0-0:i386
+      - screen
+      - git
+      - curl
+      - python3
+    update_cache: true
+    state: present

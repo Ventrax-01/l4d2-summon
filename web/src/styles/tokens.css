@@ -1,0 +1,98 @@
+/* Tokens extraídos del Board de Diseño (design/Board de Diseño.dc.html).
+   El Board usa hex literales inline; aquí se centralizan como variables CSS para que
+   exista una sola fuente de verdad. Los valores son los del diseño: no inventar ni
+   "mejorar" colores.
+
+   Regla de accesibilidad del propio Board: todo estado se comunica con
+   color + icono + etiqueta, nunca solo con color. */
+
+:root {
+  /* Fondo y superficies */
+  --bg: #101114;
+  --surface: #15181e;
+  --surface-raised: #1b1f27;
+  --surface-code: #0b0c0f;
+
+  /* Bordes */
+  --border: #262a33;
+  --border-soft: #1e222a;
+  --border-strong: #333945;
+  --border-muted: #2a2f3a;
+  --border-faint: #20242c;
+
+  /* Acento primario (acción primaria + estado "en juego") */
+  --accent: #28d8ff;
+  --accent-hover: #5fe2ff;
+  --accent-bright: #7fe8ff;
+  --on-accent: #06212b;
+  --accent-glow: rgba(40, 216, 255, 0.28);
+  --accent-glow-soft: rgba(40, 216, 255, 0.2);
+  --accent-glow-strong: rgba(40, 216, 255, 0.35);
+
+  /* Estados semánticos */
+  --free: #3ddc91;      /* libre */
+  --prep: #ffb224;      /* preparando */
+  --danger: #ff5c5c;    /* error */
+  --danger-text: #ffb3b3;
+  --reserved: #8b7cff;  /* reservado / cola */
+
+  /* Texto */
+  --text: #f2f4f8;
+  --text-2: #c7ceda;
+  --text-muted: #9aa3b2;
+  --text-subtle: #6e7787;
+  --text-disabled: #5b6675;
+
+  /* Tipografía */
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+  --font-mono: ui-monospace, Menlo, monospace;
+
+  /* Radios */
+  --r-mini: 2px;
+  --r-chip: 3px;
+  --r: 4px;
+  --r-modal: 6px;
+  --r-round: 50%;
+
+  /* Breakpoints (referencia; en @media van literales)
+     móvil <640px · tablet 640-1024px · escritorio >1024px */
+}
+
+/* Animaciones nombradas por el Board */
+@keyframes vxPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@keyframes vxShimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes vxBar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+@keyframes vxSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes vxToast {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vxPop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

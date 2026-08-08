@@ -1,0 +1,119 @@
+.rsv {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 28px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.rsv--centro {
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+}
+
+.rsv-vacio {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.rsv-cab {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rsv-etiqueta {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: var(--r-chip);
+  border: 1px solid var(--border-muted);
+  background: var(--surface-raised);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.14em;
+}
+
+.rsv-cab h1 {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.rsv-cab p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.rsv-error {
+  padding: 18px;
+  border-radius: 5px;
+  border: 1px solid rgb(255 92 92 / 0.3);
+  background: rgb(255 92 92 / 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rsv-error h2 {
+  font-size: 15px;
+  color: var(--danger-text);
+}
+
+.rsv-error p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.rsv-reintentar {
+  height: 56px;
+  border: 0;
+  border-radius: var(--r);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  box-shadow: 0 0 28px var(--accent-glow-soft);
+}
+
+.rsv-reintentar:disabled {
+  background: #1e5f73;
+  color: #9fd8e8;
+  box-shadow: none;
+}
+
+.rsv-avisar {
+  padding: 4px;
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 13.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rsv-volver {
+  height: 48px;
+  border-radius: var(--r);
+  border: 1px solid var(--border-muted);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.rsv-volver:hover {
+  border-color: #4a5160;
+  color: var(--text-2);
+}

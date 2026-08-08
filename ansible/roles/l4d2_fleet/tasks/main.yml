@@ -1,0 +1,16 @@
+---
+- name: Install dependencies
+  ansible.builtin.import_tasks: dependencies.yml
+
+- name: Install the game
+  ansible.builtin.import_tasks: game.yml
+
+- name: Deploy ZoneMod
+  ansible.builtin.import_tasks: zonemod.yml
+
+- name: Configure and start the fleet
+  ansible.builtin.import_tasks: fleet.yml
+
+- name: Set up monitoring
+  ansible.builtin.import_tasks: monitoring.yml
+  when: with_monitoring | bool

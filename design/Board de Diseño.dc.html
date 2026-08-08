@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#1A1C22;font-family:'Source Sans 3',sans-serif}
+a{color:#28D8FF;text-decoration:none}a:hover{color:#7FE8FF}
+.dv-turn{padding:44px 48px 36px;border-bottom:1px solid rgba(255,255,255,.06);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:12px;margin:0 0 6px}
+.dv-tid{font:700 11px 'Outfit',sans-serif;padding:4px 9px;background:#28D8FF;color:#06212B;border-radius:3px;text-decoration:none;letter-spacing:.08em}
+.dv-tname{font:700 17px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.02em}
+.dv-note{font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2;margin:0 0 22px;max-width:760px}
+.dv-opts{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:600 11.5px 'Source Sans 3',sans-serif;color:#9AA3B2}
+.dv-oid{font:700 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#E5EAF2;border-radius:3px;text-decoration:none}
+.dv-card{max-width:100%;background:#101114;border:1px solid #262A33;border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,.45);overflow:hidden}
+.dv-opt:target .dv-oid{background:#28D8FF;color:#06212B}
+@keyframes vxPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes vxShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes vxBar{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+@keyframes vxSpin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t0" data-screen-label="Sistema visual">
+<div class="dv-thd"><a class="dv-tid" href="#t0">SISTEMA</a><span class="dv-tname">Dirección visual — Ventrax</span></div>
+<p class="dv-note">Tema oscuro carbón (#101114) con acento cian (#28D8FF) reservado a la acción primaria y al estado "en juego". Outfit para titulares y datos, Source Sans 3 para cuerpo. Esquinas de 4px, look técnico y limpio. Los estados combinan siempre color + icono + etiqueta. Verde = libre, ámbar = preparando, cian = en juego, rojo = error, violeta = reservado para la cola. Mobile-first: columnas de 390px; el desktop reordena la misma jerarquía en rejilla.</p>
+<div class="dv-opts">
+<div class="dv-opt" id="0a"><div class="dv-olabel"><a class="dv-oid" href="#0a">0a</a>Paleta + tipografía</div>
+<div class="dv-card" style="width:390px;padding:24px;display:flex;flex-direction:column;gap:18px">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="width:30px;height:30px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 15px 'Outfit',sans-serif;color:#06212B">V</div>
+    <div><div style="font:800 17px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.04em">VENTRAX</div><div style="font:600 9.5px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.22em">L4D2 SERVERS</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+    <div style="display:flex;flex-direction:column;gap:5px"><div style="height:44px;background:#28D8FF;border-radius:3px"></div><span style="font:600 9px ui-monospace,monospace;color:#9AA3B2">#28D8FF</span></div>
+    <div style="display:flex;flex-direction:column;gap:5px"><div style="height:44px;background:#3DDC91;border-radius:3px"></div><span style="font:600 9px ui-monospace,monospace;color:#9AA3B2">#3DDC91</span></div>
+    <div style="display:flex;flex-direction:column;gap:5px"><div style="height:44px;background:#FFB224;border-radius:3px"></div><span style="font:600 9px ui-monospace,monospace;color:#9AA3B2">#FFB224</span></div>
+    <div style="display:flex;flex-direction:column;gap:5px"><div style="height:44px;background:#FF5C5C;border-radius:3px"></div><span style="font:600 9px ui-monospace,monospace;color:#9AA3B2">#FF5C5C</span></div>
+    <div style="display:flex;flex-direction:column;gap:5px"><div style="height:44px;background:#8B7CFF;border-radius:3px"></div><span style="font:600 9px ui-monospace,monospace;color:#9AA3B2">#8B7CFF</span></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <div style="font:800 24px 'Outfit',sans-serif;color:#F2F4F8">Reserva y juega</div>
+    <div style="font:400 14px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">Cuerpo Source Sans 3 — legible y neutro sobre carbón.</div>
+  </div>
+  <button style="height:52px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 16px 'Outfit',sans-serif;letter-spacing:.03em;box-shadow:0 0 24px rgba(40,216,255,.25);cursor:pointer">Reservar servidor</button>
+  <button style="height:44px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Acción secundaria</button>
+</div></div>
+<div class="dv-opt" id="0b"><div class="dv-olabel"><a class="dv-oid" href="#0b">0b</a>Chips de estado (color + icono + etiqueta)</div>
+<div class="dv-card" style="width:300px;padding:24px;display:flex;flex-direction:column;gap:12px">
+  <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:rgba(61,220,145,.12);border:1px solid rgba(61,220,145,.35);border-radius:3px;font:700 11px 'Outfit',sans-serif;color:#3DDC91;letter-spacing:.12em;align-self:flex-start"><span style="width:7px;height:7px;border-radius:50%;background:#3DDC91"></span>LIBRE</span>
+  <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:rgba(255,178,36,.1);border:1px solid rgba(255,178,36,.35);border-radius:3px;font:700 11px 'Outfit',sans-serif;color:#FFB224;letter-spacing:.12em;align-self:flex-start"><span style="width:7px;height:7px;border-radius:50%;background:#FFB224;animation:vxPulse 1.2s infinite"></span>PREPARANDO</span>
+  <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:rgba(40,216,255,.1);border:1px solid rgba(40,216,255,.35);border-radius:3px;font:700 11px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em;align-self:flex-start"><span style="width:7px;height:7px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span>
+  <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:rgba(255,92,92,.1);border:1px solid rgba(255,92,92,.35);border-radius:3px;font:700 11px 'Outfit',sans-serif;color:#FF5C5C;letter-spacing:.12em;align-self:flex-start"><span style="font-size:11px">⚠</span>ERROR</span>
+  <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:rgba(139,124,255,.1);border:1px solid rgba(139,124,255,.35);border-radius:3px;font:700 11px 'Outfit',sans-serif;color:#8B7CFF;letter-spacing:.12em;align-self:flex-start"><span style="font-size:11px">⧗</span>RESERVADO</span>
+</div></div>
+</div>
+</section>
+
+
+<section class="dv-turn" id="t1" data-screen-label="1 · Login">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Login — Entrar con Steam</span></div>
+<p class="dv-note">Un único método de acceso, sin formularios. El mismo botón sirve para cuentas nuevas y recurrentes. Tres estados: normal, redirigiendo a Steam y error con reintento. En desktop el bloque se centra sobre el mismo fondo, sin añadir nada.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Móvil · normal</div>
+<div class="dv-card" style="width:390px;height:760px;display:flex;flex-direction:column;background:radial-gradient(ellipse 120% 50% at 50% -10%,rgba(40,216,255,.08),transparent 60%),#101114">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0;padding:0 32px;text-align:center">
+    <div style="width:56px;height:56px;background:#28D8FF;border-radius:6px;display:grid;place-items:center;font:800 28px 'Outfit',sans-serif;color:#06212B;box-shadow:0 0 40px rgba(40,216,255,.3)">V</div>
+    <div style="margin-top:18px;font:800 26px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.04em">VENTRAX</div>
+    <div style="margin-top:4px;font:600 11px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.28em">L4D2 SERVERS</div>
+    <div style="margin-top:28px;font:400 16px/1.5 'Source Sans 3',sans-serif;color:#C7CEDA;max-width:280px">Reserva un servidor y juega al instante.</div>
+  </div>
+  <div style="padding:0 24px 48px;display:flex;flex-direction:column;gap:14px">
+    <button style="height:56px;display:flex;align-items:center;justify-content:center;gap:12px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.22);cursor:pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#06212B" stroke-width="2"></circle><circle cx="15.5" cy="8.5" r="2.4" fill="#06212B"></circle><path d="M4 14l7-2.5" stroke="#06212B" stroke-width="2" stroke-linecap="round"></path><circle cx="9" cy="15" r="2" fill="#06212B"></circle></svg>
+      Entrar con Steam
+    </button>
+    <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#6E7787;text-align:center">Acceso abierto: cualquiera con cuenta de Steam entra y juega.</div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Móvil · redirigiendo a Steam</div>
+<div class="dv-card" style="width:390px;height:760px;display:flex;flex-direction:column;background:radial-gradient(ellipse 120% 50% at 50% -10%,rgba(40,216,255,.08),transparent 60%),#101114">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 32px;text-align:center">
+    <div style="width:56px;height:56px;background:#28D8FF;border-radius:6px;display:grid;place-items:center;font:800 28px 'Outfit',sans-serif;color:#06212B">V</div>
+    <div style="margin-top:18px;font:800 26px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.04em">VENTRAX</div>
+    <div style="margin-top:4px;font:600 11px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.28em">L4D2 SERVERS</div>
+    <div style="margin-top:28px;font:400 16px/1.5 'Source Sans 3',sans-serif;color:#C7CEDA;max-width:280px">Reserva un servidor y juega al instante.</div>
+  </div>
+  <div style="padding:0 24px 48px;display:flex;flex-direction:column;gap:14px">
+    <button disabled style="height:56px;display:flex;align-items:center;justify-content:center;gap:12px;background:#1E5F73;color:#9FD8E8;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;position:relative;overflow:hidden">
+      <span style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></span>
+      <span style="width:16px;height:16px;border:2px solid rgba(159,216,232,.4);border-top-color:#9FD8E8;border-radius:50%;animation:vxSpin .8s linear infinite;display:inline-block"></span>
+      Conectando con Steam…
+    </button>
+    <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#6E7787;text-align:center">Te llevamos a Steam para confirmar tu cuenta.</div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Móvil · error de sesión</div>
+<div class="dv-card" style="width:390px;height:760px;display:flex;flex-direction:column;background:radial-gradient(ellipse 120% 50% at 50% -10%,rgba(40,216,255,.08),transparent 60%),#101114">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 32px;text-align:center">
+    <div style="width:56px;height:56px;background:#28D8FF;border-radius:6px;display:grid;place-items:center;font:800 28px 'Outfit',sans-serif;color:#06212B">V</div>
+    <div style="margin-top:18px;font:800 26px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.04em">VENTRAX</div>
+    <div style="margin-top:4px;font:600 11px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.28em">L4D2 SERVERS</div>
+    <div style="margin-top:28px;font:400 16px/1.5 'Source Sans 3',sans-serif;color:#C7CEDA;max-width:280px">Reserva un servidor y juega al instante.</div>
+  </div>
+  <div style="padding:0 24px 48px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:14px 16px;background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.3);border-radius:4px;text-align:left">
+      <span style="font-size:15px;line-height:1.3">⚠</span>
+      <div style="font:400 13.5px/1.45 'Source Sans 3',sans-serif;color:#FFB3B3">No pudimos iniciar sesión con Steam. Vuelve a intentarlo.</div>
+    </div>
+    <button style="height:56px;display:flex;align-items:center;justify-content:center;gap:12px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;cursor:pointer">Reintentar con Steam</button>
+    <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#6E7787;text-align:center">Si sigue fallando, avisa al operador.</div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Desktop · normal (1280)</div>
+<div class="dv-card" style="width:1280px;height:720px;display:flex;background:radial-gradient(ellipse 60% 80% at 70% 30%,rgba(40,216,255,.07),transparent 60%),#101114">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0">
+    <div style="width:64px;height:64px;background:#28D8FF;border-radius:7px;display:grid;place-items:center;font:800 32px 'Outfit',sans-serif;color:#06212B;box-shadow:0 0 48px rgba(40,216,255,.3)">V</div>
+    <div style="margin-top:20px;font:800 34px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div>
+    <div style="margin-top:5px;font:600 12px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.32em">L4D2 SERVERS</div>
+    <div style="margin-top:26px;font:400 18px/1.5 'Source Sans 3',sans-serif;color:#C7CEDA">Reserva un servidor y juega al instante.</div>
+    <button style="margin-top:36px;height:56px;padding:0 44px;display:flex;align-items:center;gap:12px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.22);cursor:pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#06212B" stroke-width="2"></circle><circle cx="15.5" cy="8.5" r="2.4" fill="#06212B"></circle><path d="M4 14l7-2.5" stroke="#06212B" stroke-width="2" stroke-linecap="round"></path><circle cx="9" cy="15" r="2" fill="#06212B"></circle></svg>
+      Entrar con Steam
+    </button>
+    <div style="margin-top:16px;font:400 13px 'Source Sans 3',sans-serif;color:#6E7787">Acceso abierto: cualquiera con cuenta de Steam entra y juega.</div>
+  </div>
+</div></div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t2" data-screen-label="2 · Home / lista de servidores">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Home pública — lista de servidores</span></div>
+<p class="dv-note">Vista central, con o sin sesión. Rejilla dinámica: 1 columna en móvil, auto-fill de mínimo 280px en desktop — funciona de 1 a 8 tarjetas sin romperse (con 1 tarjeta se limita el ancho y se centra). Contador de libres/ocupados junto al título. La nota de apagado automático vive bajo la rejilla, en tono positivo. Cada estado de tarjeta usa color + icono + etiqueta.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a"><div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Móvil · con sesión · 4 tarjetas, los 4 estados</div>
+<div class="dv-card" style="width:390px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="font:600 13px 'Source Sans 3',sans-serif;color:#C7CEDA">R4zor</span><div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC;border:1px solid #3A5A6E">R4</div></div>
+  </div>
+  <div style="padding:20px 20px 8px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <div style="font:800 22px 'Outfit',sans-serif;color:#F2F4F8">Servidores</div>
+      <div style="display:flex;align-items:center;gap:6px;font:600 12px 'Source Sans 3',sans-serif;color:#9AA3B2"><span style="width:7px;height:7px;border-radius:50%;background:#3DDC91"></span>1 libre<span style="color:#3A4150">·</span><span style="width:7px;height:7px;border-radius:50%;background:#28D8FF"></span>3 en uso</div>
+    </div>
+    <button style="height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;letter-spacing:.02em;box-shadow:0 0 28px rgba(40,216,255,.2);cursor:pointer">⚡ Reservar servidor</button>
+  </div>
+  <div style="padding:14px 20px 20px;display:flex;flex-direction:column;gap:12px">
+    <div style="background:#15181E;border:1px solid rgba(61,220,145,.3);border-radius:5px;padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #2</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(61,220,145,.12);border:1px solid rgba(61,220,145,.35);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#3DDC91;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#3DDC91"></span>LIBRE</span></div>
+      <div style="font:400 13.5px 'Source Sans 3',sans-serif;color:#9AA3B2">Listo para que alguien lo reserve.</div>
+    </div>
+    <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;overflow:hidden">
+      <div style="height:110px;position:relative;background:linear-gradient(135deg,#233041,#141920)">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(255,255,255,.025) 12px,rgba(255,255,255,.025) 24px)"></div>
+        <div style="position:absolute;top:10px;right:10px;font:600 8.5px 'Outfit',sans-serif;color:#8A94A6;letter-spacing:.14em;background:rgba(0,0,0,.35);padding:3px 7px;border-radius:2px">IMAGEN MAPA · CDN</div>
+        <div style="position:absolute;left:14px;bottom:10px;font:700 15px 'Outfit',sans-serif;color:#E5EAF2;text-shadow:0 1px 6px rgba(0,0,0,.6)">Dead Center</div>
+        <span style="position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(9,42,52,.85);border:1px solid rgba(40,216,255,.4);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span>
+      </div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #1</span>
+          <span style="font:600 13px 'Source Sans 3',sans-serif;color:#C7CEDA">👥 3/8</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:#4A3A5C;display:grid;place-items:center;font:700 10px 'Outfit',sans-serif;color:#CBB3EC">NX</div><div style="font:600 13px 'Source Sans 3',sans-serif;color:#C7CEDA">Nyx_<span style="font-weight:400;color:#6E7787"> · reservó hace 24 min</span></div></div>
+        </div>
+        <button style="height:44px;background:transparent;color:#28D8FF;border:1px solid rgba(40,216,255,.45);border-radius:4px;font:700 14px 'Outfit',sans-serif;cursor:pointer">Entrar a jugar</button>
+      </div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(255,178,36,.3);border-radius:5px;padding:16px;display:flex;flex-direction:column;gap:11px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #3</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,178,36,.1);border:1px solid rgba(255,178,36,.35);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#FFB224;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#FFB224;animation:vxPulse 1.2s infinite"></span>PREPARANDO</span></div>
+      <div style="font:400 13.5px 'Source Sans 3',sans-serif;color:#9AA3B2">Alguien lo está reservando ahora mismo…</div>
+      <div style="height:4px;background:#20242C;border-radius:2px;overflow:hidden;position:relative"><span style="position:absolute;top:0;left:0;height:100%;width:40%;background:#FFB224;border-radius:2px;animation:vxBar 1.6s ease-in-out infinite"></span></div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(255,92,92,.3);border-radius:5px;padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #4</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,92,92,.1);border:1px solid rgba(255,92,92,.35);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#FF5C5C;letter-spacing:.12em">⚠ ERROR</span></div>
+      <div style="font:400 13.5px 'Source Sans 3',sans-serif;color:#9AA3B2">Este servidor no pudo prepararse. Ya estamos en ello.</div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+      <span style="font-size:13px">🌙</span>
+      <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Los servidores se cierran solos cuando quedan vacíos un rato. Así siempre hay sitio para el siguiente.</div>
+    </div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="2b"><div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Móvil · sin sesión · 1 tarjeta</div>
+<div class="dv-card" style="width:390px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <button style="height:36px;padding:0 14px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 13px 'Outfit',sans-serif;cursor:pointer">Entrar con Steam</button>
+  </div>
+  <div style="padding:20px 20px 8px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <div style="font:800 22px 'Outfit',sans-serif;color:#F2F4F8">Servidores</div>
+      <div style="display:flex;align-items:center;gap:6px;font:600 12px 'Source Sans 3',sans-serif;color:#9AA3B2"><span style="width:7px;height:7px;border-radius:50%;background:#3DDC91"></span>1 libre<span style="color:#3A4150">·</span><span style="width:7px;height:7px;border-radius:50%;background:#28D8FF"></span>0 en uso</div>
+    </div>
+    <button style="height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.2);cursor:pointer">⚡ Reservar servidor</button>
+    <div style="font:400 12px 'Source Sans 3',sans-serif;color:#6E7787;text-align:center;margin-top:-6px">Te pediremos entrar con Steam primero.</div>
+  </div>
+  <div style="padding:14px 20px 24px;display:flex;flex-direction:column;gap:12px">
+    <div style="background:#15181E;border:1px solid rgba(61,220,145,.3);border-radius:5px;padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #1</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(61,220,145,.12);border:1px solid rgba(61,220,145,.35);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#3DDC91;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#3DDC91"></span>LIBRE</span></div>
+      <div style="font:400 13.5px 'Source Sans 3',sans-serif;color:#9AA3B2">Listo para que alguien lo reserve.</div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+      <span style="font-size:13px">🌙</span>
+      <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Los servidores se cierran solos cuando quedan vacíos un rato. Así siempre hay sitio para el siguiente.</div>
+    </div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="2c"><div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Desktop 1280 · 8 tarjetas, todos los estados (incl. reservado para cola)</div>
+<div class="dv-card" style="width:1280px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 14px 'Outfit',sans-serif;color:#06212B">V</div><div><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</span><span style="font:600 9px 'Outfit',sans-serif;color:#6E7787;letter-spacing:.2em;margin-left:10px">L4D2 SERVERS</span></div></div>
+    <div style="display:flex;align-items:center;gap:10px"><span style="font:600 13.5px 'Source Sans 3',sans-serif;color:#C7CEDA">R4zor</span><div style="width:34px;height:34px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC;border:1px solid #3A5A6E">R4</div></div>
+  </div>
+  <div style="padding:28px 40px 10px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:baseline;gap:18px">
+      <div style="font:800 26px 'Outfit',sans-serif;color:#F2F4F8">Servidores</div>
+      <div style="display:flex;align-items:center;gap:7px;font:600 13px 'Source Sans 3',sans-serif;color:#9AA3B2"><span style="width:8px;height:8px;border-radius:50%;background:#3DDC91"></span>2 libres<span style="color:#3A4150">·</span><span style="width:8px;height:8px;border-radius:50%;background:#28D8FF"></span>6 ocupados</div>
+    </div>
+    <button style="height:52px;padding:0 36px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 16px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.2);cursor:pointer">⚡ Reservar servidor</button>
+  </div>
+  <div style="padding:18px 40px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+    <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:92px;position:relative;background:linear-gradient(135deg,#233041,#141920)"><div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(255,255,255,.025) 12px,rgba(255,255,255,.025) 24px)"></div><div style="position:absolute;left:12px;bottom:8px;font:700 13.5px 'Outfit',sans-serif;color:#E5EAF2;text-shadow:0 1px 6px rgba(0,0,0,.6)">Dead Center</div><span style="position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(9,42,52,.85);border:1px solid rgba(40,216,255,.4);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:5px;height:5px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span></div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:9px;flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 13.5px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #1</span><span style="font:600 12px 'Source Sans 3',sans-serif;color:#C7CEDA">👥 3/8</span></div>
+        <div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;background:#4A3A5C;display:grid;place-items:center;font:700 9px 'Outfit',sans-serif;color:#CBB3EC">NX</div><span style="font:600 12px 'Source Sans 3',sans-serif;color:#C7CEDA">Nyx_</span><span style="font:400 11px 'Source Sans 3',sans-serif;color:#6E7787">· 24 min</span></div>
+        <button style="height:38px;margin-top:auto;background:transparent;color:#28D8FF;border:1px solid rgba(40,216,255,.45);border-radius:4px;font:700 12.5px 'Outfit',sans-serif;cursor:pointer">Entrar a jugar</button>
+      </div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(61,220,145,.3);border-radius:5px;padding:14px;display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 13.5px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #2</span><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(61,220,145,.12);border:1px solid rgba(61,220,145,.35);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#3DDC91;letter-spacing:.12em"><span style="width:5px;height:5px;border-radius:50%;background:#3DDC91"></span>LIBRE</span></div>
+      <div style="font:400 12.5px/1.45 'Source Sans 3',sans-serif;color:#9AA3B2">Listo para que alguien lo reserve.</div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(255,178,36,.3);border-radius:5px;padding:14px;display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 13.5px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #3</span><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(255,178,36,.1);border:1px solid rgba(255,178,36,.35);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#FFB224;letter-spacing:.12em"><span style="width:5px;height:5px;border-radius:50%;background:#FFB224;animation:vxPulse 1.2s infinite"></span>PREPARANDO</span></div>
+      <div style="font:400 12.5px/1.45 'Source Sans 3',sans-serif;color:#9AA3B2">Alguien lo está reservando…</div>
+      <div style="height:4px;background:#20242C;border-radius:2px;overflow:hidden;position:relative;margin-top:auto"><span style="position:absolute;top:0;left:0;height:100%;width:40%;background:#FFB224;border-radius:2px;animation:vxBar 1.6s ease-in-out infinite"></span></div>
+    </div>
+    <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:92px;position:relative;background:linear-gradient(135deg,#2E2A3C,#141920)"><div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(255,255,255,.025) 12px,rgba(255,255,255,.025) 24px)"></div><div style="position:absolute;left:12px;bottom:8px;font:700 13.5px 'Outfit',sans-serif;color:#E5EAF2;text-shadow:0 1px 6px rgba(0,0,0,.6)">The Parish</div><span style="position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(9,42,52,.85);border:1px solid rgba(40,216,255,.4);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:5px;height:5px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span></div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:9px;flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 13.5px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #4</span><span style="font:600 12px 'Source Sans 3',sans-serif;color:#C7CEDA">👥 6/8</span></div>
+        <div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;background:#3C4A2E;display:grid;place-items:center;font:700 9px 'Outfit',sans-serif;color:#BFE39A">KV</div><span style="font:600 12px 'Source Sans 3',sans-serif;color:#C7CEDA">Kova</span><span style="font:400 11px 'Source Sans 3',sans-serif;color:#6E7787">· 1 h 12 min</span></div>
+        <button style="height:38px;margin-top:auto;background:transparent;color:#28D8FF;border:1px solid rgba(40,216,255,.45);border-radius:4px;font:700 12.5px 'Outfit',sans-serif;cursor:pointer">Entrar a jugar</button>
+      </div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(255,92,92,.3);border-radius:5px;padding:14px;display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 13.5px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #5</span><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(255,92,92,.1);border:1px solid rgba(255,92,92,.35);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#FF5C5C;letter-spacing:.12em">⚠ ERROR</span></div>
+      <div style="font:400 12.5px/1.45 'Source Sans 3',sans-serif;color:#9AA3B2">No pudo prepararse. Ya estamos en ello.</div>
+    </div>
+    <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:92px;position:relative;background:linear-gradient(135deg,#3C3226,#141920)"><div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(255,255,255,.025) 12px,rgba(255,255,255,.025) 24px)"></div><div style="position:absolute;left:12px;bottom:8px;font:700 13.5px 'Outfit',sans-serif;color:#E5EAF2;text-shadow:0 1px 6px rgba(0,0,0,.6)">Dark Carnival</div><span style="position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(9,42,52,.85);border:1px solid rgba(40,216,255,.4);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:5px;height:5px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span></div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:9px;flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 13.5px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #6</span><span style="font:600 12px 'Source Sans 3',sans-serif;color:#C7CEDA">👥 8/8</span></div>
+        <div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;background:#5C4A3A;display:grid;place-items:center;font:700 9px 'Outfit',sans-serif;color:#ECD3B3">PD</div><span style="font:600 12px 'Source Sans 3',sans-serif;color:#C7CEDA">PixelDuke</span><span style="font:400 11px 'Source Sans 3',sans-serif;color:#6E7787">· 38 min</span></div>
+        <button disabled style="height:38px;margin-top:auto;background:transparent;color:#5B6675;border:1px solid #2A2F3A;border-radius:4px;font:700 12.5px 'Outfit',sans-serif">Servidor lleno</button>
+      </div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(139,124,255,.3);border-radius:5px;padding:14px;display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 13.5px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #7</span><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(139,124,255,.1);border:1px solid rgba(139,124,255,.35);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#8B7CFF;letter-spacing:.12em">⧗ RESERVADO</span></div>
+      <div style="font:400 12.5px/1.45 'Source Sans 3',sans-serif;color:#9AA3B2">Guardado para el siguiente de la cola.</div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(61,220,145,.3);border-radius:5px;padding:14px;display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 13.5px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #8</span><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(61,220,145,.12);border:1px solid rgba(61,220,145,.35);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#3DDC91;letter-spacing:.12em"><span style="width:5px;height:5px;border-radius:50%;background:#3DDC91"></span>LIBRE</span></div>
+      <div style="font:400 12.5px/1.45 'Source Sans 3',sans-serif;color:#9AA3B2">Listo para que alguien lo reserve.</div>
+    </div>
+  </div>
+  <div style="margin:0 40px 28px;display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+    <span style="font-size:13px">🌙</span>
+    <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Los servidores se cierran solos cuando quedan vacíos un rato. Así siempre hay sitio para el siguiente. Recuerda: 1 servidor por persona, y todos los servidores son públicos.</div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="2d"><div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>Desktop 1280 · 1 sola tarjeta (rejilla centrada, sin huecos)</div>
+<div class="dv-card" style="width:1280px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 14px 'Outfit',sans-serif;color:#06212B">V</div><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</span></div>
+    <button style="height:38px;padding:0 16px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 13px 'Outfit',sans-serif;cursor:pointer">Entrar con Steam</button>
+  </div>
+  <div style="padding:28px 40px 36px;display:flex;flex-direction:column;align-items:center;gap:18px">
+    <div style="width:100%;max-width:560px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font:800 26px 'Outfit',sans-serif;color:#F2F4F8">Servidores</div>
+      <div style="display:flex;align-items:center;gap:7px;font:600 13px 'Source Sans 3',sans-serif;color:#9AA3B2"><span style="width:8px;height:8px;border-radius:50%;background:#3DDC91"></span>1 libre<span style="color:#3A4150">·</span><span style="width:8px;height:8px;border-radius:50%;background:#28D8FF"></span>0 ocupados</div>
+    </div>
+    <button style="width:100%;max-width:560px;height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.2);cursor:pointer">⚡ Reservar servidor</button>
+    <div style="width:100%;max-width:560px;background:#15181E;border:1px solid rgba(61,220,145,.3);border-radius:5px;padding:18px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #1</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(61,220,145,.12);border:1px solid rgba(61,220,145,.35);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#3DDC91;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#3DDC91"></span>LIBRE</span></div>
+      <div style="font:400 13.5px 'Source Sans 3',sans-serif;color:#9AA3B2">Listo para que alguien lo reserve.</div>
+    </div>
+    <div style="width:100%;max-width:560px;display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+      <span style="font-size:13px">🌙</span>
+      <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Los servidores se cierran solos cuando quedan vacíos un rato.</div>
+    </div>
+  </div>
+</div></div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t3" data-screen-label="3 · Stepper de reserva">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">Flujo de reserva — stepper por etapas</span></div>
+<p class="dv-note">Mismo componente para 3 etapas (~45 s) y 4 etapas (~3 min): lista vertical en móvil, horizontal en desktop. Hecha = check cian, actual = anillo pulsante + micro-copy + barra indeterminada, pendiente = atenuada. Nunca hay cronómetro exacto. Se puede salir y volver (estado "reanudando"). El error nunca culpa al usuario.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="3a"><div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Móvil · flujo largo, 4 etapas (~3 min)</div>
+<div class="dv-card" style="width:390px;height:700px;display:flex;flex-direction:column;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;padding:32px 24px;display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="align-self:flex-start;padding:4px 10px;background:#1B1F27;border:1px solid #2A2F3A;border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.14em">SERVIDOR #2 · TUYO</span>
+      <div style="font:800 24px 'Outfit',sans-serif;color:#F2F4F8">Preparando tu servidor</div>
+      <div style="font:400 14px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">Suele tardar unos minutos. Puedes salir y volver: tu reserva sigue viva.</div>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:#28D8FF;display:grid;place-items:center;color:#06212B;font-weight:800;font-size:15px">✓</div><div style="width:2px;flex:1;background:#28D8FF;min-height:26px"></div></div>
+        <div style="padding:5px 0 26px"><div style="font:700 15px 'Outfit',sans-serif;color:#F2F4F8">Despertando</div><div style="font:400 12.5px 'Source Sans 3',sans-serif;color:#6E7787">Encendiendo tu servidor… hecho</div></div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:rgba(40,216,255,.12);border:2px solid #28D8FF;display:grid;place-items:center;box-shadow:0 0 16px rgba(40,216,255,.35);animation:vxPulse 1.6s infinite"><span style="width:10px;height:10px;border-radius:50%;background:#28D8FF"></span></div><div style="width:2px;flex:1;background:#262A33;min-height:26px"></div></div>
+        <div style="padding:5px 0 26px;flex:1"><div style="font:700 15px 'Outfit',sans-serif;color:#28D8FF">Iniciando</div><div style="font:400 12.5px 'Source Sans 3',sans-serif;color:#9AA3B2">Arrancando y cargando el mapa…</div>
+        <div style="margin-top:10px;height:4px;background:#20242C;border-radius:2px;overflow:hidden;position:relative"><span style="position:absolute;top:0;left:0;height:100%;width:40%;background:#28D8FF;border-radius:2px;animation:vxBar 1.6s ease-in-out infinite"></span></div></div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:#1B1F27;border:2px solid #2A2F3A;display:grid;place-items:center;font:700 13px 'Outfit',sans-serif;color:#5B6675">3</div><div style="width:2px;flex:1;background:#262A33;min-height:26px"></div></div>
+        <div style="padding:5px 0 26px"><div style="font:700 15px 'Outfit',sans-serif;color:#5B6675">Verificando</div><div style="font:400 12.5px 'Source Sans 3',sans-serif;color:#4A5160">Comprobando que todo responde y dándote tus permisos…</div></div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:#1B1F27;border:2px solid #2A2F3A;display:grid;place-items:center;font:700 13px 'Outfit',sans-serif;color:#5B6675">4</div></div>
+        <div style="padding:5px 0"><div style="font:700 15px 'Outfit',sans-serif;color:#5B6675">¡Listo!</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 24px 32px"><button style="width:100%;height:48px;background:transparent;color:#9AA3B2;border:1px solid #2A2F3A;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Volver a la lista (la reserva sigue)</button></div>
+</div></div>
+
+<div class="dv-opt" id="3b"><div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Móvil · flujo rápido, 3 etapas (~45 s)</div>
+<div class="dv-card" style="width:390px;height:700px;display:flex;flex-direction:column;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;padding:32px 24px;display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="align-self:flex-start;padding:4px 10px;background:#1B1F27;border:1px solid #2A2F3A;border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.14em">SERVIDOR #5 · TUYO</span>
+      <div style="font:800 24px 'Outfit',sans-serif;color:#F2F4F8">Preparando tu servidor</div>
+      <div style="font:400 14px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">Menos de un minuto. Puedes salir y volver: tu reserva sigue viva.</div>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:#28D8FF;display:grid;place-items:center;color:#06212B;font-weight:800;font-size:15px">✓</div><div style="width:2px;flex:1;background:#28D8FF;min-height:26px"></div></div>
+        <div style="padding:5px 0 26px"><div style="font:700 15px 'Outfit',sans-serif;color:#F2F4F8">Iniciando</div><div style="font:400 12.5px 'Source Sans 3',sans-serif;color:#6E7787">Arrancando y cargando el mapa… hecho</div></div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:rgba(40,216,255,.12);border:2px solid #28D8FF;display:grid;place-items:center;box-shadow:0 0 16px rgba(40,216,255,.35);animation:vxPulse 1.6s infinite"><span style="width:10px;height:10px;border-radius:50%;background:#28D8FF"></span></div><div style="width:2px;flex:1;background:#262A33;min-height:26px"></div></div>
+        <div style="padding:5px 0 26px;flex:1"><div style="font:700 15px 'Outfit',sans-serif;color:#28D8FF">Verificando</div><div style="font:400 12.5px 'Source Sans 3',sans-serif;color:#9AA3B2">Comprobando que todo responde y dándote tus permisos…</div>
+        <div style="margin-top:10px;height:4px;background:#20242C;border-radius:2px;overflow:hidden;position:relative"><span style="position:absolute;top:0;left:0;height:100%;width:40%;background:#28D8FF;border-radius:2px;animation:vxBar 1.6s ease-in-out infinite"></span></div></div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:#1B1F27;border:2px solid #2A2F3A;display:grid;place-items:center;font:700 13px 'Outfit',sans-serif;color:#5B6675">3</div></div>
+        <div style="padding:5px 0"><div style="font:700 15px 'Outfit',sans-serif;color:#5B6675">¡Listo!</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 24px 32px"><button style="width:100%;height:48px;background:transparent;color:#9AA3B2;border:1px solid #2A2F3A;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Volver a la lista (la reserva sigue)</button></div>
+</div></div>
+
+<div class="dv-opt" id="3c"><div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>Móvil · error en la preparación</div>
+<div class="dv-card" style="width:390px;height:700px;display:flex;flex-direction:column;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;padding:32px 24px;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="align-self:flex-start;padding:4px 10px;background:#1B1F27;border:1px solid #2A2F3A;border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.14em">SERVIDOR #2</span>
+      <div style="font:800 24px 'Outfit',sans-serif;color:#F2F4F8">Preparando tu servidor</div>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:#28D8FF;display:grid;place-items:center;color:#06212B;font-weight:800;font-size:15px">✓</div><div style="width:2px;flex:1;background:#28D8FF;min-height:22px"></div></div>
+        <div style="padding:5px 0 22px"><div style="font:700 15px 'Outfit',sans-serif;color:#F2F4F8">Despertando</div></div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;flex-direction:column;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:rgba(255,92,92,.12);border:2px solid #FF5C5C;display:grid;place-items:center;color:#FF5C5C;font-weight:800;font-size:14px">!</div></div>
+        <div style="padding:5px 0"><div style="font:700 15px 'Outfit',sans-serif;color:#FF5C5C">Iniciando — algo falló</div></div>
+      </div>
+    </div>
+    <div style="padding:18px;background:rgba(255,92,92,.06);border:1px solid rgba(255,92,92,.3);border-radius:5px;display:flex;flex-direction:column;gap:8px">
+      <div style="font:700 15px 'Outfit',sans-serif;color:#FFB3B3">No pudimos preparar tu servidor</div>
+      <div style="font:400 13.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">Algo falló de nuestro lado; no es culpa tuya. Tu sitio no se pierde: reintenta cuando quieras.</div>
+    </div>
+  </div>
+  <div style="padding:0 24px 32px;display:flex;flex-direction:column;gap:12px">
+    <button style="height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.2);cursor:pointer">Reintentar</button>
+    <a href="#3c" style="text-align:center;font:600 13.5px 'Source Sans 3',sans-serif;color:#9AA3B2;text-decoration:underline;text-underline-offset:3px">Avisar al operador</a>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="3d"><div class="dv-olabel"><a class="dv-oid" href="#3d">3d</a>Móvil · reanudando al volver</div>
+<div class="dv-card" style="width:390px;height:380px;display:flex;flex-direction:column;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:0 32px;text-align:center">
+    <span style="width:36px;height:36px;border:3px solid rgba(40,216,255,.25);border-top-color:#28D8FF;border-radius:50%;animation:vxSpin .9s linear infinite;display:inline-block"></span>
+    <div style="font:700 18px 'Outfit',sans-serif;color:#F2F4F8">Reanudando tu reserva…</div>
+    <div style="font:400 13.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">Tu servidor siguió preparándose mientras no estabas. Recuperando el progreso.</div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="3e"><div class="dv-olabel"><a class="dv-oid" href="#3e">3e</a>Desktop 1280 · 4 etapas en horizontal</div>
+<div class="dv-card" style="width:1280px;height:560px;display:flex;flex-direction:column;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 14px 'Outfit',sans-serif;color:#06212B">V</div><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</span></div>
+    <div style="width:34px;height:34px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:36px;padding:0 80px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+      <span style="padding:4px 12px;background:#1B1F27;border:1px solid #2A2F3A;border-radius:3px;font:700 10.5px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.14em">SERVIDOR #2 · TUYO</span>
+      <div style="font:800 30px 'Outfit',sans-serif;color:#F2F4F8">Preparando tu servidor</div>
+      <div style="font:400 15px 'Source Sans 3',sans-serif;color:#9AA3B2">Suele tardar unos minutos. Puedes salir y volver: tu reserva sigue viva.</div>
+    </div>
+    <div style="display:flex;align-items:flex-start;width:100%;max-width:860px">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:#28D8FF;display:grid;place-items:center;color:#06212B;font-weight:800;font-size:16px">✓</div><div style="font:700 14px 'Outfit',sans-serif;color:#F2F4F8">Despertando</div></div>
+      <div style="flex:1;height:2px;background:#28D8FF;margin-top:17px"></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:rgba(40,216,255,.12);border:2px solid #28D8FF;display:grid;place-items:center;box-shadow:0 0 18px rgba(40,216,255,.35);animation:vxPulse 1.6s infinite"><span style="width:11px;height:11px;border-radius:50%;background:#28D8FF"></span></div><div style="font:700 14px 'Outfit',sans-serif;color:#28D8FF">Iniciando</div><div style="font:400 12px 'Source Sans 3',sans-serif;color:#9AA3B2;text-align:center;max-width:170px">Arrancando y cargando el mapa…</div></div>
+      <div style="flex:1;height:2px;background:#262A33;margin-top:17px"></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:#1B1F27;border:2px solid #2A2F3A;display:grid;place-items:center;font:700 14px 'Outfit',sans-serif;color:#5B6675">3</div><div style="font:700 14px 'Outfit',sans-serif;color:#5B6675">Verificando</div></div>
+      <div style="flex:1;height:2px;background:#262A33;margin-top:17px"></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:#1B1F27;border:2px solid #2A2F3A;display:grid;place-items:center;font:700 14px 'Outfit',sans-serif;color:#5B6675">4</div><div style="font:700 14px 'Outfit',sans-serif;color:#5B6675">¡Listo!</div></div>
+    </div>
+    <div style="width:100%;max-width:520px;height:4px;background:#20242C;border-radius:2px;overflow:hidden;position:relative"><span style="position:absolute;top:0;left:0;height:100%;width:40%;background:#28D8FF;border-radius:2px;animation:vxBar 1.6s ease-in-out infinite"></span></div>
+  </div>
+</div></div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t4" data-screen-label="4 · ¡Listo!">
+<div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">¡Listo! — servidor entregado</span></div>
+<p class="dv-note">Momento de recompensa: check con glow, Conectar como único CTA primario (abre steam://connect), dirección copiable con feedback "Copiado", y chuleta de admin escaneable que deja claro lo que NO puede hacer (banear). Recordatorios de servidor público y cierre automático en tono positivo.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="4a"><div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Móvil · listo (con toast "Copiado")</div>
+<div class="dv-card" style="width:390px;background:#101114;position:relative">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="padding:32px 24px 28px;display:flex;flex-direction:column;gap:20px;background:radial-gradient(ellipse 120% 40% at 50% 0%,rgba(61,220,145,.07),transparent 60%)">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(61,220,145,.12);border:2px solid #3DDC91;display:grid;place-items:center;font-size:28px;color:#3DDC91;box-shadow:0 0 36px rgba(61,220,145,.3)">✓</div>
+      <div style="font:800 26px 'Outfit',sans-serif;color:#F2F4F8">¡Tu servidor está listo!</div>
+      <div style="font:400 14px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">El Servidor #2 está arriba y es tuyo. A jugar.</div>
+    </div>
+    <button style="height:60px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:800 18px 'Outfit',sans-serif;letter-spacing:.02em;box-shadow:0 0 32px rgba(40,216,255,.3);cursor:pointer">▶ Conectar</button>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:700 10.5px 'Outfit',sans-serif;color:#6E7787;letter-spacing:.14em">O CONECTA MANUALMENTE</span>
+      <div style="display:flex;gap:8px">
+        <code style="flex:1;display:flex;align-items:center;padding:0 14px;height:48px;background:#0B0C0F;border:1px solid #262A33;border-radius:4px;font:600 13.5px ui-monospace,Menlo,monospace;color:#8FD4EC;overflow:hidden;white-space:nowrap">connect play.ventrax.gg:27015</code>
+        <button style="width:48px;height:48px;background:#1B1F27;border:1px solid #333945;border-radius:4px;color:#E5EAF2;font-size:16px;cursor:pointer" title="Copiar dirección">⧉</button>
+      </div>
+      <span style="font:400 12px 'Source Sans 3',sans-serif;color:#6E7787">Compártela: cualquiera puede entrar, el servidor es público.</span>
+    </div>
+    <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">🛡</span><span style="font:700 13px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.06em">ERES ADMIN DE ESTE SERVIDOR</span></div>
+      <div style="display:flex;flex-direction:column;gap:9px;font:400 13.5px 'Source Sans 3',sans-serif;color:#C7CEDA">
+        <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Expulsar jugadores (kick)</div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Cambiar de mapa</div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Controlar la partida (reiniciar, pausar…)</div>
+        <div style="display:flex;align-items:center;gap:10px;color:#8A94A6"><span style="color:#FF5C5C;font-weight:700">✕</span>Banear — eso no está en tus manos</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+      <span style="font-size:13px">🌙</span>
+      <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Tu servidor se cierra solo si queda vacío un rato. No tienes que hacer nada.</div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button style="flex:1;height:46px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 13.5px 'Outfit',sans-serif;cursor:pointer">Ir a Mi servidor</button>
+      <button style="flex:1;height:46px;background:transparent;color:#FF8A8A;border:1px solid rgba(255,92,92,.35);border-radius:4px;font:600 13.5px 'Outfit',sans-serif;cursor:pointer">Cerrar servidor</button>
+    </div>
+    <div style="height:52px"></div>
+  </div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:18px;display:flex;align-items:center;gap:8px;padding:10px 16px;background:#1B2A22;border:1px solid rgba(61,220,145,.4);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.5)"><span style="color:#3DDC91;font-weight:700">✓</span><span style="font:600 13px 'Source Sans 3',sans-serif;color:#D9F5E8">Dirección copiada</span></div>
+</div></div>
+
+<div class="dv-opt" id="4b"><div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a>Desktop 1280 · listo (dos columnas)</div>
+<div class="dv-card" style="width:1280px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 14px 'Outfit',sans-serif;color:#06212B">V</div><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</span></div>
+    <div style="width:34px;height:34px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="padding:48px 80px 56px;display:grid;grid-template-columns:1fr 400px;gap:56px;background:radial-gradient(ellipse 60% 50% at 30% 0%,rgba(61,220,145,.06),transparent 60%)">
+    <div style="display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;align-items:center;gap:18px">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(61,220,145,.12);border:2px solid #3DDC91;display:grid;place-items:center;font-size:28px;color:#3DDC91;box-shadow:0 0 36px rgba(61,220,145,.3)">✓</div>
+        <div><div style="font:800 32px 'Outfit',sans-serif;color:#F2F4F8">¡Tu servidor está listo!</div><div style="font:400 15px 'Source Sans 3',sans-serif;color:#9AA3B2">El Servidor #2 está arriba y es tuyo. A jugar.</div></div>
+      </div>
+      <button style="height:60px;max-width:420px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:800 18px 'Outfit',sans-serif;box-shadow:0 0 32px rgba(40,216,255,.3);cursor:pointer">▶ Conectar</button>
+      <div style="display:flex;flex-direction:column;gap:8px;max-width:420px">
+        <span style="font:700 10.5px 'Outfit',sans-serif;color:#6E7787;letter-spacing:.14em">O CONECTA MANUALMENTE</span>
+        <div style="display:flex;gap:8px">
+          <code style="flex:1;display:flex;align-items:center;padding:0 14px;height:48px;background:#0B0C0F;border:1px solid #262A33;border-radius:4px;font:600 13.5px ui-monospace,Menlo,monospace;color:#8FD4EC;white-space:nowrap">connect play.ventrax.gg:27015</code>
+          <button style="width:48px;height:48px;background:#1B1F27;border:1px solid #333945;border-radius:4px;color:#E5EAF2;font-size:16px;cursor:pointer">⧉</button>
+        </div>
+        <span style="font:400 12px 'Source Sans 3',sans-serif;color:#6E7787">Compártela: cualquiera puede entrar, el servidor es público.</span>
+      </div>
+      <div style="display:flex;gap:12px;max-width:420px">
+        <button style="flex:1;height:46px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 13.5px 'Outfit',sans-serif;cursor:pointer">Ir a Mi servidor</button>
+        <button style="flex:1;height:46px;background:transparent;color:#FF8A8A;border:1px solid rgba(255,92,92,.35);border-radius:4px;font:600 13.5px 'Outfit',sans-serif;cursor:pointer">Cerrar servidor</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🛡</span><span style="font:700 13.5px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.06em">ERES ADMIN DE ESTE SERVIDOR</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px;font:400 14px 'Source Sans 3',sans-serif;color:#C7CEDA">
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Expulsar jugadores (kick)</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Cambiar de mapa</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Controlar la partida (reiniciar, pausar…)</div>
+          <div style="display:flex;align-items:center;gap:10px;color:#8A94A6"><span style="color:#FF5C5C;font-weight:700">✕</span>Banear — eso no está en tus manos</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+        <span style="font-size:13px">🌙</span>
+        <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Tu servidor se cierra solo si queda vacío un rato. No tienes que hacer nada.</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t5" data-screen-label="5 · Cola de espera">
+<div class="dv-thd"><a class="dv-tid" href="#t5">5</a><span class="dv-tname">Cola de espera — en cola / ¡es tu turno!</span></div>
+<p class="dv-note">FIFO. "En cola" muestra posición grande, cuántos esperan y cómo salir. "¡Es tu turno!" es imposible de ignorar: pantalla tomada por el aviso, cuenta regresiva en anillo y CTA "Entrar ahora" (lleva al stepper rápido). Si dejas pasar el tiempo, pasa el siguiente. Pensado para volver de una pestaña en segundo plano: el estado se ve entero de un vistazo, con favicon/título parpadeante como refuerzo.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="5a"><div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>Móvil · en cola, posición #3</div>
+<div class="dv-card" style="width:390px;height:700px;display:flex;flex-direction:column;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;padding:0 32px;text-align:center">
+    <span style="padding:5px 12px;background:rgba(139,124,255,.1);border:1px solid rgba(139,124,255,.35);border-radius:3px;font:700 10.5px 'Outfit',sans-serif;color:#8B7CFF;letter-spacing:.14em">⧗ EN COLA</span>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="font:800 72px/1 'Outfit',sans-serif;color:#F2F4F8">#3</div>
+      <div style="font:600 15px 'Outfit',sans-serif;color:#9AA3B2">tu posición en la cola</div>
+    </div>
+    <div style="font:400 14px/1.55 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:280px">Ahora mismo todos los servidores están ocupados. 5 personas esperan; en cuanto se libere uno y te toque, te avisamos aquí mismo.</div>
+    <div style="display:flex;align-items:center;gap:8px;font:400 12.5px 'Source Sans 3',sans-serif;color:#6E7787"><span style="width:7px;height:7px;border-radius:50%;background:#8B7CFF;animation:vxPulse 1.4s infinite"></span>Puedes dejar esta pestaña de fondo, tu sitio se guarda.</div>
+  </div>
+  <div style="padding:0 24px 32px"><button style="width:100%;height:48px;background:transparent;color:#FF8A8A;border:1px solid rgba(255,92,92,.35);border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Salir de la cola</button></div>
+</div></div>
+
+<div class="dv-opt" id="5b"><div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>Móvil · ¡es tu turno! (cuenta regresiva)</div>
+<div class="dv-card" style="width:390px;height:700px;display:flex;flex-direction:column;background:radial-gradient(ellipse 130% 55% at 50% 0%,rgba(40,216,255,.12),transparent 65%),#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(40,216,255,.25)">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;padding:0 32px;text-align:center">
+    <span style="padding:6px 14px;background:#28D8FF;border-radius:3px;font:800 11px 'Outfit',sans-serif;color:#06212B;letter-spacing:.16em;animation:vxPulse 1.2s infinite">¡ES TU TURNO!</span>
+    <div style="font:800 28px 'Outfit',sans-serif;color:#F2F4F8">Hay un servidor<br>reservado para ti</div>
+    <div style="position:relative;width:132px;height:132px;display:grid;place-items:center">
+      <svg width="132" height="132" viewBox="0 0 132 132" style="transform:rotate(-90deg)"><circle cx="66" cy="66" r="58" fill="none" stroke="#20242C" stroke-width="8"></circle><circle cx="66" cy="66" r="58" fill="none" stroke="#28D8FF" stroke-width="8" stroke-linecap="round" stroke-dasharray="364" stroke-dashoffset="80"></circle></svg>
+      <div style="position:absolute;display:flex;flex-direction:column;align-items:center"><span style="font:800 32px 'Outfit',sans-serif;color:#F2F4F8">3:47</span><span style="font:600 10px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.12em">PARA ENTRAR</span></div>
+    </div>
+    <div style="font:400 13.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:280px">Si no entras a tiempo, el turno pasa al siguiente de la cola.</div>
+  </div>
+  <div style="padding:0 24px 32px;display:flex;flex-direction:column;gap:12px">
+    <button style="height:60px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:800 18px 'Outfit',sans-serif;box-shadow:0 0 32px rgba(40,216,255,.35);cursor:pointer">Entrar ahora</button>
+    <button style="height:44px;background:transparent;color:#9AA3B2;border:1px solid #2A2F3A;border-radius:4px;font:600 13.5px 'Outfit',sans-serif;cursor:pointer">Ceder mi turno</button>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="5c"><div class="dv-olabel"><a class="dv-oid" href="#5c">5c</a>Desktop 1280 · ¡es tu turno! (modal sobre la home)</div>
+<div class="dv-card" style="width:1280px;height:640px;position:relative;background:#101114;overflow:hidden">
+  <div style="filter:blur(3px);opacity:.35;pointer-events:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid #1E222A">
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 14px 'Outfit',sans-serif;color:#06212B">V</div><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</span></div>
+      <div style="width:34px;height:34px;border-radius:50%;background:#2E4A5C"></div>
+    </div>
+    <div style="padding:28px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <div style="height:180px;background:#15181E;border:1px solid #262A33;border-radius:5px"></div>
+      <div style="height:180px;background:#15181E;border:1px solid #262A33;border-radius:5px"></div>
+      <div style="height:180px;background:#15181E;border:1px solid #262A33;border-radius:5px"></div>
+      <div style="height:180px;background:#15181E;border:1px solid #262A33;border-radius:5px"></div>
+    </div>
+  </div>
+  <div style="position:absolute;inset:0;background:rgba(8,9,12,.55);display:grid;place-items:center">
+    <div style="width:480px;background:#15181E;border:1px solid rgba(40,216,255,.4);border-radius:6px;box-shadow:0 0 60px rgba(40,216,255,.15),0 24px 64px rgba(0,0,0,.6);padding:36px;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center">
+      <span style="padding:6px 14px;background:#28D8FF;border-radius:3px;font:800 11px 'Outfit',sans-serif;color:#06212B;letter-spacing:.16em;animation:vxPulse 1.2s infinite">¡ES TU TURNO!</span>
+      <div style="font:800 26px 'Outfit',sans-serif;color:#F2F4F8">Hay un servidor reservado para ti</div>
+      <div style="position:relative;width:116px;height:116px;display:grid;place-items:center">
+        <svg width="116" height="116" viewBox="0 0 116 116" style="transform:rotate(-90deg)"><circle cx="58" cy="58" r="50" fill="none" stroke="#20242C" stroke-width="8"></circle><circle cx="58" cy="58" r="50" fill="none" stroke="#28D8FF" stroke-width="8" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="70"></circle></svg>
+        <div style="position:absolute;display:flex;flex-direction:column;align-items:center"><span style="font:800 28px 'Outfit',sans-serif;color:#F2F4F8">3:47</span><span style="font:600 9.5px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.12em">PARA ENTRAR</span></div>
+      </div>
+      <div style="font:400 13.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">Si no entras a tiempo, el turno pasa al siguiente de la cola.</div>
+      <button style="width:100%;height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:800 17px 'Outfit',sans-serif;box-shadow:0 0 32px rgba(40,216,255,.35);cursor:pointer">Entrar ahora</button>
+      <button style="width:100%;height:42px;background:transparent;color:#9AA3B2;border:1px solid #2A2F3A;border-radius:4px;font:600 13px 'Outfit',sans-serif;cursor:pointer">Ceder mi turno</button>
+    </div>
+  </div>
+</div></div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t6" data-screen-label="6 · Mi servidor">
+<div class="dv-thd"><a class="dv-tid" href="#t6">6</a><span class="dv-tname">Mi servidor</span></div>
+<p class="dv-note">El único servidor del usuario (1 por persona). Estado, mapa y jugadores arriba; Conectar como primario; dirección copiable y chuleta de admin como en ¡Listo!. Cerrar pide confirmación porque libera el slot para la cola. Vacío = CTA de reservar.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="6a"><div class="dv-olabel"><a class="dv-oid" href="#6a">6a</a>Móvil · servidor activo</div>
+<div class="dv-card" style="width:390px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="padding:24px 20px 28px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font:800 22px 'Outfit',sans-serif;color:#F2F4F8">Mi servidor</div>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(40,216,255,.1);border:1px solid rgba(40,216,255,.35);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span>
+    </div>
+    <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;overflow:hidden">
+      <div style="height:120px;position:relative;background:linear-gradient(135deg,#233041,#141920)">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(255,255,255,.025) 12px,rgba(255,255,255,.025) 24px)"></div>
+        <div style="position:absolute;top:10px;right:10px;font:600 8.5px 'Outfit',sans-serif;color:#8A94A6;letter-spacing:.14em;background:rgba(0,0,0,.35);padding:3px 7px;border-radius:2px">IMAGEN MAPA · CDN</div>
+        <div style="position:absolute;left:14px;bottom:10px;font:700 16px 'Outfit',sans-serif;color:#E5EAF2;text-shadow:0 1px 6px rgba(0,0,0,.6)">Dead Center</div>
+      </div>
+      <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #2</span>
+        <div style="display:flex;align-items:center;gap:14px;font:600 13px 'Source Sans 3',sans-serif;color:#C7CEDA"><span>👥 3/8</span><span style="color:#6E7787;font-weight:400">activo 42 min</span></div>
+      </div>
+    </div>
+    <button style="height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:800 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.25);cursor:pointer">▶ Conectar</button>
+    <div style="display:flex;gap:8px">
+      <code style="flex:1;display:flex;align-items:center;padding:0 14px;height:48px;background:#0B0C0F;border:1px solid #262A33;border-radius:4px;font:600 13.5px ui-monospace,Menlo,monospace;color:#8FD4EC;white-space:nowrap;overflow:hidden">connect play.ventrax.gg:27015</code>
+      <button style="width:48px;height:48px;background:#1B1F27;border:1px solid #333945;border-radius:4px;color:#E5EAF2;font-size:16px;cursor:pointer" title="Copiar dirección">⧉</button>
+    </div>
+    <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+      <div style="display:flex;align-items:center;gap:9px"><span style="font-size:14px">🛡</span><span style="font:700 13px 'Outfit',sans-serif;color:#F2F4F8">Tus poderes de admin</span><span style="font:400 12px 'Source Sans 3',sans-serif;color:#6E7787">kick · mapa · partida</span></div>
+      <span style="color:#6E7787">▾</span>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+      <span style="font-size:13px">🌙</span>
+      <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Público: cualquiera puede entrar con la dirección. Se cierra solo si queda vacío un rato.</div>
+    </div>
+    <button style="height:46px;background:transparent;color:#FF8A8A;border:1px solid rgba(255,92,92,.35);border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Cerrar servidor</button>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="6b"><div class="dv-olabel"><a class="dv-oid" href="#6b">6b</a>Móvil · confirmación de cierre</div>
+<div class="dv-card" style="width:390px;height:640px;position:relative;background:#101114;overflow:hidden">
+  <div style="filter:blur(2px);opacity:.35;padding:24px 20px;display:flex;flex-direction:column;gap:14px">
+    <div style="font:800 22px 'Outfit',sans-serif;color:#F2F4F8">Mi servidor</div>
+    <div style="height:190px;background:#15181E;border:1px solid #262A33;border-radius:5px"></div>
+    <div style="height:56px;background:#28D8FF;border-radius:4px;opacity:.7"></div>
+    <div style="height:48px;background:#0B0C0F;border:1px solid #262A33;border-radius:4px"></div>
+  </div>
+  <div style="position:absolute;inset:0;background:rgba(8,9,12,.6);display:flex;align-items:flex-end">
+    <div style="width:100%;background:#15181E;border-top:1px solid #333945;border-radius:8px 8px 0 0;padding:28px 24px 32px;display:flex;flex-direction:column;gap:14px">
+      <div style="width:36px;height:4px;background:#333945;border-radius:2px;align-self:center;margin-top:-12px"></div>
+      <div style="font:800 19px 'Outfit',sans-serif;color:#F2F4F8">¿Cerrar tu servidor?</div>
+      <div style="font:400 14px/1.55 'Source Sans 3',sans-serif;color:#9AA3B2">Se desconectará a los 3 jugadores que están dentro y el sitio pasará al siguiente de la cola. Podrás reservar otro cuando quieras.</div>
+      <button style="height:52px;background:#FF5C5C;color:#2B0606;border:none;border-radius:4px;font:700 16px 'Outfit',sans-serif;cursor:pointer">Sí, cerrar servidor</button>
+      <button style="height:46px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">No, seguir jugando</button>
+    </div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="6c"><div class="dv-olabel"><a class="dv-oid" href="#6c">6c</a>Móvil · sin servidor (vacío)</div>
+<div class="dv-card" style="width:390px;height:560px;display:flex;flex-direction:column;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:0 40px;text-align:center">
+    <div style="width:72px;height:72px;border-radius:6px;background:#15181E;border:1px dashed #333945;display:grid;place-items:center;font-size:28px;opacity:.8">🎮</div>
+    <div style="font:800 20px 'Outfit',sans-serif;color:#F2F4F8">No tienes servidor ahora</div>
+    <div style="font:400 14px/1.55 'Source Sans 3',sans-serif;color:#9AA3B2">Reserva uno y en unos minutos estás jugando. Recuerda: 1 servidor por persona.</div>
+    <button style="height:56px;padding:0 36px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 16px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.25);cursor:pointer">⚡ Reservar servidor</button>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="6d"><div class="dv-olabel"><a class="dv-oid" href="#6d">6d</a>Desktop 1280 · servidor activo</div>
+<div class="dv-card" style="width:1280px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 14px 'Outfit',sans-serif;color:#06212B">V</div><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</span></div>
+    <div style="width:34px;height:34px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="padding:36px 80px 48px;display:grid;grid-template-columns:1fr 400px;gap:48px">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="font:800 28px 'Outfit',sans-serif;color:#F2F4F8">Mi servidor</div>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(40,216,255,.1);border:1px solid rgba(40,216,255,.35);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span>
+      </div>
+      <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;overflow:hidden">
+        <div style="height:180px;position:relative;background:linear-gradient(135deg,#233041,#141920)">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(255,255,255,.025) 12px,rgba(255,255,255,.025) 24px)"></div>
+          <div style="position:absolute;top:12px;right:12px;font:600 9px 'Outfit',sans-serif;color:#8A94A6;letter-spacing:.14em;background:rgba(0,0,0,.35);padding:3px 8px;border-radius:2px">IMAGEN MAPA · CDN</div>
+          <div style="position:absolute;left:18px;bottom:12px;font:700 20px 'Outfit',sans-serif;color:#E5EAF2;text-shadow:0 1px 6px rgba(0,0,0,.6)">Dead Center</div>
+        </div>
+        <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font:800 16px 'Outfit',sans-serif;color:#F2F4F8">SERVIDOR #2</span>
+          <div style="display:flex;align-items:center;gap:16px;font:600 14px 'Source Sans 3',sans-serif;color:#C7CEDA"><span>👥 3/8 jugando</span><span style="color:#6E7787;font-weight:400">activo 42 min</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px">
+        <button style="flex:1;height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:800 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.25);cursor:pointer">▶ Conectar</button>
+        <button style="height:56px;padding:0 22px;background:transparent;color:#FF8A8A;border:1px solid rgba(255,92,92,.35);border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Cerrar servidor</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <code style="flex:1;display:flex;align-items:center;padding:0 14px;height:48px;background:#0B0C0F;border:1px solid #262A33;border-radius:4px;font:600 13.5px ui-monospace,Menlo,monospace;color:#8FD4EC;white-space:nowrap">connect play.ventrax.gg:27015</code>
+        <button style="width:48px;height:48px;background:#1B1F27;border:1px solid #333945;border-radius:4px;color:#E5EAF2;font-size:16px;cursor:pointer">⧉</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;padding-top:52px">
+      <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🛡</span><span style="font:700 13.5px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.06em">TUS PODERES DE ADMIN</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px;font:400 14px 'Source Sans 3',sans-serif;color:#C7CEDA">
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Expulsar jugadores (kick)</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Cambiar de mapa</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Controlar la partida</div>
+          <div style="display:flex;align-items:center;gap:10px;color:#8A94A6"><span style="color:#FF5C5C;font-weight:700">✕</span>Banear — eso no está en tus manos</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+        <span style="font-size:13px">🌙</span>
+        <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Público: cualquiera puede entrar con la dirección. Se cierra solo si queda vacío un rato.</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t7" data-screen-label="7 · Perfil">
+<div class="dv-thd"><a class="dv-tid" href="#t7">7</a><span class="dv-tname">Perfil</span></div>
+<p class="dv-note">Datos de Steam en solo lectura (avatar, nick, SteamID), acceso rápido a la reserva o cola activa, y cerrar sesión. Sin ajustes complejos.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="7a"><div class="dv-olabel"><a class="dv-oid" href="#7a">7a</a>Móvil · con reserva activa</div>
+<div class="dv-card" style="width:390px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <span style="font:600 13px 'Source Sans 3',sans-serif;color:#6E7787">Perfil</span>
+  </div>
+  <div style="padding:28px 24px 32px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:64px;height:64px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:800 22px 'Outfit',sans-serif;color:#8FD4EC;border:2px solid #3A5A6E">R4</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font:800 20px 'Outfit',sans-serif;color:#F2F4F8">R4zor</div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font:600 11.5px ui-monospace,Menlo,monospace;color:#6E7787">STEAM64 · 7656119…8231</span><span style="font:600 9px 'Outfit',sans-serif;color:#5B6675;border:1px solid #2A2F3A;border-radius:2px;padding:2px 5px;letter-spacing:.1em">SOLO LECTURA</span></div>
+      </div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(40,216,255,.3);border-radius:5px;padding:16px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <span style="display:inline-flex;align-items:center;gap:6px;font:700 10px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#28D8FF"></span>RESERVA ACTIVA</span>
+        <span style="font:600 14px 'Source Sans 3',sans-serif;color:#E5EAF2">Servidor #2 · Dead Center · 3/8</span>
+      </div>
+      <button style="height:38px;padding:0 14px;background:transparent;color:#28D8FF;border:1px solid rgba(40,216,255,.45);border-radius:4px;font:700 12.5px 'Outfit',sans-serif;cursor:pointer">Ir a Mi servidor</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:700 10.5px 'Outfit',sans-serif;color:#6E7787;letter-spacing:.14em">TU CUENTA</span>
+      <div style="font:400 13px/1.55 'Source Sans 3',sans-serif;color:#8A94A6">Tus datos vienen de Steam y se actualizan solos. Aquí no hay nada que configurar.</div>
+    </div>
+    <button style="height:48px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Cerrar sesión</button>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="7b"><div class="dv-olabel"><a class="dv-oid" href="#7b">7b</a>Móvil · en cola (indicador)</div>
+<div class="dv-card" style="width:390px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <span style="font:600 13px 'Source Sans 3',sans-serif;color:#6E7787">Perfil</span>
+  </div>
+  <div style="padding:28px 24px 32px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:64px;height:64px;border-radius:50%;background:#4A3A5C;display:grid;place-items:center;font:800 22px 'Outfit',sans-serif;color:#CBB3EC;border:2px solid #5C4A6E">NX</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font:800 20px 'Outfit',sans-serif;color:#F2F4F8">Nyx_</div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font:600 11.5px ui-monospace,Menlo,monospace;color:#6E7787">STEAM64 · 7656119…4407</span><span style="font:600 9px 'Outfit',sans-serif;color:#5B6675;border:1px solid #2A2F3A;border-radius:2px;padding:2px 5px;letter-spacing:.1em">SOLO LECTURA</span></div>
+      </div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(139,124,255,.3);border-radius:5px;padding:16px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <span style="display:inline-flex;align-items:center;gap:6px;font:700 10px 'Outfit',sans-serif;color:#8B7CFF;letter-spacing:.12em">⧗ EN COLA</span>
+        <span style="font:600 14px 'Source Sans 3',sans-serif;color:#E5EAF2">Posición #3 · 5 personas esperan</span>
+      </div>
+      <button style="height:38px;padding:0 14px;background:transparent;color:#8B7CFF;border:1px solid rgba(139,124,255,.45);border-radius:4px;font:700 12.5px 'Outfit',sans-serif;cursor:pointer">Ver mi cola</button>
+    </div>
+    <button style="height:48px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Cerrar sesión</button>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="7c"><div class="dv-olabel"><a class="dv-oid" href="#7c">7c</a>Desktop 1280 · perfil</div>
+<div class="dv-card" style="width:1280px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 14px 'Outfit',sans-serif;color:#06212B">V</div><span style="font:800 15px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</span></div>
+    <div style="width:34px;height:34px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="padding:44px 80px 56px;display:flex;flex-direction:column;gap:24px;max-width:640px">
+    <div style="display:flex;align-items:center;gap:20px">
+      <div style="width:80px;height:80px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:800 28px 'Outfit',sans-serif;color:#8FD4EC;border:2px solid #3A5A6E">R4</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font:800 26px 'Outfit',sans-serif;color:#F2F4F8">R4zor</div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="font:600 12.5px ui-monospace,Menlo,monospace;color:#6E7787">STEAM64 · 76561198012348231</span><span style="font:600 9px 'Outfit',sans-serif;color:#5B6675;border:1px solid #2A2F3A;border-radius:2px;padding:2px 6px;letter-spacing:.1em">SOLO LECTURA</span></div>
+      </div>
+    </div>
+    <div style="background:#15181E;border:1px solid rgba(40,216,255,.3);border-radius:5px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <span style="display:inline-flex;align-items:center;gap:6px;font:700 10px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#28D8FF"></span>RESERVA ACTIVA</span>
+        <span style="font:600 15px 'Source Sans 3',sans-serif;color:#E5EAF2">Servidor #2 · Dead Center · 3/8 jugando</span>
+      </div>
+      <button style="height:40px;padding:0 16px;background:transparent;color:#28D8FF;border:1px solid rgba(40,216,255,.45);border-radius:4px;font:700 13px 'Outfit',sans-serif;cursor:pointer">Ir a Mi servidor</button>
+    </div>
+    <div style="font:400 13.5px/1.55 'Source Sans 3',sans-serif;color:#8A94A6">Tus datos vienen de Steam y se actualizan solos. Aquí no hay nada que configurar.</div>
+    <button style="height:48px;width:220px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">Cerrar sesión</button>
+  </div>
+</div></div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t8" data-screen-label="8 · Estados transversales">
+<div class="dv-thd"><a class="dv-tid" href="#t8">8</a><span class="dv-tname">Estados transversales — vacío, carga, error, backend caído, toasts</span></div>
+<p class="dv-note">Piezas reutilizables. Los skeletons calcan la geometría real de las tarjetas para evitar saltos de layout. El error de sección es local y con reintento; "backend caído" es la única pantalla donde no carga nada. Los toasts entran desde abajo (móvil) o abajo-derecha (desktop), con icono + texto, nunca solo color.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="8a"><div class="dv-olabel"><a class="dv-oid" href="#8a">8a</a>Móvil · lista vacía (0 servidores)</div>
+<div class="dv-card" style="width:390px;height:520px;display:flex;flex-direction:column;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:0 40px;text-align:center">
+    <div style="width:72px;height:72px;border-radius:6px;background:#15181E;border:1px dashed #333945;display:grid;place-items:center;font-size:28px;opacity:.8">🛰</div>
+    <div style="font:800 20px 'Outfit',sans-serif;color:#F2F4F8">No hay servidores ahora mismo</div>
+    <div style="font:400 14px/1.55 'Source Sans 3',sans-serif;color:#9AA3B2">El operador aún no ha publicado ninguno. Vuelve en un rato.</div>
+    <button style="height:48px;padding:0 28px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">↻ Actualizar</button>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="8b"><div class="dv-olabel"><a class="dv-oid" href="#8b">8b</a>Móvil · carga (skeletons de la lista)</div>
+<div class="dv-card" style="width:390px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(90deg,#1B1F27 25%,#232833 50%,#1B1F27 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="width:130px;height:24px;border-radius:3px;background:linear-gradient(90deg,#1B1F27 25%,#232833 50%,#1B1F27 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+      <div style="width:110px;height:14px;border-radius:3px;background:linear-gradient(90deg,#1B1F27 25%,#232833 50%,#1B1F27 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+    </div>
+    <div style="height:56px;border-radius:4px;background:linear-gradient(90deg,#17323C 25%,#1D3F4C 50%,#17323C 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+    <div style="height:96px;border-radius:5px;border:1px solid #1E222A;background:linear-gradient(90deg,#15181E 25%,#1B2029 50%,#15181E 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+    <div style="height:230px;border-radius:5px;border:1px solid #1E222A;background:linear-gradient(90deg,#15181E 25%,#1B2029 50%,#15181E 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+    <div style="height:96px;border-radius:5px;border:1px solid #1E222A;background:linear-gradient(90deg,#15181E 25%,#1B2029 50%,#15181E 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="8c"><div class="dv-olabel"><a class="dv-oid" href="#8c">8c</a>Móvil · error de sección (la lista no cargó)</div>
+<div class="dv-card" style="width:390px;background:#101114">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1E222A">
+    <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 13px 'Outfit',sans-serif;color:#06212B">V</div><div style="font:800 14px 'Outfit',sans-serif;color:#F2F4F8;letter-spacing:.05em">VENTRAX</div></div>
+    <div style="width:32px;height:32px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC">R4</div>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+    <div style="font:800 22px 'Outfit',sans-serif;color:#F2F4F8">Servidores</div>
+    <div style="border:1px solid rgba(255,92,92,.3);background:rgba(255,92,92,.05);border-radius:5px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+      <span style="font-size:22px">⚠</span>
+      <div style="font:700 15px 'Outfit',sans-serif;color:#F2F4F8">La lista no cargó</div>
+      <div style="font:400 13.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">No pudimos traer los servidores. Suele resolverse al momento.</div>
+      <button style="height:44px;padding:0 24px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 14px 'Outfit',sans-serif;cursor:pointer">Reintentar</button>
+    </div>
+  </div>
+</div></div>
+
+<div class="dv-opt" id="8d"><div class="dv-olabel"><a class="dv-oid" href="#8d">8d</a>Móvil · backend caído (global)</div>
+<div class="dv-card" style="width:390px;height:640px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;padding:0 40px;text-align:center;background:#101114;box-sizing:border-box">
+  <div style="width:56px;height:56px;background:#1B1F27;border:1px solid #2A2F3A;border-radius:6px;display:grid;place-items:center;font:800 24px 'Outfit',sans-serif;color:#5B6675">V</div>
+  <div style="font:800 22px 'Outfit',sans-serif;color:#F2F4F8">Estamos fuera de línea</div>
+  <div style="font:400 14px/1.6 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:280px">El servicio no responde ahora mismo. No es tu conexión: es cosa nuestra. Si tenías un servidor, tu reserva se conserva.</div>
+  <button style="height:52px;padding:0 32px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 15px 'Outfit',sans-serif;cursor:pointer">↻ Reintentar</button>
+  <div style="font:400 12px 'Source Sans 3',sans-serif;color:#5B6675">Reintento automático en 30 s</div>
+</div></div>
+
+<div class="dv-opt" id="8e"><div class="dv-olabel"><a class="dv-oid" href="#8e">8e</a>Desktop 1280 · backend caído</div>
+<div class="dv-card" style="width:1280px;height:520px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;text-align:center;background:#101114">
+  <div style="width:64px;height:64px;background:#1B1F27;border:1px solid #2A2F3A;border-radius:7px;display:grid;place-items:center;font:800 28px 'Outfit',sans-serif;color:#5B6675">V</div>
+  <div style="font:800 28px 'Outfit',sans-serif;color:#F2F4F8">Estamos fuera de línea</div>
+  <div style="font:400 15px/1.6 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:420px">El servicio no responde ahora mismo. No es tu conexión: es cosa nuestra. Si tenías un servidor, tu reserva se conserva.</div>
+  <button style="height:52px;padding:0 36px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 15px 'Outfit',sans-serif;cursor:pointer">↻ Reintentar</button>
+  <div style="font:400 12.5px 'Source Sans 3',sans-serif;color:#5B6675">Reintento automático en 30 s</div>
+</div></div>
+
+<div class="dv-opt" id="8f"><div class="dv-olabel"><a class="dv-oid" href="#8f">8f</a>Toasts — confirmación, info, error y límite</div>
+<div class="dv-card" style="width:420px;padding:24px;display:flex;flex-direction:column;gap:12px;background:#0B0C0F">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#1B2A22;border:1px solid rgba(61,220,145,.4);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.5)"><span style="color:#3DDC91;font-weight:700">✓</span><span style="font:600 13.5px 'Source Sans 3',sans-serif;color:#D9F5E8">Dirección copiada</span></div>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#1B2A22;border:1px solid rgba(61,220,145,.4);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.5)"><span style="color:#3DDC91;font-weight:700">✓</span><span style="font:600 13.5px 'Source Sans 3',sans-serif;color:#D9F5E8">Servidor cerrado. El sitio pasa al siguiente de la cola.</span></div>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#1E2130;border:1px solid rgba(139,124,255,.4);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.5)"><span style="color:#8B7CFF;font-weight:700">⧗</span><span style="font:600 13.5px 'Source Sans 3',sans-serif;color:#E2DCFF">Saliste de la cola. Puedes volver cuando quieras.</span></div>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#2A1B1B;border:1px solid rgba(255,178,36,.4);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.5)"><span style="color:#FFB224;font-weight:700">⏱</span><span style="font:600 13.5px 'Source Sans 3',sans-serif;color:#FFE7C2">Espera unos segundos antes de reservar de nuevo.</span></div>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#2A1B1B;border:1px solid rgba(255,92,92,.4);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.5)"><span style="color:#FF5C5C;font-weight:700">⚠</span><span style="font:600 13.5px 'Source Sans 3',sans-serif;color:#FFD1D1">No se pudo copiar. Mantén pulsada la dirección para copiarla.</span></div>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#1E2130;border:1px solid rgba(139,124,255,.4);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.5)"><span style="color:#8B7CFF;font-weight:700">ℹ</span><span style="font:600 13.5px 'Source Sans 3',sans-serif;color:#E2DCFF">Ya tienes un servidor activo. Ciérralo para reservar otro.</span></div>
+</div></div>
+
+</div>
+</section>
+</x-dc>
+</body>
+</html>

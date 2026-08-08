@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!--
+  Sample custom MOTD (the panel shown to players on connect).
+
+  To use a custom MOTD:
+    1. Copy this file to roles/l4d2_fleet/files/motd.local.html and edit it.
+       (*.local.html is gitignored, so your content stays out of the repo.)
+    2. Set  motd_file: "motd.local.html"  in group_vars/all.yml.
+  Leave motd_file empty to keep ZoneMod's default MOTD.
+
+  The smaller "host" banner works the same way: host.local.html + host_file.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { background:#15171c; color:#e8e8e8; font-family:Arial,Helvetica,sans-serif; text-align:center; margin:0; padding:18px; }
+  h2 { color:#4ade80; }
+  a  { color:#7dd3fc; text-decoration:none; font-weight:bold; }
+</style>
+</head>
+<body>
+  <h2>Welcome to MY SERVER</h2>
+  <p>Join our community and follow us so we can keep these servers free:</p>
+  <p>
+    <a href="https://example.com/group">Steam Group</a> &middot;
+    <a href="https://example.com/tiktok">TikTok</a> &middot;
+    <a href="https://example.com/kick">Kick</a>
+  </p>
+</body>
+</html>

@@ -1,0 +1,30 @@
+---
+# Copy this to group_vars/all.yml and fill in your values:
+#
+#     cp group_vars/all.yml.sample group_vars/all.yml
+#
+# group_vars/all.yml is gitignored, so your real settings (server name, rcon
+# password, admin SteamIDs) stay out of the repo. Anything you leave out falls
+# back to the defaults in roles/l4d2_fleet/defaults/main.yml.
+
+base_name: "My ZoneMod Server"     # in-game name; the launcher appends " #N"
+server_count: 4
+
+# "versus" = ZoneMod competitive 4v4 (needs ~8 players; lone players can't play).
+# "coop"   = campaign with bots — friends can drop in and play with any number.
+gamemode: versus
+
+# Loopback only, but still keep the real one private.
+rcon_password: "change-me"
+
+# Admins seeded into admins_simple.ini. flags: z=root c=kick d=ban e=unban
+# f=slay m=rcon; prefix with an immunity level, e.g. "99:z". Grab a connected
+# player's SteamID with `status` in the console.
+admins:
+  - { steamid: "STEAM_1:0:00000000", flags: "99:z" }
+
+# Custom banners (optional). Copy roles/l4d2_fleet/files/motd.sample.html to
+# <name>.local.html (gitignored), edit it, and point to it here. Leave empty to
+# keep ZoneMod's defaults. The host_file is the smaller banner.
+# motd_file: "motd.local.html"
+# host_file: "host.local.html"

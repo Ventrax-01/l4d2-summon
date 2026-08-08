@@ -1,0 +1,154 @@
+.cab {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgb(16 17 20 / 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.cab-int {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+}
+
+.cab-marca {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+}
+
+.cab-logo {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: var(--r-chip);
+  background: var(--accent);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.cab-titulo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.cab-titulo strong {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.cab-titulo small {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 8px;
+  color: var(--text-subtle);
+  letter-spacing: 0.22em;
+}
+
+.cab-acc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cab-chip {
+  height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: var(--r);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.cab-chip--mio {
+  background: rgb(40 216 255 / 0.08);
+  border: 1px solid rgb(40 216 255 / 0.35);
+  color: var(--accent);
+}
+
+.cab-chip--cola {
+  background: rgb(139 124 255 / 0.08);
+  border: 1px solid rgb(139 124 255 / 0.35);
+  color: var(--reserved);
+}
+
+.cab-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-round);
+  background: var(--accent);
+  animation: vxPulse 1.4s infinite;
+}
+
+.cab-perfil {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.cab-nick {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.cab-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-round);
+  background: #2e4a5c;
+  border: 1px solid #3a5a6e;
+  color: #8fd4ec;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.cab-entrar {
+  height: 38px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.cab-entrar:hover {
+  border-color: #4a5160;
+}
+
+/* En móvil el nick se esconde: el avatar basta y libera ancho. */
+@media (max-width: 480px) {
+  .cab-nick {
+    display: none;
+  }
+
+  .cab-chip {
+    padding: 0 9px;
+  }
+}

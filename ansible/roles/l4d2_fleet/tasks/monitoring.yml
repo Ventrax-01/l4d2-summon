@@ -1,0 +1,159 @@
+---
+- name: Install Prometheus and node_exporter
+  ansible.builtin.apt:
+    name:
+      - prometheus
+      - prometheus-node-exporter
+    update_cache: true
+    state: present
+
+- name: Install the L4D2 exporter
+  ansible.builtin.copy:
+    src: l4d2_exporter.py
+    dest: /opt/l4d2-fleet/l4d2_exporter.py
+    mode: "0755"
+  notify: restart l4d2-exporter
+
+- name: Install the L4D2 exporter service
+  ansible.builtin.copy:
+    src: l4d2-exporter.service
+    dest: /etc/systemd/system/l4d2-exporter.service
+    mode: "0644"
+  notify: reload systemd
+
+- name: Start the L4D2 exporter
+  ansible.builtin.systemd:
+    name: l4d2-exporter
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Register the scrape targets in Prometheus
+  ansible.builtin.blockinfile:
+    path: /etc/prometheus/prometheus.yml
+    marker: "# {mark} l4d2-fleet"
+    block: "{{ lookup('file', 'monitoring/prometheus/scrape-jobs.yml') }}"
+  notify: restart prometheus
+
+- name: Add the Grafana apt key
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /etc/apt/keyrings/grafana.asc
+    mode: "0644"
+
+- name: Add the Grafana apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/grafana.asc] https://apt.grafana.com stable main"
+    filename: grafana
+
+- name: Install Grafana
+  ansible.builtin.apt:
+    name: grafana
+    update_cache: true
+    state: present
+
+- name: Set the Grafana HTTP port
+  ansible.builtin.lineinfile:
+    path: /etc/grafana/grafana.ini
+    regexp: '^;?http_port ='
+    line: "http_port = {{ grafana_port }}"
+    insertafter: '^\[server\]'
+  notify: restart grafana
+
+- name: Provision the Grafana data source
+  ansible.builtin.copy:
+    src: monitoring/grafana/datasources/prometheus.yml
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+    mode: "0644"
+
+- name: Provision the Grafana dashboard provider
+  ansible.builtin.copy:
+    src: monitoring/grafana/dashboards/provider.yml
+    dest: /etc/grafana/provisioning/dashboards/provider.yml
+    mode: "0644"
+
+- name: Provision the fleet dashboard
+  ansible.builtin.copy:
+    src: monitoring/grafana/dashboards/l4d2-fleet.json
+    dest: /var/lib/grafana/dashboards/l4d2-fleet.json
+    owner: grafana
+    group: grafana
+    mode: "0644"
+
+- name: Start Grafana
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: true
+    state: started
+
+# --- Logs: Loki + Promtail (journald -> Grafana) ---
+- name: Install Loki and Promtail
+  ansible.builtin.apt:
+    name:
+      - loki
+      - promtail
+    state: present
+  when: with_logs | bool
+
+- name: Make the systemd journal persistent
+  ansible.builtin.file:
+    path: /var/log/journal
+    state: directory
+    mode: "0755"
+  when: with_logs | bool
+  notify: restart journald
+
+- name: Let Promtail read the journal and the chat logs
+  # systemd-journal for the server logs; the server's group so it can traverse
+  # {{ install_dir }} (under /home/{{ steam_user }}, 0750) and read the chat_logger files.
+  ansible.builtin.user:
+    name: promtail
+    groups: "systemd-journal,{{ steam_user }}"
+    append: true
+  when: with_logs | bool
+  notify: restart promtail
+
+- name: Create Loki and Promtail data directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.user }}"
+    mode: "0755"
+  loop:
+    - { path: /var/lib/loki, user: loki }
+    - { path: /var/lib/promtail, user: promtail }
+  when: with_logs | bool
+
+- name: Configure Loki
+  ansible.builtin.template:
+    src: loki.yml.j2
+    dest: /etc/loki/config.yml
+    mode: "0644"
+  when: with_logs | bool
+  notify: restart loki
+
+- name: Configure Promtail
+  ansible.builtin.template:
+    src: promtail.yml.j2
+    dest: /etc/promtail/config.yml
+    mode: "0644"
+  when: with_logs | bool
+  notify: restart promtail
+
+- name: Provision the Loki data source
+  ansible.builtin.copy:
+    src: monitoring/grafana/datasources/loki.yml
+    dest: /etc/grafana/provisioning/datasources/loki.yml
+    mode: "0644"
+  when: with_logs | bool
+  notify: restart grafana
+
+- name: Start and enable Loki and Promtail
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - loki
+    - promtail
+  when: with_logs | bool

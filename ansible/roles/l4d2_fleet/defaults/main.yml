@@ -1,0 +1,45 @@
+---
+# Fleet identity and size
+base_name: "My ZoneMod Server"   # in-game name; the launcher appends " #N"
+server_count: 4                  # how many servers to run
+port_base: 6032                  # game port = port_base + N  (server #1 -> 6033/udp)
+
+# Gameplay
+gamemode: versus
+start_map: c1m1_hotel
+tickrate: 100
+maxplayers: 32
+public: 1                        # 1 = relax sv_pure so custom client files are allowed
+
+# Steam group (optional) — lists the servers in your Steam group's server browser.
+# Use the group's numeric ID; comma-separate to belong to more than one.
+steam_group: ""                  # empty = don't advertise under any group
+steam_group_exclusive: 0         # 1 = only members of the group can connect
+
+# Custom server banners (optional) — leave empty to keep ZoneMod's defaults.
+# Put your HTML in roles/l4d2_fleet/files/<name>.local.html (gitignored, copy from
+# motd.sample.html) and name the file here. See README "Custom MOTD / banner".
+motd_file: ""                    # MOTD panel shown on connect, e.g. "motd.local.html"
+host_file: ""                    # smaller "host" banner, e.g. "host.local.html"
+
+# Admins seeded into admins_simple.ini (the in-game !admin plugin still adds more at runtime).
+# flags: z=root  c=kick  d=ban  e=unban  f=slay  m=rcon ; prefix with immunity e.g. "99:z"
+admins:
+  - { steamid: "STEAM_1:0:00000000", flags: "99:z" }   # placeholder; set yours in group_vars/all.yml
+
+# Host
+steam_user: steam
+install_dir: /home/steam/l4d2
+game_ip: ""                      # A2S target for the exporter; empty = auto-detect
+
+# RCON (loopback only)
+rcon_password: "change-me"
+
+# Monitoring stack (Prometheus + node_exporter + Grafana)
+with_monitoring: true
+grafana_port: 3000               # Grafana HTTP port (keep on the LAN; only change if you know what you're exposing)
+
+# Logs: ship each server's journald output to Loki and show it in Grafana.
+# Label-driven, so it works for however many servers you run (no hardcoding).
+with_logs: true
+loki_retention: "168h"           # how long Loki keeps logs (7 days)

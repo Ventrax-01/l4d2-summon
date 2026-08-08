@@ -1,0 +1,55 @@
+# Managed by Ansible — reads the systemd journal and ships the l4d2@N units to
+# Loki. The instance number is pulled out of the unit name into an `instance`
+# label, so the same Grafana $server variable filters logs by server. Add a
+# fifth server and it shows up on its own — nothing here is per-server.
+server:
+  http_listen_address: 127.0.0.1
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: warn
+
+positions:
+  filename: /var/lib/promtail/positions.yaml
+
+clients:
+  - url: http://127.0.0.1:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: l4d2
+    journal:
+      max_age: 12h
+      path: /var/log/journal
+      labels:
+        job: l4d2
+    relabel_configs:
+      # keep only the fleet units (l4d2@1, l4d2@2, …)
+      - source_labels: ['__journal__systemd_unit']
+        regex: 'l4d2@(\d+)\.service'
+        action: keep
+      # l4d2@3.service -> instance="3"
+      - source_labels: ['__journal__systemd_unit']
+        regex: 'l4d2@(\d+)\.service'
+        target_label: instance
+        replacement: '${1}'
+
+  # Game chat — the chat_logger plugin writes one clean line per player message to a
+  # per-server file (addons/sourcemod/logs/chat/chat-<port>.log). One target per instance so
+  # each file carries the same `instance` label as the journald job above, keeping the
+  # Grafana $server filter working. The leading Unix epoch is parsed and dropped.
+  - job_name: l4d2_chat
+    static_configs:
+{% for n in range(1, server_count | int + 1) %}
+      - targets: [localhost]
+        labels:
+          job: l4d2_chat
+          instance: "{{ n }}"
+          __path__: {{ install_dir }}/left4dead2/addons/sourcemod/logs/chat/chat-{{ (port_base | int) + n }}.log
+{% endfor %}
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<epoch>\d+) (?P<chat>.*)$'
+      - timestamp:
+          source: epoch
+          format: Unix
+      - output:
+          source: chat

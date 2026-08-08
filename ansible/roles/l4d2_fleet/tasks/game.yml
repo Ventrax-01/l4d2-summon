@@ -1,0 +1,45 @@
+---
+- name: Create the steam service account
+  ansible.builtin.user:
+    name: "{{ steam_user }}"
+    shell: /bin/bash
+    create_home: true
+
+- name: Install SteamCMD and download L4D2 (app 222860)
+  # The windows -> linux platform switch has to happen in one SteamCMD session,
+  # otherwise app 222860 fails with "Invalid platform".
+  ansible.builtin.shell: |
+    set -euo pipefail
+    mkdir -p ~/steamcmd && cd ~/steamcmd
+    if [ ! -f steamcmd.sh ]; then
+      curl -sSL https://media.steampowered.com/installer/steamcmd_linux.tar.gz | tar xz
+    fi
+    ./steamcmd.sh +force_install_dir "{{ install_dir }}" +login anonymous \
+      +@sSteamCmdForcePlatformType windows +app_update 222860 \
+      +@sSteamCmdForcePlatformType linux +app_update 222860 validate +quit
+  args:
+    executable: /bin/bash
+    creates: "{{ install_dir }}/srcds_run"
+  changed_when: true
+  become: true
+  become_user: "{{ steam_user }}"
+
+- name: Create the Steam SDK directory
+  ansible.builtin.file:
+    path: "/home/{{ steam_user }}/.steam/sdk32"
+    state: directory
+    mode: "0755"
+  become: true
+  become_user: "{{ steam_user }}"
+
+- name: Link steamclient.so into the Steam SDK path
+  # srcds looks for ~/.steam/sdk32/steamclient.so at startup; without it the log
+  # fills with "cannot open shared object file" / SteamAPI_Init warnings. Harmless,
+  # but linking it keeps the logs clean.
+  ansible.builtin.file:
+    src: "{{ install_dir }}/bin/steamclient.so"
+    dest: "/home/{{ steam_user }}/.steam/sdk32/steamclient.so"
+    state: link
+    force: true
+  become: true
+  become_user: "{{ steam_user }}"

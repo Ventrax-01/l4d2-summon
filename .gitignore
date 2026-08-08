@@ -1,0 +1,49 @@
+# ---------------------------------------------------------------- Secretos
+# Este repo es PÚBLICO. Nada de lo de abajo se commitea nunca.
+# La configuración real se copia de los .sample y se rellena en cada despliegue.
+ansible/group_vars/all.yml
+ansible/group_vars/*secret*
+*vault*
+*.pem
+agent-token*
+.env
+.env.*
+!.env.example
+
+# Contenido del MOTD y del banner: es por despliegue, no del repo
+ansible/roles/l4d2_fleet/files/*.local.html
+
+# ---------------------------------------------------------------- Ansible
+*.retry
+.ansible/
+# Juego descargado en tiempo de provisión
+left4dead2/
+
+# ---------------------------------------------------------------- Node / web
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+*.local
+
+# ---------------------------------------------------------------- CDK
+cdk.out/
+
+# ---------------------------------------------------------------- Playwright
+/web/test-results/
+/web/playwright-report/
+/web/blob-report/
+/web/.playwright/
+
+# ---------------------------------------------------------------- Python
+__pycache__/
+*.pyc
+.venv/
+
+# ---------------------------------------------------------------- Editor / SO
+.DS_Store
+.idea/
+*.swp
+
+# Índice local de CodeGraph
+.codegraph/

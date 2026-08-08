@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#101114;font-family:'Source Sans 3',sans-serif}
+a{color:#28D8FF;text-decoration:none}a:hover{color:#7FE8FF}
+@keyframes vxPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes vxShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes vxBar{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+@keyframes vxSpin{to{transform:rotate(360deg)}}
+@keyframes vxToast{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes vxPop{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#101114;color:#F2F4F8;display:flex;flex-direction:column">
+
+<sc-if value="{{ showDown }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Backend caído" style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;padding:40px 24px;text-align:center;min-height:100vh;box-sizing:border-box">
+    <div style="width:56px;height:56px;background:#1B1F27;border:1px solid #2A2F3A;border-radius:6px;display:grid;place-items:center;font:800 24px 'Outfit',sans-serif;color:#5B6675">V</div>
+    <div style="font:800 24px 'Outfit',sans-serif">Estamos fuera de línea</div>
+    <div style="font:400 14px/1.6 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:320px">El servicio no responde ahora mismo. No es tu conexión: es cosa nuestra. Si tenías un servidor, tu reserva se conserva.</div>
+    <button onClick="{{ retryDown }}" style="height:52px;padding:0 32px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 15px 'Outfit',sans-serif;cursor:pointer">↻ Reintentar</button>
+    <div style="font:400 12px 'Source Sans 3',sans-serif;color:#5B6675">Reintento automático en 30 s · (desactiva "Backend caído" en Tweaks)</div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Login" style="flex:1;display:flex;flex-direction:column;min-height:100vh;background:radial-gradient(ellipse 120% 50% at 50% -10%,rgba(40,216,255,.08),transparent 60%)">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 32px;text-align:center">
+      <div style="width:56px;height:56px;background:#28D8FF;border-radius:6px;display:grid;place-items:center;font:800 28px 'Outfit',sans-serif;color:#06212B;box-shadow:0 0 40px rgba(40,216,255,.3)">V</div>
+      <div style="margin-top:18px;font:800 26px 'Outfit',sans-serif;letter-spacing:.04em">VENTRAX</div>
+      <div style="margin-top:4px;font:600 11px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.28em">L4D2 SERVERS</div>
+      <div style="margin-top:28px;font:400 16px/1.5 'Source Sans 3',sans-serif;color:#C7CEDA;max-width:300px">Reserva un servidor y juega al instante.</div>
+    </div>
+    <div style="padding:0 24px 48px;display:flex;flex-direction:column;gap:14px;width:100%;max-width:420px;margin:0 auto;box-sizing:border-box">
+      <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:14px 16px;background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.3);border-radius:4px;text-align:left">
+          <span style="font-size:15px">⚠</span>
+          <div style="font:400 13.5px/1.45 'Source Sans 3',sans-serif;color:#FFB3B3">No pudimos iniciar sesión con Steam. Vuelve a intentarlo.</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ loginLoading }}" hint-placeholder-val="{{ false }}">
+        <button disabled style="height:56px;display:flex;align-items:center;justify-content:center;gap:12px;background:#1E5F73;color:#9FD8E8;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif">
+          <span style="width:16px;height:16px;border:2px solid rgba(159,216,232,.4);border-top-color:#9FD8E8;border-radius:50%;animation:vxSpin .8s linear infinite;display:inline-block"></span>
+          Conectando con Steam…
+        </button>
+      </sc-if>
+      <sc-if value="{{ loginIdle }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ doLogin }}" style="height:56px;display:flex;align-items:center;justify-content:center;gap:12px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.22);cursor:pointer" style-hover="background:#5FE2FF">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#06212B" stroke-width="2"></circle><circle cx="15.5" cy="8.5" r="2.4" fill="#06212B"></circle><path d="M4 14l7-2.5" stroke="#06212B" stroke-width="2" stroke-linecap="round"></path><circle cx="9" cy="15" r="2" fill="#06212B"></circle></svg>
+          {{ loginBtnLabel }}
+        </button>
+      </sc-if>
+      <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#6E7787;text-align:center">Acceso abierto: cualquiera con cuenta de Steam entra y juega.</div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+  <div style="position:sticky;top:0;z-index:20;background:rgba(16,17,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid #1E222A">
+    <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:12px">
+      <div onClick="{{ goHome }}" style="display:flex;align-items:center;gap:9px;cursor:pointer">
+        <div style="width:28px;height:28px;background:#28D8FF;border-radius:3px;display:grid;place-items:center;font:800 14px 'Outfit',sans-serif;color:#06212B">V</div>
+        <div style="display:flex;flex-direction:column"><span style="font:800 14px 'Outfit',sans-serif;letter-spacing:.05em">VENTRAX</span><span style="font:600 8px 'Outfit',sans-serif;color:#6E7787;letter-spacing:.22em">L4D2 SERVERS</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <sc-if value="{{ headerMyServer }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ goMyServer }}" style="height:36px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;background:rgba(40,216,255,.08);color:#28D8FF;border:1px solid rgba(40,216,255,.35);border-radius:4px;font:700 12px 'Outfit',sans-serif;cursor:pointer"><span style="width:6px;height:6px;border-radius:50%;background:#28D8FF;animation:vxPulse 1.4s infinite"></span>Mi servidor</button>
+        </sc-if>
+        <sc-if value="{{ headerQueue }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ goQueue }}" style="height:36px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;background:rgba(139,124,255,.08);color:#8B7CFF;border:1px solid rgba(139,124,255,.35);border-radius:4px;font:700 12px 'Outfit',sans-serif;cursor:pointer">⧗ Cola {{ queuePosLabel }}</button>
+        </sc-if>
+        <sc-if value="{{ hasSession }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ goProfile }}" style="display:flex;align-items:center;gap:8px;cursor:pointer" title="Perfil">
+            <span style="font:600 13px 'Source Sans 3',sans-serif;color:#C7CEDA">R4zor</span>
+            <div style="width:34px;height:34px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:700 12px 'Outfit',sans-serif;color:#8FD4EC;border:1px solid #3A5A6E">R4</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noSession }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ goLogin }}" style="height:38px;padding:0 14px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 13px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#4A5160">Entrar con Steam</button>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ showSkeleton }}" hint-placeholder-val="{{ false }}">
+  <div style="max-width:1200px;margin:0 auto;width:100%;padding:20px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="width:130px;height:24px;border-radius:3px;background:linear-gradient(90deg,#1B1F27 25%,#232833 50%,#1B1F27 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+      <div style="width:110px;height:14px;border-radius:3px;background:linear-gradient(90deg,#1B1F27 25%,#232833 50%,#1B1F27 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+    </div>
+    <div style="height:56px;border-radius:4px;background:linear-gradient(90deg,#17323C 25%,#1D3F4C 50%,#17323C 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+      <div style="height:150px;border-radius:5px;border:1px solid #1E222A;background:linear-gradient(90deg,#15181E 25%,#1B2029 50%,#15181E 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+      <div style="height:150px;border-radius:5px;border:1px solid #1E222A;background:linear-gradient(90deg,#15181E 25%,#1B2029 50%,#15181E 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+      <div style="height:150px;border-radius:5px;border:1px solid #1E222A;background:linear-gradient(90deg,#15181E 25%,#1B2029 50%,#15181E 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+      <div style="height:150px;border-radius:5px;border:1px solid #1E222A;background:linear-gradient(90deg,#15181E 25%,#1B2029 50%,#15181E 75%);background-size:200% 100%;animation:vxShimmer 1.4s linear infinite"></div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Home" style="max-width:1200px;margin:0 auto;width:100%;padding:20px 20px 32px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div style="font:800 24px 'Outfit',sans-serif">Servidores</div>
+      <div style="display:flex;align-items:center;gap:7px;font:600 12.5px 'Source Sans 3',sans-serif;color:#9AA3B2"><span style="width:7px;height:7px;border-radius:50%;background:#3DDC91"></span>{{ freeLabel }}<span style="color:#3A4150">·</span><span style="width:7px;height:7px;border-radius:50%;background:#28D8FF"></span>{{ busyLabel }}</div>
+    </div>
+    <sc-if value="{{ listError }}" hint-placeholder-val="{{ false }}">
+      <div style="border:1px solid rgba(255,92,92,.3);background:rgba(255,92,92,.05);border-radius:5px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+        <span style="font-size:22px">⚠</span>
+        <div style="font:700 15px 'Outfit',sans-serif">La lista no cargó</div>
+        <div style="font:400 13.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">No pudimos traer los servidores. Suele resolverse al momento.</div>
+        <button onClick="{{ retryList }}" style="height:44px;padding:0 24px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 14px 'Outfit',sans-serif;cursor:pointer">Reintentar</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ listOk }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ reserve }}" style="height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;letter-spacing:.02em;box-shadow:0 0 28px rgba(40,216,255,.2);cursor:pointer" style-hover="background:#5FE2FF;box-shadow:0 0 36px rgba(40,216,255,.35)">⚡ Reservar servidor</button>
+      <sc-if value="{{ noSession }}" hint-placeholder-val="{{ false }}">
+        <div style="font:400 12px 'Source Sans 3',sans-serif;color:#6E7787;text-align:center;margin-top:-8px">Te pediremos entrar con Steam primero.</div>
+      </sc-if>
+      <sc-if value="{{ hasServers }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+          <sc-for list="{{ servers }}" as="s" hint-placeholder-count="4">
+            <div style="background:#15181E;border:1px solid {{ s.border }};border-radius:5px;overflow:hidden;display:flex;flex-direction:column">
+              <sc-if value="{{ s.isActivo }}" hint-placeholder-val="{{ false }}">
+                <div style="height:96px;position:relative;background:linear-gradient(135deg,{{ s.grad }},#141920)">
+                  <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(255,255,255,.025) 12px,rgba(255,255,255,.025) 24px)"></div>
+                  <div style="position:absolute;top:8px;right:8px;font:600 8px 'Outfit',sans-serif;color:#8A94A6;letter-spacing:.14em;background:rgba(0,0,0,.35);padding:3px 6px;border-radius:2px">IMAGEN MAPA · CDN</div>
+                  <div style="position:absolute;left:12px;bottom:8px;font:700 14px 'Outfit',sans-serif;color:#E5EAF2;text-shadow:0 1px 6px rgba(0,0,0,.6)">{{ s.map }}</div>
+                  <span style="position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(9,42,52,.85);border:1px solid rgba(40,216,255,.4);border-radius:3px;font:700 9px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:5px;height:5px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span>
+                </div>
+              </sc-if>
+              <div style="padding:13px 14px;display:flex;flex-direction:column;gap:9px;flex:1">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <span style="font:800 14px 'Outfit',sans-serif">{{ s.name }}<sc-if value="{{ s.isMine }}" hint-placeholder-val="{{ false }}"><span style="margin-left:8px;font:700 8.5px 'Outfit',sans-serif;color:#06212B;background:#28D8FF;border-radius:2px;padding:2px 6px;letter-spacing:.12em;vertical-align:2px">TUYO</span></sc-if></span>
+                  <sc-if value="{{ s.isActivo }}" hint-placeholder-val="{{ false }}"><span style="font:600 12px 'Source Sans 3',sans-serif;color:#C7CEDA">👥 {{ s.players }}</span></sc-if>
+                  <sc-if value="{{ s.chip }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:{{ s.chipBg }};border:1px solid {{ s.chipBorder }};border-radius:3px;font:700 9px 'Outfit',sans-serif;color:{{ s.chipColor }};letter-spacing:.12em;white-space:nowrap">{{ s.chipIcon }} {{ s.chipLabel }}</span></sc-if>
+                </div>
+                <sc-if value="{{ s.sub }}" hint-placeholder-val="{{ true }}"><div style="font:400 12.5px/1.45 'Source Sans 3',sans-serif;color:#9AA3B2">{{ s.sub }}</div></sc-if>
+                <sc-if value="{{ s.isPrep }}" hint-placeholder-val="{{ false }}">
+                  <div style="height:4px;background:#20242C;border-radius:2px;overflow:hidden;position:relative;margin-top:auto"><span style="position:absolute;top:0;left:0;height:100%;width:40%;background:#FFB224;border-radius:2px;animation:vxBar 1.6s ease-in-out infinite"></span></div>
+                </sc-if>
+                <sc-if value="{{ s.isActivo }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;background:{{ s.ownerBg }};display:grid;place-items:center;font:700 9px 'Outfit',sans-serif;color:{{ s.ownerFg }}">{{ s.ownerInit }}</div><span style="font:600 12px 'Source Sans 3',sans-serif;color:#C7CEDA">{{ s.owner }}</span><span style="font:400 11px 'Source Sans 3',sans-serif;color:#6E7787">· {{ s.since }}</span></div>
+                  <sc-if value="{{ s.isFull }}" hint-placeholder-val="{{ false }}"><button disabled style="height:40px;margin-top:auto;background:transparent;color:#5B6675;border:1px solid #2A2F3A;border-radius:4px;font:700 12.5px 'Outfit',sans-serif">Servidor lleno</button></sc-if>
+                  <sc-if value="{{ s.notFull }}" hint-placeholder-val="{{ true }}"><a href="steam://connect/play.ventrax.gg:27015" onClick="{{ s.join }}" style="height:40px;margin-top:auto;display:flex;align-items:center;justify-content:center;background:transparent;color:#28D8FF;border:1px solid rgba(40,216,255,.45);border-radius:4px;font:700 12.5px 'Outfit',sans-serif;cursor:pointer" style-hover="background:rgba(40,216,255,.08)">Entrar a jugar</a></sc-if>
+                </sc-if>
+                <sc-if value="{{ s.isMine }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ s.open }}" style="height:40px;margin-top:auto;background:rgba(40,216,255,.1);color:#28D8FF;border:1px solid rgba(40,216,255,.45);border-radius:4px;font:700 12.5px 'Outfit',sans-serif;cursor:pointer">{{ s.mineCta }}</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ noServers }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:56px 40px;text-align:center;border:1px dashed #2A2F3A;border-radius:6px">
+          <div style="width:64px;height:64px;border-radius:6px;background:#15181E;border:1px dashed #333945;display:grid;place-items:center;font-size:26px;opacity:.8">🛰</div>
+          <div style="font:800 18px 'Outfit',sans-serif">No hay servidores ahora mismo</div>
+          <div style="font:400 13.5px/1.55 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:300px">El operador aún no ha publicado ninguno. Vuelve en un rato.</div>
+        </div>
+      </sc-if>
+      <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+        <span style="font-size:13px">🌙</span>
+        <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Los servidores se cierran solos cuando quedan vacíos un rato. Así siempre hay sitio para el siguiente. 1 servidor por persona; todos son públicos.</div>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isStepper }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Stepper" style="max-width:560px;margin:0 auto;width:100%;padding:28px 24px 40px;box-sizing:border-box;display:flex;flex-direction:column;gap:26px">
+    <sc-if value="{{ resuming }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 0;text-align:center">
+        <span style="width:36px;height:36px;border:3px solid rgba(40,216,255,.25);border-top-color:#28D8FF;border-radius:50%;animation:vxSpin .9s linear infinite;display:inline-block"></span>
+        <div style="font:700 17px 'Outfit',sans-serif">Reanudando tu reserva…</div>
+        <div style="font:400 13px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">Tu servidor siguió preparándose mientras no estabas.</div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ stepperBody }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="align-self:flex-start;padding:4px 10px;background:#1B1F27;border:1px solid #2A2F3A;border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.14em">{{ stepServerLabel }}</span>
+        <div style="font:800 24px 'Outfit',sans-serif">Preparando tu servidor</div>
+        <div style="font:400 14px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">{{ stepIntro }}</div>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+          <div style="display:flex;gap:14px">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <sc-if value="{{ st.isDone }}" hint-placeholder-val="{{ false }}"><div style="width:32px;height:32px;border-radius:50%;background:#28D8FF;display:grid;place-items:center;color:#06212B;font-weight:800;font-size:15px;flex:none">✓</div></sc-if>
+              <sc-if value="{{ st.isCurrent }}" hint-placeholder-val="{{ false }}"><div style="width:32px;height:32px;border-radius:50%;background:rgba(40,216,255,.12);border:2px solid #28D8FF;display:grid;place-items:center;box-shadow:0 0 16px rgba(40,216,255,.35);animation:vxPulse 1.6s infinite;box-sizing:border-box;flex:none"><span style="width:10px;height:10px;border-radius:50%;background:#28D8FF"></span></div></sc-if>
+              <sc-if value="{{ st.isFailed }}" hint-placeholder-val="{{ false }}"><div style="width:32px;height:32px;border-radius:50%;background:rgba(255,92,92,.12);border:2px solid #FF5C5C;display:grid;place-items:center;color:#FF5C5C;font-weight:800;font-size:14px;box-sizing:border-box;flex:none">!</div></sc-if>
+              <sc-if value="{{ st.isPending }}" hint-placeholder-val="{{ false }}"><div style="width:32px;height:32px;border-radius:50%;background:#1B1F27;border:2px solid #2A2F3A;display:grid;place-items:center;font:700 13px 'Outfit',sans-serif;color:#5B6675;box-sizing:border-box;flex:none">{{ st.num }}</div></sc-if>
+              <sc-if value="{{ st.showLine }}" hint-placeholder-val="{{ true }}"><div style="width:2px;flex:1;background:{{ st.lineColor }};min-height:24px"></div></sc-if>
+            </div>
+            <div style="padding:5px 0 24px;flex:1">
+              <div style="font:700 15px 'Outfit',sans-serif;color:{{ st.titleColor }}">{{ st.label }}</div>
+              <sc-if value="{{ st.micro }}" hint-placeholder-val="{{ false }}"><div style="font:400 12.5px/1.4 'Source Sans 3',sans-serif;color:{{ st.microColor }};margin-top:2px">{{ st.micro }}</div></sc-if>
+              <sc-if value="{{ st.isCurrent }}" hint-placeholder-val="{{ false }}"><div style="margin-top:10px;height:4px;background:#20242C;border-radius:2px;overflow:hidden;position:relative"><span style="position:absolute;top:0;left:0;height:100%;width:40%;background:#28D8FF;border-radius:2px;animation:vxBar 1.6s ease-in-out infinite"></span></div></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ stepFailed }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:18px;background:rgba(255,92,92,.06);border:1px solid rgba(255,92,92,.3);border-radius:5px;display:flex;flex-direction:column;gap:8px">
+          <div style="font:700 15px 'Outfit',sans-serif;color:#FFB3B3">No pudimos preparar tu servidor</div>
+          <div style="font:400 13.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">Algo falló de nuestro lado; no es culpa tuya. Tu sitio no se pierde: reintenta cuando quieras.</div>
+        </div>
+        <button onClick="{{ retryStep }}" style="height:56px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.2);cursor:pointer">Reintentar</button>
+        <button onClick="{{ notifyOp }}" style="background:none;border:none;font:600 13.5px 'Source Sans 3',sans-serif;color:#9AA3B2;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:4px">Avisar al operador</button>
+      </sc-if>
+      <sc-if value="{{ stepRunning }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ leaveStepper }}" style="height:48px;background:transparent;color:#9AA3B2;border:1px solid #2A2F3A;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#4A5160;color:#C7CEDA">Volver a la lista (la reserva sigue)</button>
+      </sc-if>
+    </sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isReady }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="¡Listo!" style="max-width:560px;margin:0 auto;width:100%;padding:28px 24px 40px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px;background:radial-gradient(ellipse 120% 30% at 50% 0%,rgba(61,220,145,.07),transparent 60%)">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;animation:vxPop .4s ease-out">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(61,220,145,.12);border:2px solid #3DDC91;display:grid;place-items:center;font-size:28px;color:#3DDC91;box-shadow:0 0 36px rgba(61,220,145,.3)">✓</div>
+      <div style="font:800 26px 'Outfit',sans-serif">¡Tu servidor está listo!</div>
+      <div style="font:400 14px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2">El {{ myName }} está arriba y es tuyo. A jugar.</div>
+    </div>
+    <a href="steam://connect/play.ventrax.gg:27015" onClick="{{ connectToast }}" style="height:60px;display:flex;align-items:center;justify-content:center;background:#28D8FF;color:#06212B;border-radius:4px;font:800 18px 'Outfit',sans-serif;letter-spacing:.02em;box-shadow:0 0 32px rgba(40,216,255,.3);cursor:pointer" style-hover="background:#5FE2FF">▶ Conectar</a>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:700 10.5px 'Outfit',sans-serif;color:#6E7787;letter-spacing:.14em">O CONECTA MANUALMENTE</span>
+      <div style="display:flex;gap:8px">
+        <code style="flex:1;display:flex;align-items:center;padding:0 14px;height:48px;background:#0B0C0F;border:1px solid #262A33;border-radius:4px;font:600 13px ui-monospace,Menlo,monospace;color:#8FD4EC;overflow:hidden;white-space:nowrap">connect play.ventrax.gg:27015</code>
+        <button onClick="{{ copyAddr }}" title="Copiar dirección" style="width:48px;height:48px;background:#1B1F27;border:1px solid #333945;border-radius:4px;color:#E5EAF2;font-size:16px;cursor:pointer" style-hover="border-color:#4A5160">{{ copyIcon }}</button>
+      </div>
+      <span style="font:400 12px 'Source Sans 3',sans-serif;color:#6E7787">Compártela: cualquiera puede entrar, el servidor es público.</span>
+    </div>
+    <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">🛡</span><span style="font:700 13px 'Outfit',sans-serif;letter-spacing:.06em">ERES ADMIN DE ESTE SERVIDOR</span></div>
+      <div style="display:flex;flex-direction:column;gap:9px;font:400 13.5px 'Source Sans 3',sans-serif;color:#C7CEDA">
+        <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Expulsar jugadores (kick)</div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Cambiar de mapa</div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Controlar la partida (reiniciar, pausar…)</div>
+        <div style="display:flex;align-items:center;gap:10px;color:#8A94A6"><span style="color:#FF5C5C;font-weight:700">✕</span>Banear — eso no está en tus manos</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+      <span style="font-size:13px">🌙</span>
+      <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Tu servidor se cierra solo si queda vacío un rato. No tienes que hacer nada.</div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button onClick="{{ goMyServer }}" style="flex:1;height:46px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 13.5px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#4A5160">Ir a Mi servidor</button>
+      <button onClick="{{ askClose }}" style="flex:1;height:46px;background:transparent;color:#FF8A8A;border:1px solid rgba(255,92,92,.35);border-radius:4px;font:600 13.5px 'Outfit',sans-serif;cursor:pointer" style-hover="background:rgba(255,92,92,.06)">Cerrar servidor</button>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isQueue }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="En cola" style="max-width:560px;margin:0 auto;width:100%;padding:48px 24px 40px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;flex:1;justify-content:center">
+    <span style="padding:5px 12px;background:rgba(139,124,255,.1);border:1px solid rgba(139,124,255,.35);border-radius:3px;font:700 10.5px 'Outfit',sans-serif;color:#8B7CFF;letter-spacing:.14em">⧗ EN COLA</span>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="font:800 72px/1 'Outfit',sans-serif">#{{ queuePos }}</div>
+      <div style="font:600 15px 'Outfit',sans-serif;color:#9AA3B2">tu posición en la cola</div>
+    </div>
+    <div style="font:400 14px/1.55 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:300px">Ahora mismo todos los servidores están ocupados. {{ queueWaiting }} personas esperan; en cuanto se libere uno y te toque, te avisamos aquí mismo.</div>
+    <div style="display:flex;align-items:center;gap:8px;font:400 12.5px 'Source Sans 3',sans-serif;color:#6E7787"><span style="width:7px;height:7px;border-radius:50%;background:#8B7CFF;animation:vxPulse 1.4s infinite"></span>Puedes dejar esta pestaña de fondo, tu sitio se guarda.</div>
+    <button onClick="{{ leaveQueue }}" style="width:100%;max-width:340px;height:48px;background:transparent;color:#FF8A8A;border:1px solid rgba(255,92,92,.35);border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="background:rgba(255,92,92,.06)">Salir de la cola</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isTurn }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="¡Es tu turno!" style="max-width:560px;margin:0 auto;width:100%;padding:40px 24px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;flex:1;justify-content:center;animation:vxPop .35s ease-out">
+    <span style="padding:6px 14px;background:#28D8FF;border-radius:3px;font:800 11px 'Outfit',sans-serif;color:#06212B;letter-spacing:.16em;animation:vxPulse 1.2s infinite">¡ES TU TURNO!</span>
+    <div style="font:800 28px 'Outfit',sans-serif">Hay un servidor<br>reservado para ti</div>
+    <div style="position:relative;width:132px;height:132px;display:grid;place-items:center">
+      <svg width="132" height="132" viewBox="0 0 132 132" style="transform:rotate(-90deg)"><circle cx="66" cy="66" r="58" fill="none" stroke="#20242C" stroke-width="8"></circle><circle cx="66" cy="66" r="58" fill="none" stroke="#28D8FF" stroke-width="8" stroke-linecap="round" stroke-dasharray="364" stroke-dashoffset="{{ ringOffset }}" style="transition:stroke-dashoffset 1s linear"></circle></svg>
+      <div style="position:absolute;display:flex;flex-direction:column;align-items:center"><span style="font:800 32px 'Outfit',sans-serif">{{ turnClock }}</span><span style="font:600 10px 'Outfit',sans-serif;color:#9AA3B2;letter-spacing:.12em">PARA ENTRAR</span></div>
+    </div>
+    <div style="font:400 13.5px/1.5 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:300px">Si no entras a tiempo, el turno pasa al siguiente de la cola. (Cuenta acelerada en el prototipo.)</div>
+    <button onClick="{{ enterNow }}" style="width:100%;max-width:380px;height:60px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:800 18px 'Outfit',sans-serif;box-shadow:0 0 32px rgba(40,216,255,.35);cursor:pointer" style-hover="background:#5FE2FF">Entrar ahora</button>
+    <button onClick="{{ cedeTurn }}" style="width:100%;max-width:380px;height:44px;background:transparent;color:#9AA3B2;border:1px solid #2A2F3A;border-radius:4px;font:600 13.5px 'Outfit',sans-serif;cursor:pointer">Ceder mi turno</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isMyServer }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Mi servidor" style="max-width:560px;margin:0 auto;width:100%;padding:24px 20px 36px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px">
+    <sc-if value="{{ hasReservation }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font:800 22px 'Outfit',sans-serif">Mi servidor</div>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(40,216,255,.1);border:1px solid rgba(40,216,255,.35);border-radius:3px;font:700 10px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#28D8FF"></span>EN JUEGO</span>
+      </div>
+      <div style="background:#15181E;border:1px solid #262A33;border-radius:5px;overflow:hidden">
+        <div style="height:120px;position:relative;background:linear-gradient(135deg,#233041,#141920)">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(255,255,255,.025) 12px,rgba(255,255,255,.025) 24px)"></div>
+          <div style="position:absolute;top:10px;right:10px;font:600 8.5px 'Outfit',sans-serif;color:#8A94A6;letter-spacing:.14em;background:rgba(0,0,0,.35);padding:3px 7px;border-radius:2px">IMAGEN MAPA · CDN</div>
+          <div style="position:absolute;left:14px;bottom:10px;font:700 16px 'Outfit',sans-serif;color:#E5EAF2;text-shadow:0 1px 6px rgba(0,0,0,.6)">Dead Center</div>
+        </div>
+        <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font:800 15px 'Outfit',sans-serif">{{ myName }}</span>
+          <div style="display:flex;align-items:center;gap:14px;font:600 13px 'Source Sans 3',sans-serif;color:#C7CEDA"><span>👥 {{ myPlayers }}</span><span style="color:#6E7787;font-weight:400">{{ myUptime }}</span></div>
+        </div>
+      </div>
+      <a href="steam://connect/play.ventrax.gg:27015" onClick="{{ connectToast }}" style="height:56px;display:flex;align-items:center;justify-content:center;background:#28D8FF;color:#06212B;border-radius:4px;font:800 17px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.25);cursor:pointer" style-hover="background:#5FE2FF">▶ Conectar</a>
+      <div style="display:flex;gap:8px">
+        <code style="flex:1;display:flex;align-items:center;padding:0 14px;height:48px;background:#0B0C0F;border:1px solid #262A33;border-radius:4px;font:600 13px ui-monospace,Menlo,monospace;color:#8FD4EC;white-space:nowrap;overflow:hidden">connect play.ventrax.gg:27015</code>
+        <button onClick="{{ copyAddr }}" title="Copiar dirección" style="width:48px;height:48px;background:#1B1F27;border:1px solid #333945;border-radius:4px;color:#E5EAF2;font-size:16px;cursor:pointer" style-hover="border-color:#4A5160">{{ copyIcon }}</button>
+      </div>
+      <div onClick="{{ toggleAdmin }}" style="background:#15181E;border:1px solid #262A33;border-radius:5px;padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><span style="font-size:14px">🛡</span><span style="font:700 13px 'Outfit',sans-serif">Tus poderes de admin</span><span style="font:400 12px 'Source Sans 3',sans-serif;color:#6E7787">kick · mapa · partida</span></div>
+          <span style="color:#6E7787">{{ adminChevron }}</span>
+        </div>
+        <sc-if value="{{ adminOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:9px;font:400 13.5px 'Source Sans 3',sans-serif;color:#C7CEDA;padding-top:12px;margin-top:12px;border-top:1px solid #20242C">
+            <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Expulsar jugadores (kick)</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Cambiar de mapa</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="color:#3DDC91;font-weight:700">✓</span>Controlar la partida (reiniciar, pausar…)</div>
+            <div style="display:flex;align-items:center;gap:10px;color:#8A94A6"><span style="color:#FF5C5C;font-weight:700">✕</span>Banear — eso no está en tus manos</div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:rgba(40,216,255,.04);border:1px solid #1E2630;border-radius:4px">
+        <span style="font-size:13px">🌙</span>
+        <div style="font:400 12.5px/1.5 'Source Sans 3',sans-serif;color:#8A94A6">Público: cualquiera puede entrar con la dirección. Se cierra solo si queda vacío un rato.</div>
+      </div>
+      <button onClick="{{ askClose }}" style="height:46px;background:transparent;color:#FF8A8A;border:1px solid rgba(255,92,92,.35);border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="background:rgba(255,92,92,.06)">Cerrar servidor</button>
+    </sc-if>
+    <sc-if value="{{ noReservation }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:72px 40px;text-align:center">
+        <div style="width:72px;height:72px;border-radius:6px;background:#15181E;border:1px dashed #333945;display:grid;place-items:center;font-size:28px;opacity:.8">🎮</div>
+        <div style="font:800 20px 'Outfit',sans-serif">No tienes servidor ahora</div>
+        <div style="font:400 14px/1.55 'Source Sans 3',sans-serif;color:#9AA3B2;max-width:300px">Reserva uno y en unos minutos estás jugando. Recuerda: 1 servidor por persona.</div>
+        <button onClick="{{ reserveFromEmpty }}" style="height:56px;padding:0 36px;background:#28D8FF;color:#06212B;border:none;border-radius:4px;font:700 16px 'Outfit',sans-serif;box-shadow:0 0 28px rgba(40,216,255,.25);cursor:pointer" style-hover="background:#5FE2FF">⚡ Reservar servidor</button>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Perfil" style="max-width:560px;margin:0 auto;width:100%;padding:28px 24px 40px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:64px;height:64px;border-radius:50%;background:#2E4A5C;display:grid;place-items:center;font:800 22px 'Outfit',sans-serif;color:#8FD4EC;border:2px solid #3A5A6E">R4</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font:800 20px 'Outfit',sans-serif">R4zor</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font:600 11.5px ui-monospace,Menlo,monospace;color:#6E7787">STEAM64 · 76561198012348231</span><span style="font:600 9px 'Outfit',sans-serif;color:#5B6675;border:1px solid #2A2F3A;border-radius:2px;padding:2px 5px;letter-spacing:.1em">SOLO LECTURA</span></div>
+      </div>
+    </div>
+    <sc-if value="{{ hasReservation }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#15181E;border:1px solid rgba(40,216,255,.3);border-radius:5px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:700 10px 'Outfit',sans-serif;color:#28D8FF;letter-spacing:.12em"><span style="width:6px;height:6px;border-radius:50%;background:#28D8FF"></span>RESERVA ACTIVA</span>
+          <span style="font:600 14px 'Source Sans 3',sans-serif;color:#E5EAF2">{{ myName }} · Dead Center · {{ myPlayers }}</span>
+        </div>
+        <button onClick="{{ goMyServer }}" style="height:38px;padding:0 14px;background:transparent;color:#28D8FF;border:1px solid rgba(40,216,255,.45);border-radius:4px;font:700 12.5px 'Outfit',sans-serif;cursor:pointer">Ir a Mi servidor</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ inQueueAny }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#15181E;border:1px solid rgba(139,124,255,.3);border-radius:5px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <span style="font:700 10px 'Outfit',sans-serif;color:#8B7CFF;letter-spacing:.12em">⧗ EN COLA</span>
+          <span style="font:600 14px 'Source Sans 3',sans-serif;color:#E5EAF2">Posición #{{ queuePos }} · {{ queueWaiting }} personas esperan</span>
+        </div>
+        <button onClick="{{ goQueue }}" style="height:38px;padding:0 14px;background:transparent;color:#8B7CFF;border:1px solid rgba(139,124,255,.45);border-radius:4px;font:700 12.5px 'Outfit',sans-serif;cursor:pointer">Ver mi cola</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ profileIdle }}" hint-placeholder-val="{{ true }}">
+      <div style="font:400 13px/1.55 'Source Sans 3',sans-serif;color:#8A94A6">No tienes reservas ni cola ahora mismo. Tus datos vienen de Steam y se actualizan solos: aquí no hay nada que configurar.</div>
+    </sc-if>
+    <button onClick="{{ logout }}" style="height:48px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#4A5160">Cerrar sesión</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{ confirmingClose }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;background:rgba(8,9,12,.6);display:grid;place-items:center;z-index:50;padding:20px">
+    <div style="width:100%;max-width:420px;background:#15181E;border:1px solid #333945;border-radius:6px;padding:28px 24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:vxPop .25s ease-out">
+      <div style="font:800 19px 'Outfit',sans-serif">¿Cerrar tu servidor?</div>
+      <div style="font:400 14px/1.55 'Source Sans 3',sans-serif;color:#9AA3B2">Se desconectará a quien esté dentro y el sitio pasará al siguiente de la cola. Podrás reservar otro cuando quieras.</div>
+      <button onClick="{{ confirmClose }}" style="height:52px;background:#FF5C5C;color:#2B0606;border:none;border-radius:4px;font:700 16px 'Outfit',sans-serif;cursor:pointer" style-hover="background:#FF7A7A">Sí, cerrar servidor</button>
+      <button onClick="{{ cancelClose }}" style="height:46px;background:transparent;color:#E5EAF2;border:1px solid #333945;border-radius:4px;font:600 14px 'Outfit',sans-serif;cursor:pointer">No, seguir jugando</button>
+    </div>
+  </div>
+</sc-if>
+
+<div style="position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:60;display:flex;flex-direction:column;gap:8px;width:min(92vw,420px)">
+  <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:{{ t.bg }};border:1px solid {{ t.border }};border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.5);animation:vxToast .25s ease-out">
+      <span style="color:{{ t.iconColor }};font-weight:700">{{ t.icon }}</span>
+      <span style="font:600 13.5px 'Source Sans 3',sans-serif;color:{{ t.fg }}">{{ t.text }}</span>
+    </div>
+  </sc-for>
+</div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;numServidores&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:4,&quot;min&quot;:1,&quot;max&quot;:8,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Escenario&quot;},&quot;todosOcupados&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Escenario&quot;},&quot;flujoLargo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Escenario&quot;},&quot;fallaPreparacion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Fallos&quot;},&quot;loginFalla&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Fallos&quot;},&quot;errorDeLista&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Fallos&quot;},&quot;backendCaido&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Fallos&quot;}}">
+class Component extends DCLogic {
+  state = {
+    view: 'home', session: false, loading: true,
+    loginPhase: 'idle', // idle | loading | error
+    servers: [], reservation: null, // {serverId, stages, stageIdx, failed, done}
+    resuming: false, adminOpen: false, confirmingClose: false,
+    queue: null, // {pos, waiting}
+    turnLeft: null, // seconds
+    copied: false, listError: false, toasts: [], lastReserve: 0, retried: false
+  };
+  componentDidMount() {
+    this._timers = [];
+    this._t(() => this.setState({ loading: false, servers: this.buildServers() }), 1400);
+  }
+  componentDidUpdate(prevProps) {
+    if (prevProps.numServidores !== this.props.numServidores || prevProps.todosOcupados !== this.props.todosOcupados) {
+      const base = this.buildServers();
+      const r = this.state.reservation;
+      if (r) {
+        const mine = this.state.servers.find(x => x.id === r.serverId);
+        const idx = base.findIndex(x => x.id === r.serverId);
+        if (mine && idx >= 0) base[idx] = mine;
+      }
+      this.setState({ servers: base });
+    }
+    if (prevProps.errorDeLista !== this.props.errorDeLista) this.setState({ listRetried: false });
+  }
+  componentWillUnmount() { (this._timers || []).forEach(clearTimeout); clearInterval(this._qi); clearInterval(this._ti); clearInterval(this._si); }
+  _t(fn, ms) { const id = setTimeout(fn, ms); this._timers.push(id); return id; }
+  p(name, def) { const v = this.props[name]; return v === undefined || v === null ? def : v; }
+  buildServers() {
+    const n = Math.max(1, Math.min(8, this.p('numServidores', 4)));
+    const allBusy = this.p('todosOcupados', false);
+    const maps = [
+      { map: 'Dead Center', grad: '#233041' }, { map: 'The Parish', grad: '#2E2A3C' },
+      { map: 'Dark Carnival', grad: '#3C3226' }, { map: 'Hard Rain', grad: '#22343A' },
+      { map: 'Swamp Fever', grad: '#2A3626' }, { map: 'No Mercy', grad: '#33262E' },
+      { map: 'The Passing', grad: '#26303C' }, { map: 'Cold Stream', grad: '#243038' }
+    ];
+    const owners = [
+      { owner: 'Nyx_', init: 'NX', bg: '#4A3A5C', fg: '#CBB3EC', players: '3/8', since: '24 min' },
+      { owner: 'Kova', init: 'KV', bg: '#3C4A2E', fg: '#BFE39A', players: '6/8', since: '1 h 12 min' },
+      { owner: 'PixelDuke', init: 'PD', bg: '#5C4A3A', fg: '#ECD3B3', players: '8/8', since: '38 min' },
+      { owner: 'Brisa', init: 'BR', bg: '#2E4A4A', fg: '#9ADEDE', players: '2/8', since: '9 min' }
+    ];
+    const pattern = allBusy
+      ? ['activo', 'activo', 'activo', 'activo', 'activo', 'activo', 'activo', 'activo']
+      : ['activo', 'libre', 'prep', 'error', 'activo', 'libre', 'reservado', 'activo'];
+    const out = [];
+    let oi = 0;
+    for (let i = 0; i < n; i++) {
+      const st = pattern[i % pattern.length];
+      const s = { id: i + 1, name: 'SERVIDOR #' + (i + 1), state: st };
+      if (st === 'activo') { Object.assign(s, maps[i % maps.length], owners[oi % owners.length]); oi++; }
+      out.push(s);
+    }
+    return out;
+  }
+  toast(kind, text) {
+    const palettes = {
+      ok: { bg: '#1B2A22', border: 'rgba(61,220,145,.4)', iconColor: '#3DDC91', fg: '#D9F5E8', icon: '✓' },
+      info: { bg: '#1E2130', border: 'rgba(139,124,255,.4)', iconColor: '#8B7CFF', fg: '#E2DCFF', icon: 'ℹ' },
+      warn: { bg: '#2A1F14', border: 'rgba(255,178,36,.4)', iconColor: '#FFB224', fg: '#FFE7C2', icon: '⏱' },
+      err: { bg: '#2A1B1B', border: 'rgba(255,92,92,.4)', iconColor: '#FF5C5C', fg: '#FFD1D1', icon: '⚠' }
+    };
+    const t = Object.assign({ id: Date.now() + Math.random(), text }, palettes[kind]);
+    this.setState(s => ({ toasts: [...s.toasts, t] }));
+    this._t(() => this.setState(s => ({ toasts: s.toasts.filter(x => x.id !== t.id) })), 3200);
+  }
+  // ---- stepper engine ----
+  startStepper(fast) {
+    const long = !fast && this.p('flujoLargo', false);
+    const stages = long
+      ? [{ label: 'Despertando', micro: 'Encendiendo tu servidor…' }, { label: 'Iniciando', micro: 'Arrancando y cargando el mapa…' }, { label: 'Verificando', micro: 'Comprobando que todo responde y dándote tus permisos…' }, { label: '¡Listo!', micro: '' }]
+      : [{ label: 'Iniciando', micro: 'Arrancando y cargando el mapa…' }, { label: 'Verificando', micro: 'Comprobando que todo responde y dándote tus permisos…' }, { label: '¡Listo!', micro: '' }];
+    const free = this.state.servers.find(s => s.state === 'libre');
+    const sid = free ? free.id : (this.state.servers.length + 1);
+    this.setState(s => ({
+      view: 'stepper', retried: s.retried,
+      reservation: { serverId: sid, stages, stageIdx: 0, failed: false, done: false, long },
+      servers: s.servers.map(x => x.id === sid ? Object.assign({}, x, { state: 'prep', mine: true }) : x)
+    }));
+    this.runStage();
+  }
+  runStage() {
+    clearInterval(this._si);
+    this._si = setInterval(() => {
+      const r = this.state.reservation;
+      if (!r || r.failed || r.done) { clearInterval(this._si); return; }
+      const next = r.stageIdx + 1;
+      const failHere = this.p('fallaPreparacion', false) && !this.state.retried && next === 1;
+      if (failHere) {
+        this.setState(s => ({ reservation: Object.assign({}, s.reservation, { failed: true }) }));
+        clearInterval(this._si);
+        return;
+      }
+      if (next >= r.stages.length - 1) {
+        clearInterval(this._si);
+        const wasAway = this.state.view !== 'stepper';
+        this.setState(s => ({
+          reservation: Object.assign({}, s.reservation, { stageIdx: r.stages.length - 1, done: true, startedAt: Date.now() }),
+          servers: s.servers.map(x => x.id === r.serverId ? Object.assign({}, x, { state: 'activo', mine: true, map: 'Dead Center', grad: '#233041', owner: 'R4zor', init: 'R4', bg: '#2E4A5C', fg: '#8FD4EC', players: '1/8', since: 'ahora' }) : x),
+          view: s.view === 'stepper' ? 'ready' : s.view
+        }));
+        if (wasAway) this.toast('ok', '¡Tu servidor está listo!');
+      } else {
+        this.setState(s => ({ reservation: Object.assign({}, s.reservation, { stageIdx: next }) }));
+      }
+    }, 2300);
+  }
+  // ---- queue engine ----
+  startQueue() {
+    this.setState({ view: 'queue', queue: { pos: 3, waiting: 5 } });
+    clearInterval(this._qi);
+    this._qi = setInterval(() => {
+      const q = this.state.queue;
+      if (!q) { clearInterval(this._qi); return; }
+      if (q.pos > 1) this.setState({ queue: { pos: q.pos - 1, waiting: Math.max(1, q.waiting - 1) } });
+      else { clearInterval(this._qi); this.startTurn(); }
+    }, 3500);
+  }
+  startTurn() {
+    this.setState({ view: 'turn', turnLeft: 227, queue: null });
+    clearInterval(this._ti);
+    this._ti = setInterval(() => {
+      const t = this.state.turnLeft;
+      if (t === null) { clearInterval(this._ti); return; }
+      if (t <= 1) {
+        clearInterval(this._ti);
+        this.setState({ turnLeft: null, view: 'home' });
+        this.toast('warn', 'Se acabó el tiempo: el turno pasó al siguiente.');
+      } else this.setState({ turnLeft: t - 4 }); // acelerado x4
+    }, 1000);
+  }
+  renderVals() {
+    const S = this.state;
+    const backendDown = this.p('backendCaido', false);
+    const showDown = backendDown;
+    const isLogin = !showDown && S.view === 'login';
+    const showSkeleton = !showDown && !isLogin && S.loading;
+    const vis = v => !showDown && !isLogin && !S.loading && S.view === v;
+    const r = S.reservation;
+    const hasReservation = !!(r && r.done);
+    const inQueueAny = !!S.queue || S.turnLeft !== null;
+    const listError = this.p('errorDeLista', false) && !S.listRetried;
+    const servers = S.servers.map(s => {
+      const base = {
+        name: s.name, isMine: !!s.mine && (s.state === 'prep' || s.state === 'activo'),
+        isActivo: s.state === 'activo', isPrep: s.state === 'prep',
+        isLibre: s.state === 'libre', chip: s.state !== 'activo' || false
+      };
+      const cfg = {
+        libre: { border: 'rgba(61,220,145,.3)', chipBg: 'rgba(61,220,145,.12)', chipBorder: 'rgba(61,220,145,.35)', chipColor: '#3DDC91', chipIcon: '●', chipLabel: 'LIBRE', sub: 'Listo para que alguien lo reserve.' },
+        prep: { border: 'rgba(255,178,36,.3)', chipBg: 'rgba(255,178,36,.1)', chipBorder: 'rgba(255,178,36,.35)', chipColor: '#FFB224', chipIcon: '●', chipLabel: 'PREPARANDO', sub: s.mine ? 'Tu servidor se está preparando…' : 'Alguien lo está reservando ahora mismo…' },
+        error: { border: 'rgba(255,92,92,.3)', chipBg: 'rgba(255,92,92,.1)', chipBorder: 'rgba(255,92,92,.35)', chipColor: '#FF5C5C', chipIcon: '⚠', chipLabel: 'ERROR', sub: 'Este servidor no pudo prepararse. Ya estamos en ello.' },
+        reservado: { border: 'rgba(139,124,255,.3)', chipBg: 'rgba(139,124,255,.1)', chipBorder: 'rgba(139,124,255,.35)', chipColor: '#8B7CFF', chipIcon: '⧗', chipLabel: 'RESERVADO', sub: 'Guardado para el siguiente de la cola.' },
+        activo: { border: '#262A33', chip: false, sub: '' }
+      }[s.state];
+      const isFull = s.players === '8/8';
+      return Object.assign({}, base, cfg, {
+        chip: s.state !== 'activo',
+        map: s.map || '', grad: s.grad || '#233041',
+        owner: s.owner || '', ownerInit: s.init || '', ownerBg: s.bg || '#2E4A5C', ownerFg: s.fg || '#8FD4EC',
+        players: s.players || '', since: s.since || '', isFull, notFull: s.state === 'activo' && !isFull,
+        join: (e) => { this.toast('info', 'Abriendo el juego para unirte…'); },
+        open: () => this.setState({ view: base.isActivo || (r && r.done) ? (s.mine && r && r.done ? 'myserver' : 'myserver') : 'stepper' }),
+        mineCta: s.state === 'prep' ? 'Ver progreso' : 'Ir a Mi servidor'
+      });
+    });
+    const free = S.servers.filter(s => s.state === 'libre').length;
+    const busy = S.servers.length - free;
+    const steps = r ? r.stages.map((st, i) => {
+      const isDone = i < r.stageIdx || r.done;
+      const failedHere = r.failed && i === r.stageIdx + 1;
+      const isCurrent = !r.done && !r.failed && i === r.stageIdx + (r.stageIdx === 0 && !r.failed ? 0 : 0) && i === r.stageIdx;
+      const cur = !r.done && !failedHere && i === r.stageIdx && !r.failed;
+      const curFail = r.failed && i === r.stageIdx;
+      return {
+        label: failedHere || (r.failed && i === r.stageIdx) ? st.label + ' — algo falló' : st.label,
+        micro: isDone && st.micro ? st.micro.replace('…', '… hecho') : (cur ? st.micro : (i > r.stageIdx ? st.micro : '')),
+        isDone: isDone && !curFail, isCurrent: cur && !r.failed,
+        isFailed: r.failed && i === r.stageIdx,
+        isPending: !isDone && !cur && !(r.failed && i === r.stageIdx),
+        num: i + 1, showLine: i < r.stages.length - 1,
+        lineColor: (i < r.stageIdx || r.done) ? '#28D8FF' : '#262A33',
+        titleColor: r.failed && i === r.stageIdx ? '#FF5C5C' : (cur ? '#28D8FF' : (isDone ? '#F2F4F8' : '#5B6675')),
+        microColor: cur ? '#9AA3B2' : (isDone ? '#6E7787' : '#4A5160')
+      };
+    }) : [];
+    const mm = Math.floor((S.turnLeft || 0) / 60), ss = (S.turnLeft || 0) % 60;
+    return {
+      showDown, isLogin, showSkeleton,
+      isHome: vis('home'), isStepper: vis('stepper'), isReady: vis('ready'),
+      isQueue: vis('queue'), isTurn: vis('turn'), isMyServer: vis('myserver'), isProfile: vis('profile'),
+      showHeader: !showDown && !isLogin,
+      hasSession: S.session, noSession: !S.session,
+      loginLoading: S.loginPhase === 'loading', loginError: S.loginPhase === 'error', loginIdle: S.loginPhase !== 'loading',
+      loginBtnLabel: S.loginPhase === 'error' ? 'Reintentar con Steam' : 'Entrar con Steam',
+      doLogin: () => {
+        this.setState({ loginPhase: 'loading' });
+        this._t(() => {
+          if (this.p('loginFalla', false) && S.loginPhase !== 'error') this.setState({ loginPhase: 'error' });
+          else { this.setState({ loginPhase: 'idle', session: true, view: 'home' }); this.toast('ok', '¡Dentro! Bienvenido, R4zor.'); }
+        }, 1300);
+      },
+      goLogin: () => this.setState({ view: 'login' }),
+      goHome: () => this.setState({ view: showDown ? S.view : 'home' }),
+      goProfile: () => this.setState({ view: 'profile' }),
+      goMyServer: () => this.setState({ view: 'myserver', confirmingClose: false }),
+      goQueue: () => this.setState({ view: S.turnLeft !== null ? 'turn' : 'queue' }),
+      headerMyServer: S.session && hasReservation && S.view !== 'myserver',
+      headerQueue: S.session && inQueueAny && S.view !== 'queue' && S.view !== 'turn',
+      queuePosLabel: S.queue ? '#' + S.queue.pos : '',
+      freeLabel: free + (free === 1 ? ' libre' : ' libres'),
+      busyLabel: busy + (busy === 1 ? ' ocupado' : ' ocupados'),
+      hasServers: S.servers.length > 0, noServers: S.servers.length === 0,
+      listError, listOk: !listError,
+      retryList: () => this.setState({ listRetried: true }),
+      servers,
+      reserve: () => {
+        const now = Date.now();
+        if (!S.session) { this.setState({ view: 'login' }); return; }
+        if (hasReservation || (r && !r.done && !r.failed)) {
+          if (r && !r.done) { this.setState({ view: 'stepper' }); return; }
+          this.toast('info', 'Ya tienes un servidor activo. Ciérralo para reservar otro.'); return;
+        }
+        if (now - S.lastReserve < 4000) { this.toast('warn', 'Espera unos segundos antes de reservar de nuevo.'); return; }
+        this.setState({ lastReserve: now });
+        const anyFree = S.servers.some(s => s.state === 'libre');
+        if (!anyFree) { this.startQueue(); return; }
+        this.startStepper(false);
+      },
+      reserveFromEmpty: () => {
+        if (!S.servers.some(s => s.state === 'libre')) { this.startQueue(); return; }
+        this.startStepper(false);
+      },
+      // stepper
+      resuming: S.resuming, stepperBody: !S.resuming,
+      stepServerLabel: r ? 'SERVIDOR #' + r.serverId + ' · TUYO' : '',
+      stepIntro: r && r.long ? 'Suele tardar unos minutos. Puedes salir y volver: tu reserva sigue viva. (Acelerado en el prototipo.)' : 'Menos de un minuto. Puedes salir y volver: tu reserva sigue viva. (Acelerado en el prototipo.)',
+      steps, stepFailed: !!(r && r.failed), stepRunning: !!(r && !r.failed && !r.done),
+      retryStep: () => {
+        this.setState(s => ({ retried: true, reservation: Object.assign({}, s.reservation, { failed: false, stageIdx: 0 }) }));
+        this.toast('info', 'Reintentando la preparación…');
+        this.runStage();
+      },
+      notifyOp: () => this.toast('ok', 'Aviso enviado al operador. Gracias.'),
+      leaveStepper: () => {
+        this.setState({ view: 'home' });
+        this.toast('info', 'Tu reserva sigue viva. Te avisamos al terminar.');
+      },
+      // ready / my server
+      myName: r ? 'Servidor #' + r.serverId : 'Servidor',
+      myPlayers: '1/8', myUptime: hasReservation ? 'recién abierto' : '',
+      connectToast: () => this.toast('info', 'Abriendo el juego…'),
+      copyIcon: S.copied ? '✓' : '⧉',
+      copyAddr: () => {
+        const done = () => { this.setState({ copied: true }); this.toast('ok', 'Dirección copiada'); this._t(() => this.setState({ copied: false }), 2000); };
+        if (navigator.clipboard) navigator.clipboard.writeText('connect play.ventrax.gg:27015').then(done, () => this.toast('err', 'No se pudo copiar. Selecciona la dirección manualmente.'));
+        else done();
+      },
+      askClose: () => this.setState({ confirmingClose: true }),
+      cancelClose: () => this.setState({ confirmingClose: false }),
+      confirmingClose: S.confirmingClose,
+      confirmClose: () => {
+        const sid = r ? r.serverId : null;
+        this.setState(s => ({
+          confirmingClose: false, reservation: null, view: 'home',
+          servers: s.servers.map(x => x.id === sid ? { id: x.id, name: x.name, state: 'libre' } : x)
+        }));
+        this.toast('ok', 'Servidor cerrado. El sitio pasa al siguiente de la cola.');
+      },
+      hasReservation, noReservation: !hasReservation,
+      adminOpen: S.adminOpen, adminChevron: S.adminOpen ? '▴' : '▾',
+      toggleAdmin: () => this.setState(s => ({ adminOpen: !s.adminOpen })),
+      // queue
+      queuePos: S.queue ? S.queue.pos : '', queueWaiting: S.queue ? S.queue.waiting : '',
+      leaveQueue: () => { clearInterval(this._qi); this.setState({ queue: null, view: 'home' }); this.toast('info', 'Saliste de la cola. Puedes volver cuando quieras.'); },
+      // turn
+      turnClock: mm + ':' + String(ss).padStart(2, '0'),
+      ringOffset: 364 - Math.round(364 * ((S.turnLeft || 0) / 227)),
+      enterNow: () => { clearInterval(this._ti); this.setState({ turnLeft: null }); this.startStepper(true); },
+      cedeTurn: () => { clearInterval(this._ti); this.setState({ turnLeft: null, view: 'home' }); this.toast('info', 'Cediste tu turno al siguiente de la cola.'); },
+      // profile
+      inQueueAny, profileIdle: !hasReservation && !inQueueAny,
+      logout: () => { this.setState({ session: false, view: 'login', loginPhase: 'idle' }); },
+      retryDown: () => this.toast('info', 'Sin respuesta aún. Desactiva "Backend caído" en Tweaks para simular la vuelta.'),
+      toasts: S.toasts
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+.btn {
+  height: 44px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: var(--r);
+  border: 1px solid transparent;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  transition: background 0.14s, border-color 0.14s, box-shadow 0.14s;
+}
+
+.btn--ancho {
+  width: 100%;
+}
+
+.btn--primario {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 0 28px var(--accent-glow-soft);
+}
+
+.btn--primario:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: 0 0 36px var(--accent-glow-strong);
+}
+
+.btn--contorno {
+  background: transparent;
+  color: var(--accent);
+  border-color: rgb(40 216 255 / 0.45);
+}
+
+.btn--contorno:hover:not(:disabled) {
+  background: rgb(40 216 255 / 0.08);
+}
+
+.btn--fantasma {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.btn--fantasma:hover:not(:disabled) {
+  border-color: #4a5160;
+}
+
+.btn--peligro {
+  background: transparent;
+  color: var(--danger-text);
+  border-color: rgb(255 92 92 / 0.4);
+}
+
+.btn--peligro:hover:not(:disabled) {
+  background: rgb(255 92 92 / 0.08);
+}
+
+.btn:disabled {
+  background: transparent;
+  color: var(--text-disabled);
+  border-color: var(--border-muted);
+  box-shadow: none;
+}
+
+.btn-spin {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgb(255 255 255 / 0.3);
+  border-top-color: currentColor;
+  border-radius: var(--r-round);
+  animation: vxSpin 0.8s linear infinite;
+}
+
+/* En móvil los CTA ocupan el ancho: son objetivos táctiles grandes. */
+@media (max-width: 639px) {
+  .btn {
+    height: 48px;
+  }
+}

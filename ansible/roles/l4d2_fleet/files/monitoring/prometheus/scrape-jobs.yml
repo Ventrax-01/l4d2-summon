@@ -1,0 +1,7 @@
+# Appended to prometheus.yml scrape_configs by the role.
+# (The Debian prometheus package already ships a 'node' job for :9100.)
+# honor_labels keeps the exporter's own instance/port labels (one target, many servers).
+  - job_name: "l4d2"
+    honor_labels: true
+    static_configs:
+      - targets: ["localhost:9101"]
