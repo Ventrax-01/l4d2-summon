@@ -13,11 +13,25 @@ RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$RAIZ/web"
 npm run build
 
-# Los assets llevan hash en el nombre: se cachean para siempre sin riesgo.
+# Cada grupo se sube UNA vez con su cabecera. Nada de subir todo y repasar después: `sync`
+# solo copia lo que difiere, así que la segunda pasada se salta los ficheros que acaba de
+# subir y la cabecera correcta nunca llega a aplicarse.
+#
+# `immutable` solo vale para nombres que cambian cuando cambia el contenido. Vite le mete un
+# hash a lo de `assets/`, así que ahí es seguro. Para el resto —las miniaturas se llaman
+# siempre `mapas/<codigo>.webp`— sería una promesa imposible de cumplir: al sustituir una
+# imagen, quien ya la tuviera seguiría viendo la vieja un año sin llegar a preguntar. Pasó.
+#
+# Lo de abajo da lo mejor de ambos lados: CloudFront la guarda un año igual (y la purgamos
+# nosotros al publicar), y el navegador revalida siempre — un 304 son doscientos bytes.
 aws s3 sync dist "s3://$BUCKET" --delete --profile "$PERFIL" --region "$REGION" \
-  --cache-control "public,max-age=31536000,immutable" --exclude "index.html"
+  --exclude "assets/*" \
+  --cache-control "public,max-age=0,s-maxage=31536000,must-revalidate"
 
-# index.html NUNCA se cachea: es quien apunta a los assets nuevos.
+aws s3 sync dist/assets "s3://$BUCKET/assets" --delete --profile "$PERFIL" --region "$REGION" \
+  --cache-control "public,max-age=31536000,immutable"
+
+# index.html nunca se cachea en el navegador: es quien apunta a los assets nuevos.
 aws s3 cp dist/index.html "s3://$BUCKET/index.html" --profile "$PERFIL" --region "$REGION" \
   --cache-control "no-cache,must-revalidate"
 
