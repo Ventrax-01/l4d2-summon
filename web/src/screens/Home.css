@@ -141,6 +141,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 20px;
+  /* Se suma al gap del contenedor: separa el bloque de servidores del hero y de
+     la sección de abajo, para que respire como bloque propio. */
+  margin: 16px 0 24px;
 }
 
 @media (max-width: 639px) {
