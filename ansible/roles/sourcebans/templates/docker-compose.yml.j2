@@ -41,6 +41,15 @@ services:
       SBPP_DB_NAME: {{ sourcebans_db_name }}
       SBPP_DB_USER: {{ sourcebans_db_user }}
       SBPP_DB_PASS: ${DB_PASS}
+{% if config_presente %}
+    # config.php lo escribe el asistente de instalación DENTRO del contenedor, o sea en una
+    # capa que desaparece con la primera reconstrucción de la imagen. Montado desde el host
+    # sobrevive, que es la diferencia entre reinstalar o no cada vez que se despliega.
+    volumes:
+      - ./config.php:/var/www/html/config.php
+      - demos:/var/www/html/demos
+      - cache:/var/www/html/cache
+{% endif %}
     # Se publica en la LAN SIEMPRE, esté o no expuesto al público: es por donde se hace la
     # instalación inicial y por donde se administra desde casa sin dar la vuelta por el CDN.
     # La LAN no está reenviada desde internet, así que esto no abre nada.
@@ -82,6 +91,10 @@ services:
 
 volumes:
   dbdata:
+{% if config_presente %}
+  demos:
+  cache:
+{% endif %}
 {% if sourcebans_publico %}
   certs:
 {% endif %}

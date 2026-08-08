@@ -138,6 +138,31 @@
     - sourcebans_publico | bool
     - cert_final.rc | default(1) != 0
 
+# El asistente escribe config.php dentro del contenedor. Se rescata al host para poder
+# montarlo, y a partir de ahí ya vive fuera. Se hace ANTES de rescribir la compose porque
+# es su existencia la que decide si hay montaje.
+- name: Rescue config.php from the container if it only lives there
+  ansible.builtin.shell: |
+    set -e
+    if [ ! -f "{{ sourcebans_dir }}/config.php" ] \
+       && docker exec sourcebans-web test -f /var/www/html/config.php 2>/dev/null; then
+      docker cp sourcebans-web:/var/www/html/config.php "{{ sourcebans_dir }}/config.php"
+      chmod 640 "{{ sourcebans_dir }}/config.php"
+      echo rescatado
+    fi
+  register: rescate
+  changed_when: "'rescatado' in rescate.stdout"
+  failed_when: false
+
+- name: Check whether the panel is already installed
+  ansible.builtin.stat:
+    path: "{{ sourcebans_dir }}/config.php"
+  register: config_php
+
+- name: Remember whether there is a configuration to mount
+  ansible.builtin.set_fact:
+    config_presente: "{{ config_php.stat.exists }}"
+
 - name: Write the compose file
   ansible.builtin.template:
     src: docker-compose.yml.j2
@@ -262,3 +287,14 @@
     # Son los dos que tienen que seguir vivos durante una partida competitiva.
     - sbpp_main.smx
     - sbpp_checker.smx
+
+# Con el panel ya instalado, el asistente y el actualizador sobran, y el propio panel se
+# niega a arrancar mientras sigan ahí: los dos pueden lanzar migraciones contra la base en
+# producción y quedan al alcance de cualquiera que dé con la URL.
+- name: Remove the installer and updater once the panel is configured
+  ansible.builtin.file:
+    path: "{{ sourcebans_dir }}/panel/{{ item }}"
+    state: absent
+  loop: [install, updater]
+  when: config_presente | bool
+  notify: reiniciar sourcebans

@@ -19,4 +19,5 @@ RUN apt-get update \
 # subdirectorio web/ solo existe en el repositorio, que es a lo que apunta el Dockerfile de
 # desarrollo que ellos publican — seguirlo aquí deja Apache sirviendo un 404.
 COPY panel/ /var/www/html/
-RUN chown -R www-data:www-data /var/www/html
+RUN mkdir -p /var/www/html/cache /var/www/html/demos \
+ && chown -R www-data:www-data /var/www/html
