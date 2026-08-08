@@ -277,7 +277,7 @@
   background-image: var(--img, none), linear-gradient(135deg, var(--grad, #233041), #141920);
   background-size: cover, auto;
   background-position: center, center;
-  filter: blur(1.5px);
+  filter: blur(2.5px);
 }
 
 .tsl-mapa--prep::after {
