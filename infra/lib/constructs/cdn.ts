@@ -111,6 +111,10 @@ function handler(event) {
         '/api/*': comportamientoLambda(props.urlApi),
         '/auth/*': comportamientoLambda(props.urlAuth),
         '/agent/*': comportamientoLambda(props.urlAgente),
+        /* La puerta al panel de baneos. Es la API quien responde: comprueba que eres
+           operador, enciende la máquina si hace falta y redirige. El panel en sí NO pasa por
+           aquí — ver lambdas/api/sourcebans.ts. */
+        '/sourcebans': comportamientoLambda(props.urlApi),
       },
     })
   }

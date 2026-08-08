@@ -28,7 +28,8 @@
       "budgetUsd": 1,
       "budgetEmail": "alonsolgm001@gmail.com",
       "priceClass": "PriceClass_100",
-      "ssmPrefix": "/l4d2-summon"
+      "ssmPrefix": "/l4d2-summon",
+      "panelHostname": "sb.ventrax.dev"
     },
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,

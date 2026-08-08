@@ -15,10 +15,13 @@ import { verificar, sesionDeCookies, type Sesion } from '../shared/jwt'
 import { obtener } from '../shared/usuarios'
 import * as m from '../shared/modelo'
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda'
+import { puertaSourcebans } from './sourcebans'
 
 const SSM_JWT = process.env.ssmJwt!
 const HOST_JUEGO = process.env.gameHost!
 const FN_WOL = process.env.wolFunction
+/** Dónde vive el panel de baneos. Es otro dominio a propósito: ver sourcebans.ts. */
+const PANEL_BANS = process.env.panelBans ?? ''
 
 const lambda = new LambdaClient({})
 
@@ -72,6 +75,17 @@ async function sesionDe(evento: Evento): Promise<Sesion | null> {
   const token = sesionDeCookies(evento.headers?.cookie ?? evento.headers?.Cookie)
   if (!token) return null
   return verificar(token, await secreto(SSM_JWT))
+}
+
+/** Pide el encendido de la máquina. El await NO es opcional: Lambda congela el proceso al
+    devolver el handler y una promesa suelta puede quedarse sin salir, sin dejar rastro. */
+async function pedirEncendido(): Promise<void> {
+  if (!FN_WOL) return
+  try {
+    await lambda.send(new InvokeCommand({ FunctionName: FN_WOL, InvocationType: 'Event' }))
+  } catch (e) {
+    console.warn(JSON.stringify({ msg: 'no se pudo pedir el encendido', e: String(e) }))
+  }
 }
 
 // ---------------------------------------------------------------- estado
@@ -285,14 +299,8 @@ async function reservar(sesion: Sesion) {
 
        Esperar cuesta unos milisegundos: InvocationType 'Event' solo encola, no espera a que
        el WoL termine. Quien tarda minutos es la máquina, no esta llamada. */
-    if (FN_WOL) {
-      try {
-        await lambda.send(new InvokeCommand({ FunctionName: FN_WOL, InvocationType: 'Event' }))
-      } catch (e) {
-        // No se aborta la reserva: el barrido reintenta el encendido cada minuto.
-        console.warn(JSON.stringify({ msg: 'no se pudo pedir el encendido', e: String(e) }))
-      }
-    }
+    // No se aborta la reserva si falla: el barrido reintenta el encendido cada minuto.
+    await pedirEncendido()
   }
 
   return ok(intentPublico(it))
@@ -349,6 +357,12 @@ export async function handler(evento: Evento) {
 
   try {
     // El estado es público: sin sesión se ve la flota, solo que sin el bloque personal.
+    /* El panel de baneos va antes de la comprobación de sesión: tiene su propia respuesta
+       para cada caso (sin sesión, sin permiso, máquina apagada) y no es una ruta de API. */
+    if (ruta.endsWith('/sourcebans') && metodo === 'GET') {
+      return puertaSourcebans(sesion, PANEL_BANS, `https://${process.env.domain}`, pedirEncendido)
+    }
+
     if (ruta.endsWith('/api/state') && metodo === 'GET') return ok(await estado(sesion))
 
     if (!sesion) return error('UNAUTHORIZED', 'Necesitas iniciar sesión.')

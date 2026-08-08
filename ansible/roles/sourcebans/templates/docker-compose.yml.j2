@@ -41,8 +41,46 @@ services:
       SBPP_DB_NAME: {{ sourcebans_db_name }}
       SBPP_DB_USER: {{ sourcebans_db_user }}
       SBPP_DB_PASS: ${DB_PASS}
+{% if not sourcebans_publico %}
+    # Sin exponer al público, el panel se publica en la LAN para poder administrarlo desde
+    # dentro de casa sin depender de certificados ni del router.
     ports:
       - "{{ sourcebans_bind }}:{{ sourcebans_web_port }}:80"
+{% endif %}
+
+{% if sourcebans_publico %}
+  # Termina TLS con un certificado propio. El navegador habla con ESTA máquina, no con
+  # CloudFront: así la contraseña del panel no cruza internet en claro entre el borde y casa.
+  proxy:
+    image: nginx:1.27-alpine
+    container_name: sourcebans-proxy
+    restart: unless-stopped
+    depends_on: [web]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - certs:/etc/letsencrypt:ro
+      - acme:/var/www/certbot
+
+  # Renueva el certificado por su cuenta. Sin esto caduca a los 90 días y el panel deja de
+  # abrirse un martes cualquiera sin que nadie haya tocado nada.
+  certbot:
+    image: certbot/certbot:latest
+    container_name: sourcebans-certbot
+    restart: unless-stopped
+    volumes:
+      - certs:/etc/letsencrypt
+      - acme:/var/www/certbot
+    entrypoint: >-
+      sh -c 'trap exit TERM;
+      while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done'
+{% endif %}
 
 volumes:
   dbdata:
+{% if sourcebans_publico %}
+  certs:
+  acme:
+{% endif %}

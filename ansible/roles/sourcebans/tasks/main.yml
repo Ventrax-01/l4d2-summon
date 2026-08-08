@@ -70,6 +70,65 @@
   args:
     creates: "{{ sourcebans_dir }}/panel"
 
+# Todo lo del certificado va ANTES de renderizar la compose: es la compose la que cambia
+# de forma según haya certificado o no, y decidirlo después dejaba el fichero describiendo
+# un modo público que no podía arrancar.
+
+# La emisión inicial es aparte de la renovación: certbot necesita que nginx ya esté
+# sirviendo el reto en el puerto 80, y nginx no arranca sin certificado. Se rompe el círculo
+# pidiendo primero un certificado en modo standalone, con el proxy aún parado.
+- name: Check whether the certificate already exists
+  ansible.builtin.stat:
+    path: "{{ sourcebans_dir }}/certs/live/{{ sourcebans_hostname }}/fullchain.pem"
+  register: cert_previo
+  when: sourcebans_publico | bool
+
+- name: Issue the first certificate
+  ansible.builtin.command:
+    cmd: >-
+      docker run --rm -p 80:80
+      -v sourcebans_certs:/etc/letsencrypt
+      -v sourcebans_acme:/var/www/certbot
+      certbot/certbot certonly --standalone --non-interactive --agree-tos
+      --email {{ sourcebans_email }}
+      -d {{ sourcebans_hostname }}
+    chdir: "{{ sourcebans_dir }}"
+  when:
+    - sourcebans_publico | bool
+    - not (cert_previo.stat.exists | default(false))
+  register: emision
+  # No aborta nunca. La causa habitual es que el router no reenvíe el puerto 80, y eso no
+  # se arregla desde aquí: el panel sigue sirviendo en la LAN y el playbook debe terminar
+  # dejando el resto en pie en vez de abandonar a medias.
+  failed_when: false
+  changed_when: emision.rc == 0
+
+- name: Warn when the certificate could not be issued
+  ansible.builtin.debug:
+    msg: >-
+      No se pudo emitir el certificado para {{ sourcebans_hostname }}. Let's Encrypt tiene
+      que alcanzar esta máquina por el puerto 80 desde internet; pide al ISP que reenvíe
+      80 y 443 a {{ ansible_default_ipv4.address | default('esta máquina') }}. Mientras
+      tanto el panel sigue disponible en la LAN.
+  when:
+    - sourcebans_publico | bool
+    - emision is defined
+    - emision.rc | default(0) != 0
+
+- name: Check whether the certificate exists after issuing
+  ansible.builtin.stat:
+    path: "{{ sourcebans_dir }}/certs/live/{{ sourcebans_hostname }}/fullchain.pem"
+  register: cert_final
+  when: sourcebans_publico | bool
+
+# nginx no arranca sin certificado, así que sin él no tiene sentido esperar por HTTPS.
+- name: Fall back to the LAN check when there is no certificate
+  ansible.builtin.set_fact:
+    sourcebans_publico: false
+  when:
+    - sourcebans_publico | bool
+    - not (cert_final.stat.exists | default(false))
+
 - name: Write the compose file
   ansible.builtin.template:
     src: docker-compose.yml.j2
@@ -77,6 +136,16 @@
     owner: root
     group: root
     mode: "0640"
+  notify: reiniciar sourcebans
+
+- name: Write the proxy configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ sourcebans_dir }}/nginx.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  when: sourcebans_publico | bool
   notify: reiniciar sourcebans
 
 - name: Write the image definition
@@ -110,7 +179,10 @@
 
 - name: Wait for the panel to answer
   ansible.builtin.uri:
-    url: "http://{{ sourcebans_bind }}:{{ sourcebans_web_port }}/"
+    url: >-
+      {{ 'https://' ~ sourcebans_hostname ~ '/' if sourcebans_publico | bool
+         else 'http://' ~ sourcebans_bind ~ ':' ~ sourcebans_web_port ~ '/' }}
+    validate_certs: false
     status_code: [200, 302, 301]
   register: panel_vivo
   retries: 30

@@ -21,3 +21,13 @@ sourcebans_db_root_pass: ""
 # La imagen de MariaDB se fija por versión: un `latest` convierte cualquier despliegue
 # futuro en una migración de base de datos no planeada.
 sourcebans_mariadb_image: "mariadb:10.11"
+
+# Nombre público del panel. El navegador habla TLS directamente contra esta máquina, sin
+# pasar por CloudFront: el salto CloudFront→casa iría por internet llevando la contraseña
+# del panel, y no compensa. Ver infra/lambdas/api/sourcebans.ts.
+sourcebans_hostname: "sb.ventrax.dev"
+# Para avisos de caducidad del certificado.
+sourcebans_email: ""
+# Con false se queda solo en la LAN y no se pide certificado. Útil para probar sin depender
+# de que el router tenga el puerto 80 abierto.
+sourcebans_publico: false

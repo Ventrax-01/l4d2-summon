@@ -18,6 +18,8 @@ export interface AppConfig {
   /** Dominio de los servidores de juego. NO puede ser el mismo que el de la web: aquel
       resuelve a CloudFront, que solo habla HTTP y no enrutaría el UDP del juego. */
   gameHostname: string
+  /** Dominio propio del panel de baneos, que sirve la máquina de casa con su TLS. */
+  panelHostname: string
   /** IP pública fija de la máquina anfitriona. */
   homeIp: string
 
@@ -50,7 +52,7 @@ export function loadConfig(app: App): AppConfig {
 
   const requeridos = [
     'account', 'regionApp', 'regionCert', 'domainName', 'hostedZoneId',
-    'hostedZoneName', 'gameHostname', 'homeIp', 'wolMac', 'ssmPrefix',
+    'hostedZoneName', 'gameHostname', 'panelHostname', 'homeIp', 'wolMac', 'ssmPrefix',
   ]
   for (const k of requeridos) {
     if (!raw[k]) throw new Error(`Falta el parámetro de context "${k}"`)

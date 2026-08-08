@@ -36,6 +36,15 @@ export class Dns extends Construct {
       target: alias,
     })
 
+    /* El panel de baneos tiene su propio nombre apuntando a casa, no a CloudFront: el
+       navegador habla TLS directamente con la máquina. Ver lambdas/api/sourcebans.ts. */
+    new route53.ARecord(this, 'PanelA', {
+      zone: zona,
+      recordName: config.panelHostname,
+      target: route53.RecordTarget.fromIpAddresses(config.homeIp),
+      ttl: Duration.minutes(5),
+    })
+
     // Los servidores de juego, directo a casa.
     new route53.ARecord(this, 'JuegoA', {
       zone: zona,
