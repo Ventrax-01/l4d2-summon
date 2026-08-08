@@ -5,7 +5,7 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .esq-cab {
@@ -42,8 +42,8 @@
 
 .esq-rejilla {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 32px;
 }
 
 @media (max-width: 639px) {
