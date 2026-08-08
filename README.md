@@ -29,12 +29,20 @@ hay que encenderlo.
 
 | Carpeta | Qué es | Estado |
 |---|---|---|
-| `web/` | Frontend React + Vite + TypeScript | ✅ Completo, con mocks y 60 pruebas E2E |
-| `infra/` | CDK: stacks de AWS y el código de las Lambdas | ⏳ Diseñado, sin implementar |
-| `agent/` | Agente Python que corre en la PC de casa | ⏳ Diseñado, sin implementar |
-| `ansible/` | Provisión de la flota de servidores de juego | ✅ En producción |
+| `web/` | Frontend React + Vite + TypeScript | ✅ Completo, con mocks y 88 pruebas E2E |
+| `infra/` | CDK: stacks de AWS y el código de las Lambdas | ✅ Desplegado |
+| `ansible/` | Provisión de la flota, y el agente que corre en la PC de casa | ✅ En producción |
 | `docs/` | Especificación de producto y diseño técnico | ✅ |
 | `design/` | Prototipo de interfaz | ✅ |
+
+> El agente no tiene carpeta propia: vive en `ansible/roles/summon_agent/`, junto a lo que lo
+> instala. Y el plugin de admin por servidor, que en los documentos de diseño se llamaba
+> `fleet_admin`, acabó siendo `summon_admin.sp` en ese mismo rol — es de la plataforma, no de
+> la flota, que funciona sin él.
+
+Los documentos de `docs/` son el diseño **previo** a construirlo. Se conservan como quedaron
+para poder ver qué se decidió y por qué, así que en algunos puntos no describen lo que acabó
+existiendo; manda el código.
 
 ## Empezar
 
