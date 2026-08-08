@@ -6,20 +6,26 @@
 export interface Campania {
   /** Código del mapa tal como lo reporta el servidor. */
   map: string
-  /** Nombre para mostrar. */
+  /** Nombre de la campaña. Se mantiene en inglés: es como se conoce el juego. */
   nombre: string
   /** Color base del degradado de la miniatura: uno por campaña. */
   grad: string
 }
 
 export const CAMPANIAS: Campania[] = [
-  { map: 'c1m1_hotel', nombre: 'Centro Mortal', grad: '#233041' },
-  { map: 'c2m1_highway', nombre: 'Feria Oscura', grad: '#2E2A3C' },
-  { map: 'c3m1_plankcountry', nombre: 'Fiebre del Pantano', grad: '#2A3626' },
-  { map: 'c4m1_milltown_a', nombre: 'Lluvia Torrencial', grad: '#22343A' },
-  { map: 'c5m1_waterfront', nombre: 'La Parroquia', grad: '#3C3226' },
-  { map: 'c6m1_riverbank', nombre: 'El Sacrificio', grad: '#33262E' },
-  { map: 'c13m1_alpinecreek', nombre: 'Arroyo Helado', grad: '#26303C' },
+  { map: 'c1m1_hotel', nombre: 'Dead Center', grad: '#233041' },
+  { map: 'c2m1_highway', nombre: 'Dark Carnival', grad: '#2E2A3C' },
+  { map: 'c3m1_plankcountry', nombre: 'Swamp Fever', grad: '#2A3626' },
+  { map: 'c4m1_milltown_a', nombre: 'Hard Rain', grad: '#22343A' },
+  { map: 'c5m1_waterfront', nombre: 'The Parish', grad: '#3C3226' },
+  { map: 'c6m1_riverbank', nombre: 'The Passing', grad: '#33262E' },
+  { map: 'c13m1_alpinecreek', nombre: 'Cold Stream', grad: '#26303C' },
+  { map: 'c8m1_apartment', nombre: 'No Mercy', grad: '#243038' },
+  { map: 'c11m4_terminal', nombre: 'Dead Air', grad: '#2A2E36' },
+  { map: 'c12m5_cornfield', nombre: 'Blood Harvest', grad: '#2E3326' },
+  { map: 'c9m1_alleys', nombre: 'Crash Course', grad: '#2C2A30' },
+  { map: 'c10m4_mainstreet', nombre: 'Death Toll', grad: '#2A2C34' },
+  { map: 'c7m1_docks', nombre: 'The Sacrifice', grad: '#26313A' },
 ]
 
 /** Nicks de Steam realistas, incluyendo algunos deliberadamente largos. */
