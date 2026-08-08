@@ -1,5 +1,5 @@
 .home {
-  max-width: 1040px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   padding: 24px 20px 36px;
@@ -129,11 +129,12 @@
 
 /* La rejilla es fluida a propósito: el número de servidores lo decide el operador y
    puede ser cualquiera entre 1 y 8. */
-/* auto-fill con un minimo de 230px da 4 tarjetas por fila a 1040px de ancho, y
-   baja solo a 3, 2 y 1 segun se estrecha la pantalla. */
+/* Cuatro por fila SIN encoger la tarjeta: el contenedor de 1200px deja 1160 utiles,
+   asi que cada una queda en 279px — el tamaño que pide el diseño. Sigue bajando sola
+   a 3, 2 y 1 columna segun se estrecha la pantalla. */
 .home-rejilla {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
   gap: 14px;
 }
 
