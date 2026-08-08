@@ -100,15 +100,29 @@ del proyecto.
 **Todas llevan concurrencia reservada**, como techo de gasto y no por rendimiento: si alguien
 descubre el endpoint y lo martillea, se prefiere devolver 429 antes que recibir una factura.
 
-**Las Function URLs son privadas** (`AWS_IAM`) y solo CloudFront puede invocarlas. Como todo
-cuelga del mismo dominio, tampoco hay CORS que configurar.
+**Las Function URLs están abiertas pero protegidas por un secreto compartido.** Se intentó
+OAC —lo más elegante, deja la URL privada— pero la firma SigV4 hacia Lambda devolvía 403 de
+forma persistente con la configuración correcta. Se descartaron por separado la función de
+carga-no-firmada y la política de reenvío de cabeceras: ninguna era la causa. En su lugar
+CloudFront añade la cabecera `x-origen-secreto` y cada función rechaza lo que no la traiga.
+Verificado: por CloudFront la petición llega, y directa a la Function URL responde 401.
+
+**Concurrencia reservada: no se puede.** Esta cuenta tiene un límite de 10 ejecuciones
+concurrentes en total (AWS lo restringe hasta que hay historial) y exige dejar 10 sin
+reservar. Ese límite ya funciona como techo, más estricto que el que iban a dar las reservas.
+Cuando AWS lo suba, conviene repartirlo por función.
+
+Como todo cuelga del mismo dominio, tampoco hay CORS que configurar.
 
 **Los secretos van en Parameter Store, no en Secrets Manager**, que cobra 0,40 USD por secreto
 y mes: los tres costarían más que todo el resto del sistema junto.
 
-**El backend nunca devuelve 403 ni 404.** CloudFront los convierte en `index.html` para que
-funcione el enrutado de la SPA, así que un error real con esos códigos llegaría al navegador
-como una página HTML con estado 200. Se usan 401, 409, 410 y 422 en su lugar.
+**El enrutado de la SPA reescribe la ruta, no mapea errores.** Usar `errorResponses` para
+servir `index.html` ante un 403/404 parece lo natural, pero esa opción es de la distribución
+ENTERA: se tragaba también los errores de la API, y un 403 del origen Lambda llegaba al
+navegador como HTML con estado 200 — el fallo real quedaba invisible. Ahora una función
+reescribe las rutas sin extensión a `/index.html` antes de consultar S3, y solo en el
+comportamiento por defecto.
 
 ## Estado
 

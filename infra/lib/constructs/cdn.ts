@@ -1,25 +1,33 @@
 /* CloudFront: la única puerta de entrada.
 
    Todo cuelga del mismo dominio, así que el navegador nunca hace peticiones a otro origen y
-   NO hay CORS que configurar. Además las Function URLs quedan privadas: solo CloudFront
-   puede invocarlas.
+   NO hay CORS que configurar.
 
-   Dos trampas que este archivo resuelve y conviene conocer:
+   Dos decisiones que costaron encontrar y conviene no deshacer sin leer esto:
 
-   1. El fallback de la SPA usa el error 403, no solo el 404. Con OAC y sin permiso de
-      listado, S3 responde 403 (no 404) ante una ruta que no existe, como /perfil.
+   1. El enrutado de la SPA NO usa `errorResponses`. Esa opción es de la distribución ENTERA,
+      así que se traga también los errores de la API: un 403 del origen Lambda se convertía
+      en index.html con estado 200 y el fallo real quedaba invisible. Se resuelve
+      reescribiendo la ruta ANTES de ir a S3, y solo en el comportamiento por defecto.
 
-   2. Los `errorResponses` son de la distribución ENTERA, así que también afectarían a las
-      respuestas de la API: un 404 del backend se convertiría en index.html con estado 200.
-      Por eso se limitan a los códigos que la API tiene prohibido devolver (ver el contrato
-      en docs/tecnico/02-estados-api.md: usa 401/409/422 en su lugar). */
+   2. Las Function URLs NO usan OAC (control de acceso al origen). Se intentó —es lo más
+      elegante, deja la URL privada— pero la firma SigV4 hacia Lambda devolvía 403 de forma
+      persistente aun con la configuración que indica la documentación: tipo `lambda`, firma
+      `always`, y política de invocación con el ARN de la distribución. Se descartaron por
+      separado la función de carga-no-firmada y la política de reenvío de cabeceras, y
+      ninguna era la causa.
 
-import { Duration } from 'aws-cdk-lib'
+      En su lugar se usa el patrón anterior a OAC: la URL queda abierta pero CloudFront añade
+      una cabecera con un secreto compartido, y la función rechaza lo que no la traiga. El
+      nombre de la Function URL ya es aleatorio de 32 caracteres, así que el secreto es una
+      segunda barrera, no la única. Si OAC hacia Lambda llega a funcionar, merece volver. */
+
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront'
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins'
 import type * as acm from 'aws-cdk-lib/aws-certificatemanager'
 import type * as s3 from 'aws-cdk-lib/aws-s3'
 import type * as lambda from 'aws-cdk-lib/aws-lambda'
+import { Fn } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import type { AppConfig } from '../config'
 
@@ -31,6 +39,8 @@ interface Props {
   urlAuth: lambda.FunctionUrl
   urlAgente: lambda.FunctionUrl
   cabeceras: cloudfront.ResponseHeadersPolicy
+  /** Secreto que CloudFront envía a las funciones para probar que la petición viene de él. */
+  secretoOrigen: string
 }
 
 export class Cdn extends Construct {
@@ -38,34 +48,40 @@ export class Cdn extends Construct {
 
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id)
-    const { config, certificado, bucket, cabeceras } = props
+    const { config, certificado, bucket, cabeceras, secretoOrigen } = props
 
-    /* CloudFront firma la petición hacia la Lambda, pero NO firma el cuerpo, así que
-       cualquier POST fallaría la validación. Marcarlo como carga no firmada es la solución
-       documentada por AWS. */
-    const sinFirmarCuerpo = new cloudfront.Function(this, 'CuerpoSinFirmar', {
-      functionName: 'l4d2-summon-unsigned-payload',
+    /* Enrutado de la SPA: /perfil no es un objeto de S3. En vez de dejar que falle y mapear
+       el error, se reescribe la ruta a /index.html antes de consultar S3. Solo se aplica al
+       comportamiento por defecto, así que las rutas de API quedan intactas. */
+    const rutasSpa = new cloudfront.Function(this, 'RutasSpa', {
+      functionName: 'l4d2-summon-spa-routing',
       code: cloudfront.FunctionCode.fromInline(`
 function handler(event) {
-  event.request.headers['x-amz-content-sha256'] = { value: 'UNSIGNED-PAYLOAD' };
+  var uri = event.request.uri;
+  // Sin punto = ruta de la aplicación, no un archivo.
+  if (uri.indexOf('.') === -1) { event.request.uri = '/index.html'; }
   return event.request;
 }`),
       runtime: cloudfront.FunctionRuntime.JS_2_0,
     })
 
+    /** La URL de la función viene como https://xxx.lambda-url.../ ; el origen necesita solo
+        el nombre de host. */
+    const host = (url: lambda.FunctionUrl) => Fn.select(2, Fn.split('/', url.url))
+
     const comportamientoLambda = (url: lambda.FunctionUrl): cloudfront.BehaviorOptions => ({
-      origin: origins.FunctionUrlOrigin.withOriginAccessControl(url),
+      origin: new origins.HttpOrigin(host(url), {
+        protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        customHeaders: { 'x-origen-secreto': secretoOrigen },
+      }),
       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
       cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-      /* El Host debe seguir siendo el de la Function URL para que la firma valide, pero el
-         resto de cabeceras (incluida Authorization) sí se reenvían. */
+      // El Host debe ser el de la Function URL; el resto de cabeceras y la cadena de consulta
+      // sí se reenvían, que las necesita el retorno de Steam.
       originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       responseHeadersPolicy: cabeceras,
       compress: true,
-      functionAssociations: [
-        { function: sinFirmarCuerpo, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST },
-      ],
     })
 
     this.distribucion = new cloudfront.Distribution(this, 'Distribucion', {
@@ -76,7 +92,7 @@ function handler(event) {
       httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
       defaultRootObject: 'index.html',
-      // Los registros de acceso a S3 son un coste oculto y aquí no aportan nada.
+      // Los registros de acceso son un coste oculto y aquí no aportan nada.
       enableLogging: false,
 
       defaultBehavior: {
@@ -86,6 +102,9 @@ function handler(event) {
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         responseHeadersPolicy: cabeceras,
         compress: true,
+        functionAssociations: [
+          { function: rutasSpa, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST },
+        ],
       },
 
       additionalBehaviors: {
@@ -93,24 +112,6 @@ function handler(event) {
         '/auth/*': comportamientoLambda(props.urlAuth),
         '/agent/*': comportamientoLambda(props.urlAgente),
       },
-
-      /* Rutas de la SPA: /perfil no es un objeto de S3, así que devuelve 403 (por OAC) o
-         404. Se sirve index.html y el enrutador del navegador se encarga. Sin caché, para
-         que un despliegue nuevo se vea al momento. */
-      errorResponses: [
-        {
-          httpStatus: 403,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: Duration.seconds(0),
-        },
-        {
-          httpStatus: 404,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: Duration.seconds(0),
-        },
-      ],
     })
   }
 }

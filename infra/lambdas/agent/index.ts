@@ -7,7 +7,17 @@
    Responde 501 a propósito: es explícito y no simula un funcionamiento que no existe. */
 
 import { error } from '../shared/http'
+import { vieneDeCloudFront } from '../shared/origen'
 
-export async function handler() {
+interface Evento {
+  headers?: Record<string, string | undefined>
+}
+
+export async function handler(evento: Evento) {
+  // Primero: solo se atienden peticiones que vengan por CloudFront.
+  if (!vieneDeCloudFront(evento.headers ?? {})) {
+    return error('UNAUTHORIZED', 'Acceso no autorizado.')
+  }
+
   return error('UNKNOWN', 'Este endpoint todavía no está implementado.')
 }

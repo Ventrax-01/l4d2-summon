@@ -1,0 +1,141 @@
+{
+  "/L4d2SummonCert": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:26:14)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    },
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "ManagedBy",
+          "value": "cdk"
+        },
+        {
+          "key": "Owner",
+          "value": "ventrax"
+        },
+        {
+          "key": "Project",
+          "value": "l4d2-summon"
+        }
+      ]
+    }
+  ],
+  "/L4d2SummonCert/CertificateArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CertificateArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new CertStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/cert-stack.ts:38:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:26:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2SummonCert/Custom::CrossRegionExportWriterCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/L4d2SummonCert/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2SummonCert/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2SummonCert/Cert/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Cert5C9FAEC1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Certificate2 in aws-cdk-lib...",
+        "new CertStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/cert-stack.ts:32:24)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:26:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2SummonCert/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2SummonCert/Custom::CrossRegionExportWriterCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportWriterCustomResourceProviderRoleC951B1E1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2SummonCert/Custom::CrossRegionExportWriterCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportWriterCustomResourceProviderHandlerD8786E8A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2SummonCert/ExportsWriteruseast2828FA26B/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsWriteruseast2828FA26B86FBEFA7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ]
+}

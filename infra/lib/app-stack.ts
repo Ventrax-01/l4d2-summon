@@ -4,6 +4,7 @@
    recibe lo que necesita por props y no lee configuración por su cuenta. */
 
 import { Stack, StackProps, CfnOutput } from 'aws-cdk-lib'
+import * as ssm from 'aws-cdk-lib/aws-ssm'
 import type * as acm from 'aws-cdk-lib/aws-certificatemanager'
 import type { Construct } from 'constructs'
 import type { AppConfig } from './config'
@@ -27,6 +28,13 @@ export class AppStack extends Stack {
     super(scope, id, props)
     const { config, certificado } = props
 
+    /* Secreto que prueba que una petición viene de CloudFront. Es de tipo String y no
+       SecureString porque CloudFormation tiene que leerlo en despliegue para ponerlo como
+       cabecera del origen; solo sirve a quien además conozca la URL de la función. */
+    const secretoOrigen = ssm.StringParameter.valueForStringParameter(
+      this, `${config.ssmPrefix}/origin-secret`,
+    )
+
     const datos = new Datos(this, 'Datos')
     const secretos = new Secretos(this, 'Secretos', config)
 
@@ -34,6 +42,7 @@ export class AppStack extends Stack {
       config,
       tabla: datos.tabla,
       secretos,
+      secretoOrigen,
     })
 
     const sitio = new SitioEstatico(this, 'Sitio', config.account)
@@ -43,10 +52,11 @@ export class AppStack extends Stack {
       config,
       certificado,
       bucket: sitio.bucket,
-      urlApi: funciones.urlPrivada(funciones.api),
-      urlAuth: funciones.urlPrivada(funciones.authSteam),
-      urlAgente: funciones.urlPrivada(funciones.agente),
+      urlApi: funciones.urlPublica(funciones.api),
+      urlAuth: funciones.urlPublica(funciones.authSteam),
+      urlAgente: funciones.urlPublica(funciones.agente),
       cabeceras: cabeceras.politica,
+      secretoOrigen,
     })
 
     new Horarios(this, 'Horarios', funciones.reaper)

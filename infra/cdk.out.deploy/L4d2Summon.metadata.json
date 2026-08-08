@@ -1,0 +1,1006 @@
+{
+  "/L4d2Summon": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    },
+    {
+      "type": "aws:cdk:warning",
+      "data": "No cross-stack-reference strength configured, defaulting to \"strong\". We recommend you set feature flag \"@aws-cdk/core:defaultCrossStackReferences\" to \"both\", then deploy everywhere, then set it to \"weak\". Alternatively, set it to \"strong\" explicitly to lock in the current producer-protecting behavior. (See: https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/README.md#reference-strength) [ack: @aws-cdk/core:crossStackReferencesDefaultStrong]",
+      "trace": [
+        "Annotations.addMessage (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/annotations.js:1:3506)",
+        "Annotations.addWarningV2 (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/annotations.js:1:2194)",
+        "resolveValue (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/private/refs.js:1:6980)",
+        "resolveReferences (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/private/refs.js:1:4848)",
+        "prepareApp (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/private/prepare-app.js:1:1503)",
+        "synthesize (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/private/synthesis.js:1:2625)",
+        "App.synth (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/stage.js:1:5061)",
+        "App.synth (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/app.js:1:5050)",
+        "process.<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/aws-cdk-lib/core/lib/app.js:1:3936)",
+        "Object.onceWrapper (node:events:623:26)",
+        "process.emit (node:events:508:28)",
+        "process.emit (node:domain:489:12)",
+        "process.emit.sharedData.processEmitHook.installedValue [as emit] (/home/ventrax/modules/personal/l4d2-summon/infra/node_modules/@cspotcode/source-map-support/source-map-support.js:745:40)"
+      ]
+    },
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "ManagedBy",
+          "value": "cdk"
+        },
+        {
+          "key": "Owner",
+          "value": "ventrax"
+        },
+        {
+          "key": "Project",
+          "value": "l4d2-summon"
+        }
+      ]
+    }
+  ],
+  "/L4d2Summon/SsmParameterValue:--l4d2-summon--origin-secret:C96584B6-F00A-464E-AD19-53AFF4B05118.Parameter": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SsmParameterValuel4d2summonoriginsecretC96584B6F00A464EAD1953AFF4B05118Parameter"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...StringParameter2.valueForStringParameter in aws-cdk-lib...",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:34:47)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/L4d2Summon/AWSCloudFrontPartitionHostedZoneIdMap": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AWSCloudFrontPartitionHostedZoneIdMap"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new ARecord2 in aws-cdk-lib...",
+        "new Dns (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/dns.ts:28:5)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:63:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/L4d2Summon/SitioUrl": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SitioUrl"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:67:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/BucketWeb": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BucketWeb"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:68:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/DistributionId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DistributionId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:69:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/TablaDatos": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TablaDatos"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:70:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/EndpointAgente": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "EndpointAgente"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:71:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/HostDeJuego": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HostDeJuego"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:75:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Custom::CrossRegionExportReaderCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/L4d2Summon/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Datos/Tabla": [
+    {
+      "type": "aws:cdk:hasPhysicalName",
+      "data": {
+        "Ref": "DatosTablaB4450731"
+      }
+    }
+  ],
+  "/L4d2Summon/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Horarios/Grupo": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HorariosGrupo9FF2564B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new Horarios (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/scheduling.ts:19:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:62:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Horarios/Tick": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HorariosTick35803C48"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new Horarios (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/scheduling.ts:29:5)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:62:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Presupuesto/Presupuesto": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PresupuestoD056E100"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new Presupuesto (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/budget.ts:28:5)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:64:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Custom::CrossRegionExportReaderCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportReaderCustomResourceProviderRole10531BBD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Custom::CrossRegionExportReaderCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportReaderCustomResourceProviderHandler46647B68"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Datos/Tabla/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DatosTablaB4450731"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Table2 in aws-cdk-lib...",
+        "new Datos (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/data.ts:23:18)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:38:19)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/Logapi/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesLogapiC1BD08AB"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new LogGroup2 in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:64:21)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:97:16)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/api/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Funcionesapi673BCB0C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:97:16)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/api/invoke-function-url": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Funcionesapiinvokefunctionurl9B6F10CC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:55:25)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/api/invoke-function": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Funcionesapiinvokefunction9669C652"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:55:25)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/Logauth-steam/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesLogauthsteamCF0434D6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new LogGroup2 in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:64:21)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:102:22)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/auth-steam/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Funcionesauthsteam500FBFAE"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:102:22)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/auth-steam/invoke-function-url": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Funcionesauthsteaminvokefunctionurl20C0E7D0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:56:26)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/auth-steam/invoke-function": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesauthsteaminvokefunctionF90118D3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:56:26)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/Logagent/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesLogagent741FF1DD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new LogGroup2 in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:64:21)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:109:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/agent/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Funcionesagent7BE014E0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:109:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/agent/invoke-function-url": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesagentinvokefunctionurlB26D307E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:57:28)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/agent/invoke-function": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesagentinvokefunctionECD30D4C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:57:28)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/Logwol/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesLogwolC6269B2B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new LogGroup2 in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:64:21)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:114:16)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/wol/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Funcioneswol45087A5C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:114:16)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/Logreaper/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesLogreaper9516D764"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new LogGroup2 in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:64:21)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:121:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/reaper/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Funcionesreaper1557EDF4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:121:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Sitio/Bucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SitioBucket2647C130"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new SitioEstatico (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/static-site.ts:17:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:48:19)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketAutoDeleteObjects"
+      }
+    }
+  ],
+  "/L4d2Summon/Cabeceras/Politica/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CabecerasPolitica6985BC42"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new ResponseHeadersPolicy2 in aws-cdk-lib...",
+        "new CabecerasSeguridad (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/response-headers.ts:32:21)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:49:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Cdn/RutasSpa/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CdnRutasSpaB3290286"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new Cdn (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/cdn.ts:56:22)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:51:17)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Cdn/Distribucion/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CdnDistribucion5F9DB17F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Distribution2 in aws-cdk-lib...",
+        "new Cdn (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/cdn.ts:87:25)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:51:17)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Horarios/RolInvocacion/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HorariosRolInvocacionAAD7EF03"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Role2 in aws-cdk-lib...",
+        "new Horarios (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/scheduling.ts:23:17)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:62:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Dns/SitioA/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DnsSitioA02B1303E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new ARecord2 in aws-cdk-lib...",
+        "new Dns (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/dns.ts:28:5)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:63:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Dns/SitioAAAA/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DnsSitioAAAAED367642"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AaaaRecord2 in aws-cdk-lib...",
+        "new Dns (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/dns.ts:33:5)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:63:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Dns/JuegoA/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DnsJuegoA72EA993B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new ARecord2 in aws-cdk-lib...",
+        "new Dns (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/dns.ts:40:5)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:63:5)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/ExportsReader/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsReader8B249524"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/api/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesapiServiceRole6E694104"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:97:16)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/api/FunctionUrl/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesapiFunctionUrl85147426"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:55:25)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/auth-steam/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesauthsteamServiceRoleAF50C9B1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:102:22)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/auth-steam/FunctionUrl/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesauthsteamFunctionUrl3A7094DD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:56:26)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/agent/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesagentServiceRoleC52D21EE"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:109:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/agent/FunctionUrl/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesagentFunctionUrl6D2C030A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.addFunctionUrl in aws-cdk-lib...",
+        "Funciones.urlPublica (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:140:15)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:57:28)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/wol/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncioneswolServiceRole9815EFA6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:114:16)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/reaper/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesreaperServiceRole51C37DF0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new NodejsFunction in aws-cdk-lib...",
+        "crear (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:71:14)",
+        "new Funciones (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/functions.ts:121:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:41:23)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/L4d2Summon/Sitio/Bucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SitioBucketPolicy3482AD62"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new SitioEstatico (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/static-site.ts:17:19)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:48:19)"
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketPolicyStatements"
+      }
+    }
+  ],
+  "/L4d2Summon/Sitio/Bucket/AutoDeleteObjectsCustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SitioBucketAutoDeleteObjectsCustomResourceEAAA49A1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Horarios/RolInvocacion/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HorariosRolInvocacionDefaultPolicy040087C1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...NodejsFunction.grantInvoke in aws-cdk-lib...",
+        "new Horarios (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/scheduling.ts:27:12)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/api/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesapiServiceRoleDefaultPolicy82DCE021"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/auth-steam/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesauthsteamServiceRoleDefaultPolicy76624394"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/agent/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesagentServiceRoleDefaultPolicy61301321"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/wol/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncioneswolServiceRoleDefaultPolicy097C6D02"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Funciones/reaper/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FuncionesreaperServiceRoleDefaultPolicy7EC8AC56"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/L4d2Summon/Cdn/Distribucion/Origin1/S3OriginAccessControl/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CdnDistribucionOrigin1S3OriginAccessControlD522B916"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Distribution2 in aws-cdk-lib...",
+        "new Cdn (/home/ventrax/modules/personal/l4d2-summon/infra/lib/constructs/cdn.ts:87:25)",
+        "new AppStack (/home/ventrax/modules/personal/l4d2-summon/infra/lib/app-stack.ts:51:17)",
+        "<anonymous> (/home/ventrax/modules/personal/l4d2-summon/infra/bin/l4d2-summon.ts:33:20)"
+      ]
+    }
+  ]
+}
