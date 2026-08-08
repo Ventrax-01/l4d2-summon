@@ -97,9 +97,6 @@ escalar por encima de 25 empezaría a facturar sin avisar.
 para que la función de encendido alcanzara internet. Es la decisión de coste más importante
 del proyecto.
 
-**Todas llevan concurrencia reservada**, como techo de gasto y no por rendimiento: si alguien
-descubre el endpoint y lo martillea, se prefiere devolver 429 antes que recibir una factura.
-
 **Las Function URLs están abiertas pero protegidas por un secreto compartido.** Se intentó
 OAC —lo más elegante, deja la URL privada— pero la firma SigV4 hacia Lambda devolvía 403 de
 forma persistente con la configuración correcta. Se descartaron por separado la función de
