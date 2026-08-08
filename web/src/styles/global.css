@@ -75,3 +75,16 @@ samp {
   white-space: nowrap;
   border: 0;
 }
+
+/* Cuando el contenido es más corto que la pantalla, se centra verticalmente; el pie
+   sigue anclado abajo porque va después en el flujo.
+
+   `safe center` es deliberado: un `center` normal, cuando el contenido desborda, lo
+   recorta por arriba y esa parte queda fuera del área desplazable. Con `safe`, si no
+   cabe vuelve a alinear arriba. */
+.pagina > main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+}

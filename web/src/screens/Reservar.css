@@ -11,7 +11,6 @@
 .rsv--centro {
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
   gap: 16px;
 }
 

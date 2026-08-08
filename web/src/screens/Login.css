@@ -1,5 +1,4 @@
 .login {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: radial-gradient(
@@ -10,7 +9,6 @@
 }
 
 .login-hero {
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
