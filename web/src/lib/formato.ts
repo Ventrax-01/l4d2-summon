@@ -37,3 +37,9 @@ export function comandoConnect(url?: string | null): string {
 export function gradienteMapa(map?: string): string {
   return gradienteDeMapa(map)
 }
+
+/** Miniatura del mapa. Son las imágenes oficiales que el juego usa en su selector,
+    servidas desde nuestro propio CDN (no se enlazan desde fuera). */
+export function imagenDeMapa(map?: string): string | null {
+  return map ? `/mapas/${map}.webp` : null
+}

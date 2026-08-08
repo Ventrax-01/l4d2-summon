@@ -33,7 +33,10 @@
 .tsl-mapa {
   height: 110px;
   position: relative;
-  background: linear-gradient(135deg, var(--grad, #233041), #141920);
+  background-color: var(--grad, #233041);
+  background-image: var(--img, none), linear-gradient(135deg, var(--grad, #233041), #141920);
+  background-size: cover, auto;
+  background-position: center, center;
 }
 
 .tsl-mapa-trama {

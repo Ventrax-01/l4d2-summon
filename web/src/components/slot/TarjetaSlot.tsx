@@ -8,7 +8,7 @@
 
 import type { Slot } from '@/types'
 import { visualDe } from './estadoVisual'
-import { desdeHace, gradienteMapa, iniciales, nombreDeMapa } from '@/lib/formato'
+import { desdeHace, gradienteMapa, imagenDeMapa, iniciales, nombreDeMapa } from '@/lib/formato'
 import './TarjetaSlot.css'
 
 interface Props {
@@ -39,16 +39,15 @@ export default function TarjetaSlot({ slot, mio = false, onReservar, onGestionar
           style={
             {
               '--grad': gradienteMapa(slot.map),
+              // La imagen va como capa encima del degradado: si falta el archivo,
+              // el degradado sigue ahí y la tarjeta no se rompe.
+              '--img': imagenDeMapa(slot.map) ? `url(${imagenDeMapa(slot.map)})` : 'none',
             } as React.CSSProperties
           }
           role="img"
           aria-label={mapa ? `Mapa ${mapa}` : 'Servidor sin partida'}
         >
           <span className="tsl-mapa-trama" aria-hidden="true" />
-          <span className="tsl-mapa-cdn" aria-hidden="true">
-            IMAGEN MAPA · CDN
-          </span>
-
           {v.etiqueta && (
             <span
               className="tsl-badge"
