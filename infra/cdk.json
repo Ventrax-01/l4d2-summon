@@ -1,0 +1,37 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/l4d2-summon.ts",
+  "watch": {
+    "include": [
+      "**"
+    ],
+    "exclude": [
+      "README.md",
+      "cdk*.json",
+      "node_modules"
+    ]
+  },
+  "context": {
+    "l4d2-summon": {
+      "account": "211125402452",
+      "regionApp": "us-east-2",
+      "regionCert": "us-east-1",
+      "domainName": "l4d2.ventrax.dev",
+      "hostedZoneId": "Z0798505KCA3V0GU54OJ",
+      "hostedZoneName": "ventrax.dev",
+      "gameHostname": "play.ventrax.dev",
+      "homeIp": "38.253.185.38",
+      "wolMac": "0A:E0:AF:AF:28:22",
+      "wolUdpPort": 9,
+      "serversDefault": 4,
+      "agentPollSeconds": 15,
+      "logRetentionDays": 7,
+      "budgetUsd": 1,
+      "budgetEmail": "alonsolgm001@gmail.com",
+      "priceClass": "PriceClass_100",
+      "ssmPrefix": "/l4d2-summon"
+    },
+    "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/aws-iam:minimizePolicies": true
+  }
+}

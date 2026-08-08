@@ -1,0 +1,28 @@
+{
+  "name": "l4d2-summon-infra",
+  "private": true,
+  "version": "0.1.0",
+  "bin": {
+    "l4d2-summon": "bin/l4d2-summon.js"
+  },
+  "scripts": {
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "cdk deploy --all",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1106.0",
+    "@aws-sdk/client-ssm": "^3.1106.0",
+    "@aws-sdk/lib-dynamodb": "^3.1106.0",
+    "@types/node": "^22.10.2",
+    "aws-cdk": "^2.173.4",
+    "esbuild": "^0.24.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.173.4",
+    "constructs": "^10.4.2"
+  }
+}

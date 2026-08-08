@@ -51,3 +51,7 @@ __pycache__/
 
 # Índice local de CodeGraph
 .codegraph/
+
+# CDK
+/infra/cdk.out/
+/infra/.cdk.staging/
