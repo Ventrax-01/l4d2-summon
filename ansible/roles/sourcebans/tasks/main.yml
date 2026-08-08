@@ -78,24 +78,29 @@
 # sirviendo el reto en el puerto 80, y nginx no arranca sin certificado. Se rompe el círculo
 # pidiendo primero un certificado en modo standalone, con el proxy aún parado.
 - name: Check whether the certificate already exists
-  ansible.builtin.stat:
-    path: "{{ sourcebans_dir }}/certs/live/{{ sourcebans_hostname }}/fullchain.pem"
+  ansible.builtin.command:
+    cmd: >-
+      docker run --rm -v sourcebans_certs:/c alpine
+      test -f /c/live/{{ sourcebans_hostname }}/fullchain.pem
   register: cert_previo
+  failed_when: false
+  changed_when: false
   when: sourcebans_publico | bool
 
 - name: Issue the first certificate
   ansible.builtin.command:
     cmd: >-
-      docker run --rm -p 80:80
+      docker run --rm
+      -e AWS_ACCESS_KEY_ID={{ sourcebans_aws_key_id }}
+      -e AWS_SECRET_ACCESS_KEY={{ sourcebans_aws_secret }}
       -v sourcebans_certs:/etc/letsencrypt
-      -v sourcebans_acme:/var/www/certbot
-      certbot/certbot certonly --standalone --non-interactive --agree-tos
+      certbot/dns-route53 certonly --dns-route53 --non-interactive --agree-tos
       --email {{ sourcebans_email }}
       -d {{ sourcebans_hostname }}
     chdir: "{{ sourcebans_dir }}"
   when:
     - sourcebans_publico | bool
-    - not (cert_previo.stat.exists | default(false))
+    - cert_previo.rc | default(1) != 0
   register: emision
   # No aborta nunca. La causa habitual es que el router no reenvíe el puerto 80, y eso no
   # se arregla desde aquí: el panel sigue sirviendo en la LAN y el playbook debe terminar
@@ -106,19 +111,23 @@
 - name: Warn when the certificate could not be issued
   ansible.builtin.debug:
     msg: >-
-      No se pudo emitir el certificado para {{ sourcebans_hostname }}. Let's Encrypt tiene
-      que alcanzar esta máquina por el puerto 80 desde internet; pide al ISP que reenvíe
-      80 y 443 a {{ ansible_default_ipv4.address | default('esta máquina') }}. Mientras
-      tanto el panel sigue disponible en la LAN.
+      No se pudo emitir el certificado para {{ sourcebans_hostname }}. Se valida por DNS en
+      Route53, así que no hacen falta puertos: revisa que sourcebans_aws_key_id y
+      sourcebans_aws_secret estén puestos y que la credencial siga viva. Mientras tanto el
+      panel sigue disponible en la LAN.
   when:
     - sourcebans_publico | bool
     - emision is defined
     - emision.rc | default(0) != 0
 
 - name: Check whether the certificate exists after issuing
-  ansible.builtin.stat:
-    path: "{{ sourcebans_dir }}/certs/live/{{ sourcebans_hostname }}/fullchain.pem"
+  ansible.builtin.command:
+    cmd: >-
+      docker run --rm -v sourcebans_certs:/c alpine
+      test -f /c/live/{{ sourcebans_hostname }}/fullchain.pem
   register: cert_final
+  failed_when: false
+  changed_when: false
   when: sourcebans_publico | bool
 
 # nginx no arranca sin certificado, así que sin él no tiene sentido esperar por HTTPS.
@@ -127,7 +136,7 @@
     sourcebans_publico: false
   when:
     - sourcebans_publico | bool
-    - not (cert_final.stat.exists | default(false))
+    - cert_final.rc | default(1) != 0
 
 - name: Write the compose file
   ansible.builtin.template:
@@ -164,6 +173,8 @@
     content: |
       DB_PASS={{ sourcebans_db_pass }}
       DB_ROOT_PASS={{ sourcebans_db_root_pass }}
+      AWS_KEY_ID={{ sourcebans_aws_key_id }}
+      AWS_SECRET={{ sourcebans_aws_secret }}
     dest: "{{ sourcebans_dir }}/.env"
     owner: root
     group: root
@@ -182,8 +193,10 @@
 
 - name: Wait for the panel to answer
   ansible.builtin.uri:
+    # Contra el propio proxy, no contra el nombre público: ahí no hay ni DNS ni secreto de
+    # origen de por medio, así que esto comprueba el servicio y no la red que lo rodea.
     url: >-
-      {{ 'https://' ~ sourcebans_hostname ~ '/' if sourcebans_publico | bool
+      {{ 'https://127.0.0.1:' ~ sourcebans_https_port ~ '/health' if sourcebans_publico | bool
          else 'http://' ~ sourcebans_bind ~ ':' ~ sourcebans_web_port ~ '/' }}
     validate_certs: false
     status_code: [200, 302, 301]

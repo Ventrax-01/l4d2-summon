@@ -20,6 +20,8 @@ export interface AppConfig {
   gameHostname: string
   /** Dominio propio del panel de baneos, que sirve la máquina de casa con su TLS. */
   panelHostname: string
+  /** Puerto del panel en casa. No es 443 porque esa red lo tiene asignado a otro equipo. */
+  panelPort: number
   /** IP pública fija de la máquina anfitriona. */
   homeIp: string
 

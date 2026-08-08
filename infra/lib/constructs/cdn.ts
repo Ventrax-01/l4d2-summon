@@ -111,10 +111,30 @@ function handler(event) {
         '/api/*': comportamientoLambda(props.urlApi),
         '/auth/*': comportamientoLambda(props.urlAuth),
         '/agent/*': comportamientoLambda(props.urlAgente),
-        /* La puerta al panel de baneos. Es la API quien responde: comprueba que eres
-           operador, enciende la máquina si hace falta y redirige. El panel en sí NO pasa por
-           aquí — ver lambdas/api/sourcebans.ts. */
+        /* La puerta al panel: la Lambda comprueba si hay que encender la máquina y manda
+           a /sourcebans/. Ver lambdas/api/sourcebans.ts. */
         '/sourcebans': comportamientoLambda(props.urlApi),
+
+        /* Y el panel en sí, servido desde casa a través del CDN.
+
+           Va por HTTPS contra un certificado propio de la máquina: ese salto cruza internet
+           y por él viajan contraseñas de administración. El puerto no es el 443 porque en
+           esa red está asignado a otro equipo — da igual, nadie lo escribe nunca.
+
+           Sin caché: el panel tiene sesiones y formularios. Lo que se ahorra el CDN aquí no
+           compensa servir a alguien la sesión de otro. */
+        '/sourcebans/*': {
+          origin: new origins.HttpOrigin(config.panelHostname, {
+            protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+            httpsPort: config.panelPort,
+            customHeaders: { 'x-origen-secreto': secretoOrigen },
+          }),
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+          compress: true,
+        },
       },
     })
   }

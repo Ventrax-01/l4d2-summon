@@ -31,3 +31,18 @@ sourcebans_email: ""
 # Con false se queda solo en la LAN y no se pide certificado. Útil para probar sin depender
 # de que el router tenga el puerto 80 abierto.
 sourcebans_publico: false
+
+# Puerto en el que la máquina sirve el panel por HTTPS. NO tiene por qué ser 443: con
+# CloudFront delante nadie lo escribe nunca, así que vale cualquiera que el router reenvíe.
+sourcebans_https_port: 8443
+
+# Credenciales de Route53 para renovar el certificado por DNS. Se valida por DNS y no por
+# HTTP porque el puerto 80 de esta máquina está asignado a otro equipo de la red: sin él,
+# HTTP-01 no funciona nunca, no es cuestión de insistir. El permiso está recortado al
+# registro de validación de este subdominio (ver infra/lib/constructs/certbot.ts).
+sourcebans_aws_key_id: ""
+sourcebans_aws_secret: ""
+
+# El mismo secreto que CloudFront manda a las Lambdas. Sin él, cualquiera que diera con el
+# puerto entraría al panel saltándose el CDN.
+sourcebans_origen_secreto: ""
