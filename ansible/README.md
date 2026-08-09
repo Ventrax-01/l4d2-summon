@@ -13,6 +13,16 @@ cp group_vars/all.yml.sample group_vars/all.yml   # y rellenarlo (ver abajo)
 ansible-playbook playbook.yml --ask-become-pass
 ```
 
+En la máquina de casa eso vive en **`~/l4d2-summon`**, un clon de este repositorio: se
+despliega haciendo `git pull` ahí y ejecutando el playbook. La configuración con secretos es
+el único fichero que no viaja con el repo, y por eso tiene que estar en ese clon y no en un
+directorio suelto: si se queda fuera, se pierde el día que alguien limpie o reinicie.
+
+Antes de aplicar de verdad conviene un `--check`, que enseña qué se movería sin tocar nada.
+Hay cosas que salen como «cambia» en cada pasada y no significan que haya deriva: la descarga
+del juego no se puede verificar en seco, y las units de los servidores se declaran activas
+aquí aunque el agente las apague después cuando nadie las tiene reservadas.
+
 Añadir un servidor es cambiar `server_count` y volver a ejecutar: los puertos, los nombres y la
 configuración por instancia se derivan solos.
 
