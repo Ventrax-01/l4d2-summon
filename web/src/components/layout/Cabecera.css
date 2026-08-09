@@ -80,6 +80,9 @@
 /* Enlace, no botón: lleva a otro sitio en vez de hacer algo aquí, y esa diferencia debería
    verse antes de pulsarlo. Los chips de al lado son acciones de esta misma página. */
 .cab-enlace {
+  /* Separado del grupo de chips: no pertenece a esa fila de acciones y pegado a ellas se
+     lee como una más. El hueco es lo que dice que es otra cosa. */
+  margin-right: 14px;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 12px;

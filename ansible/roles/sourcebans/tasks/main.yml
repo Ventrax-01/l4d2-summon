@@ -247,7 +247,6 @@
               <a href="{{ sourcebans_site_url }}"
                  class="btn btn--secondary"
                  data-testid="volver-al-sitio">
-                  <i data-lucide="arrow-left"></i>
                   <span>Volver al listado de servidores</span>
               </a>
   notify: reiniciar sourcebans
