@@ -272,9 +272,48 @@
     group: "{{ steam_user }}"
     mode: "0640"
 
+# El paquete deja sourcebans.cfg en configs/sourcebans/, pero sbpp_main lo busca un nivel
+# más arriba, en configs/. Lo dice él mismo al arrancar: "Loading configs/sourcebans.cfg".
+# Sin ese fichero arranca igual, sin quejarse, solo que con los valores por defecto.
+# Se copia en vez de plantillarlo para no quedarnos atrás cuando cambien las opciones
+# aguas arriba, y con force: false para que un retoque a mano sobreviva al despliegue.
+- name: Give the bans plugin the config file it actually reads
+  ansible.builtin.copy:
+    src: "{{ install_dir }}/left4dead2/addons/sourcemod/configs/sourcebans/sourcebans.cfg"
+    dest: "{{ install_dir }}/left4dead2/addons/sourcemod/configs/sourcebans.cfg"
+    remote_src: true
+    force: false
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+    mode: "0644"
+
+# Es la dirección que el plugin enseña en el mensaje de expulsión, para que quien reciba un
+# baneo sepa dónde apelarlo. Por defecto viene un dominio de ejemplo que no lleva a nada.
+- name: Send banned players to our panel
+  ansible.builtin.lineinfile:
+    path: "{{ install_dir }}/left4dead2/addons/sourcemod/configs/sourcebans.cfg"
+    regexp: '^\s*"Website"'
+    line: "\t\t\"Website\"\t\t\t\"{{ sourcebans_panel_url }}\""
+    owner: "{{ steam_user }}"
+    group: "{{ steam_user }}"
+
 # Sin esto los baneos dejan de funcionar en cuanto alguien escribe !match — que es
 # justamente cuando hacen falta. confogl descarga TODO al entrar en matchmode y solo recarga
 # lo que sus cfg piden; ver roles/l4d2_fleet/files/fleet_plugins.cfg.
+# basebans es el plugin de baneos que trae SourceMod y guarda en banned_user.cfg. Registra
+# sm_ban / sm_addban / sm_unban, y como se carga antes, se queda los comandos: el baneo
+# parece funcionar —responde "Ban has been added"— pero no llega nunca a la base. Se aparta
+# a disabled/ en vez de borrarlo, para poder revertir sin reinstalar SourceMod.
+- name: Make room for the SourceBans commands
+  ansible.builtin.command:
+    cmd: >-
+      mv {{ install_dir }}/left4dead2/addons/sourcemod/plugins/basebans.smx
+         {{ install_dir }}/left4dead2/addons/sourcemod/plugins/disabled/basebans.smx
+    creates: "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/disabled/basebans.smx"
+    removes: "{{ install_dir }}/left4dead2/addons/sourcemod/plugins/basebans.smx"
+  become: true
+  become_user: "{{ steam_user }}"
+
 - name: Keep the bans plugins loaded during a match
   ansible.builtin.lineinfile:
     path: "{{ install_dir }}/left4dead2/cfg/cfgogl/fleet_plugins.cfg"

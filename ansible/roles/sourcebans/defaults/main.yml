@@ -26,6 +26,9 @@ sourcebans_mariadb_image: "mariadb:10.11"
 # pasar por CloudFront: el salto CloudFront→casa iría por internet llevando la contraseña
 # del panel, y no compensa. Ver infra/lambdas/api/sourcebans.ts.
 sourcebans_hostname: "sb.ventrax.dev"
+# La que se le enseña a quien recibe un baneo para que sepa dónde apelarlo. Es la del sitio
+# público, no la de arriba: esa es interna y además va con un puerto raro.
+sourcebans_panel_url: "https://l4d2.ventrax.dev/sourcebans/"
 # Para avisos de caducidad del certificado.
 sourcebans_email: ""
 # Con false se queda solo en la LAN y no se pide certificado. Útil para probar sin depender
