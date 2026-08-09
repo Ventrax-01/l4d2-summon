@@ -77,6 +77,19 @@
   font-size: 12px;
 }
 
+/* Deliberadamente apagado: es un sitio al que se va de vez en cuando, no una acción del
+   flujo. Compite con "Mi servidor" y con la cola si se le da color propio. */
+.cab-chip--bans {
+  border: 1px solid rgb(255 255 255 / 0.1);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.cab-chip--bans:hover {
+  border-color: rgb(255 255 255 / 0.22);
+  color: var(--text);
+}
+
 .cab-chip--mio {
   background: rgb(40 216 255 / 0.08);
   border: 1px solid rgb(40 216 255 / 0.35);

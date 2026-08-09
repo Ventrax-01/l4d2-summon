@@ -59,7 +59,11 @@ void AplicarSiEsElDuenio(int client)
     SetAdminFlag(adm, Admin_Kick, true);       // echar
     SetAdminFlag(adm, Admin_Changemap, true);  // cambiar de mapa / campaña
     SetAdminFlag(adm, Admin_Vote, true);       // forzar votaciones
-    SetAdminFlag(adm, Admin_Chat, true);
+    /* Admin_Chat queda fuera a propósito. Suena inofensivo —es el de sm_say y compañía—
+     * pero es también el que SourceComms exige para gag, mute y silence, y esos tres se
+     * guardan en la base de SourceBans y salen listados en el panel con nombre y apellido.
+     * Un castigo que sobrevive a la reserva y aparece en el historial público no es algo
+     * que deba poder poner quien alquiló el servidor durante una hora. */
     // Inmunidad media: por encima de los jugadores, por debajo del operador de la flota,
     // que conserva el root y puede intervenir si hace falta.
     SetAdminImmunityLevel(adm, 50);

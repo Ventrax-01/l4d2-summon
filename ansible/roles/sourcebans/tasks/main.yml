@@ -230,6 +230,27 @@
   delay: 5
   until: panel_vivo is succeeded
 
+# El panel es una aplicación distinta de la web, con su propia cabecera, así que desde
+# dentro no hay ninguna manera de volver. Se cuela un enlace junto al botón de tema, que es
+# el último elemento de esa cabecera y por tanto el sitio donde cae a su derecha.
+# Se parchea la plantilla en el host porque el Dockerfile la copia a la imagen: editarla
+# dentro del contenedor se perdería en la siguiente reconstrucción.
+- name: Give the panel a way back to the site
+  ansible.builtin.blockinfile:
+    path: "{{ sourcebans_dir }}/panel/themes/default/core/title.tpl"
+    # Comentario de Smarty, no de HTML: así los marcadores no llegan al navegador.
+    marker: '        {{ "{*" }} {mark} vuelta al sitio (gestionado por Ansible) {{ "*}" }}'
+    insertbefore: '^\s*</header>'
+    block: |2
+              <a href="{{ sourcebans_site_url }}"
+                 class="btn btn--ghost"
+                 data-testid="volver-al-sitio"
+                 title="Volver a los servidores">
+                  <i data-lucide="arrow-left"></i>
+                  <span>Servidores</span>
+              </a>
+  notify: reiniciar sourcebans
+
 # --- el lado del juego -------------------------------------------------------------
 
 # El tarball envuelve todo en `<nombre-release>/common/`, así que hay que descartar dos
