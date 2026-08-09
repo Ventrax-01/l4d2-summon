@@ -297,6 +297,27 @@
     owner: "{{ steam_user }}"
     group: "{{ steam_user }}"
 
+# SourceBans no descubre los servidores solo: hay que darlos de alta, y cada baneo guarda
+# el sid del servidor donde se puso. Si el servidor no está en la tabla el sid sale nulo y
+# el INSERT del baneo se cae entero.
+#
+# La IP es 127.0.1.1 y no la de la LAN porque el plugin se busca por lo que dice el cvar
+# `hostip`, y srcds arranca sin -ip: coge la que Ubuntu pone en /etc/hosts para el nombre
+# de la máquina, que es esa. Es la misma razón por la que el RCON tampoco responde en
+# 127.0.0.1. Contraintuitivo, pero es lo que el plugin compara.
+- name: Register the game servers in the bans panel
+  ansible.builtin.command:
+    cmd: >-
+      docker exec sourcebans-db mariadb -u{{ sourcebans_db_user }} -p{{ sourcebans_db_pass }}
+      {{ sourcebans_db_name }} -e
+      "INSERT INTO sb_servers (ip, port, rcon, modid, enabled)
+       SELECT '127.0.1.1', {{ port_base + item }}, '{{ rcon_password }}', 16, 1 FROM DUAL
+       WHERE NOT EXISTS (SELECT 1 FROM sb_servers
+                         WHERE ip = '127.0.1.1' AND port = {{ port_base + item }});"
+  loop: "{{ range(1, server_count + 1) | list }}"
+  changed_when: false
+  when: config_presente | bool
+
 # Sin esto los baneos dejan de funcionar en cuanto alguien escribe !match — que es
 # justamente cuando hacen falta. confogl descarga TODO al entrar en matchmode y solo recarga
 # lo que sus cfg piden; ver roles/l4d2_fleet/files/fleet_plugins.cfg.

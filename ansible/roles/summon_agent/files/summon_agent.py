@@ -81,6 +81,7 @@ estado = {
     "hechas": {},           # id de orden -> cuándo se ejecutó
     "pendiente_admin": {},  # slot -> steamid al que hay que dar el mando cuando cargue
     "sembrado": {},         # slot -> steamid que ya lo tiene
+    "bans_reenganchado": {},  # slot -> ya se recuperó la conexión de baneos tras arrancar
 }
 
 
@@ -355,10 +356,29 @@ def sembrar_admin(puerto: int, steam_id: str) -> bool:
     return "OK" in rcon(puerto, "sm_summon_admin %s" % steam_id)
 
 
+def reenganchar_bans(puerto: int) -> bool:
+    """Recupera la conexión del plugin de baneos, que se pierde en cada arranque.
+
+    Un L4D2 sin nadie dentro hiberna: deja de correr frames, y sin frames no se despachan
+    las respuestas asíncronas. El plugin pide su conexión a la base nada más cargar —o sea,
+    en plena hibernación— y esa respuesta se pierde por el camino. Como él se queda marcado
+    como "conectando", tampoco reintenta nunca: se queda mudo para siempre y los baneos se
+    caen por dentro sin escribir nada.
+
+    Recargarlo con el servidor ya despierto rehace la conexión. Se hace una sola vez por
+    arranque, cuando entra el primer jugador, que es justo cuando el servidor deja de
+    hibernar. Es transparente para quien está jugando.
+    """
+    return "sourcebans" in rcon(puerto, "sm plugins reload sbpp_main").lower()
+
+
 # ---------------------------------------------------------------- órdenes
 
 def levantar(n: int, admin_steam_id: str) -> bool:
     subprocess.run(["/usr/bin/systemctl", "restart", "l4d2@%d.service" % n], timeout=60)
+    # Proceso nuevo, plugin nuevo: la conexión de baneos vuelve a hacer falta.
+    estado["bans_reenganchado"].pop(str(n), None)
+    guardar_estado()
     if admin_steam_id:
         # El servidor tarda en cargar; el admin se siembra en la vuelta siguiente, cuando ya
         # responda el RCON. Aquí solo queda anotado —y en disco, para que un reinicio del
@@ -410,6 +430,7 @@ def parar(n: int, forzado: bool = False) -> bool:
     subprocess.run(["/usr/bin/systemctl", "stop", "l4d2@%d.service" % n], timeout=60)
     estado["pendiente_admin"].pop(str(n), None)
     estado["sembrado"].pop(str(n), None)
+    estado["bans_reenganchado"].pop(str(n), None)
     guardar_estado()
     log("servidor parado", slot=n)
     return True
@@ -543,6 +564,15 @@ def reportar_slots() -> list:
             # en memoria, un reinicio del agente entregaba el servidor sin admin diciendo
             # que sí lo tenía.
             r["adminSembrado"] = bool(estado["sembrado"].get(str(n))) or not esperando
+
+            # Con el primer jugador el servidor sale de la hibernación, y es el momento —el
+            # único— en que el plugin de baneos puede recuperar su conexión. Ver
+            # reenganchar_bans() para por qué no lo hace solo.
+            if r.get("players", 0) > 0 and not estado["bans_reenganchado"].get(str(n)):
+                if reenganchar_bans(puerto):
+                    estado["bans_reenganchado"][str(n)] = True
+                    guardar_estado()
+                    log("baneos reenganchados", slot=n)
 
         reportes.append(r)
     return reportes

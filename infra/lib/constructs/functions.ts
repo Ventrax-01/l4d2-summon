@@ -49,7 +49,10 @@ export class Funciones extends Construct {
       table: tabla.tableName,
       domain: config.domainName,
       gameHost: config.gameHostname,
-      panelBans: `https://${config.panelHostname}/`,
+      // Bajo el propio dominio: CloudFront sirve el panel en esa ruta, así que la barra de
+      // direcciones no cambia y el puerto del origen no se ve nunca. Esta variable quedó
+      // apuntando al host de casa cuando el panel aún se servía directo.
+      panelBans: `https://${config.domainName}/sourcebans/`,
       ssmSteamKey: config.ssm.steamApiKey,
       ssmJwt: config.ssm.jwtSecret,
       ssmAgentToken: config.ssm.agentToken,
