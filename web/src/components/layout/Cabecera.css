@@ -77,17 +77,20 @@
   font-size: 12px;
 }
 
-/* Deliberadamente apagado: es un sitio al que se va de vez en cuando, no una acción del
-   flujo. Compite con "Mi servidor" y con la cola si se le da color propio. */
-.cab-chip--bans {
-  border: 1px solid rgb(255 255 255 / 0.1);
-  color: var(--text-muted);
-  text-decoration: none;
+/* Enlace, no botón: lleva a otro sitio en vez de hacer algo aquí, y esa diferencia debería
+   verse antes de pulsarlo. Los chips de al lado son acciones de esta misma página. */
+.cab-enlace {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 
-.cab-chip--bans:hover {
-  border-color: rgb(255 255 255 / 0.22);
-  color: var(--text);
+.cab-enlace:hover {
+  text-decoration-thickness: 2px;
 }
 
 .cab-chip--mio {

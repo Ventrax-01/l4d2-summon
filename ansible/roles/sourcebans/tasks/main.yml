@@ -235,6 +235,8 @@
 # el último elemento de esa cabecera y por tanto el sitio donde cae a su derecha.
 # Se parchea la plantilla en el host porque el Dockerfile la copia a la imagen: editarla
 # dentro del contenedor se perdería en la siguiente reconstrucción.
+# Va como `secondary` y no como `ghost` —el estilo del botón de tema— porque ghost es
+# invisible hasta que pasas por encima, y la salida tiene que verse sin buscarla.
 - name: Give the panel a way back to the site
   ansible.builtin.blockinfile:
     path: "{{ sourcebans_dir }}/panel/themes/default/core/title.tpl"
@@ -243,11 +245,10 @@
     insertbefore: '^\s*</header>'
     block: |2
               <a href="{{ sourcebans_site_url }}"
-                 class="btn btn--ghost"
-                 data-testid="volver-al-sitio"
-                 title="Volver a los servidores">
+                 class="btn btn--secondary"
+                 data-testid="volver-al-sitio">
                   <i data-lucide="arrow-left"></i>
-                  <span>Servidores</span>
+                  <span>Volver al listado de servidores</span>
               </a>
   notify: reiniciar sourcebans
 
@@ -322,19 +323,20 @@
 # el sid del servidor donde se puso. Si el servidor no está en la tabla el sid sale nulo y
 # el INSERT del baneo se cae entero.
 #
-# La IP es 127.0.1.1 y no la de la LAN porque el plugin se busca por lo que dice el cvar
-# `hostip`, y srcds arranca sin -ip: coge la que Ubuntu pone en /etc/hosts para el nombre
-# de la máquina, que es esa. Es la misma razón por la que el RCON tampoco responde en
-# 127.0.0.1. Contraintuitivo, pero es lo que el plugin compara.
+# La IP aquí es puramente lo que se enseña en el panel: quién es cada servidor se decide
+# con `sb_id`, que l4d2-run.sh escribe en la cfg de cada instancia. Sin ese id el plugin se
+# buscaría por el cvar `hostip` —que aquí vale 127.0.1.1, la que Ubuntu pone en /etc/hosts—
+# y habría que publicar esa dirección para que se encontrara. Con el id explícito se puede
+# poner la pública, que además es la que sirve para conectarse.
 - name: Register the game servers in the bans panel
   ansible.builtin.command:
     cmd: >-
       docker exec sourcebans-db mariadb -u{{ sourcebans_db_user }} -p{{ sourcebans_db_pass }}
       {{ sourcebans_db_name }} -e
-      "INSERT INTO sb_servers (ip, port, rcon, modid, enabled)
-       SELECT '127.0.1.1', {{ port_base + item }}, '{{ rcon_password }}', 16, 1 FROM DUAL
-       WHERE NOT EXISTS (SELECT 1 FROM sb_servers
-                         WHERE ip = '127.0.1.1' AND port = {{ port_base + item }});"
+      "INSERT INTO sb_servers (sid, ip, port, rcon, modid, enabled)
+       SELECT {{ item }}, '{{ sourcebans_ip_publica }}', {{ port_base + item }},
+              '{{ rcon_password }}', 16, 1 FROM DUAL
+       WHERE NOT EXISTS (SELECT 1 FROM sb_servers WHERE sid = {{ item }});"
   loop: "{{ range(1, server_count + 1) | list }}"
   changed_when: false
   when: config_presente | bool

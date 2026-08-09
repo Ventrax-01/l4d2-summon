@@ -43,6 +43,21 @@ public void OnClientPostAdminCheck(int client)
     AplicarSiEsElDuenio(client);
 }
 
+/* Y otra vez cada vez que la caché se reconstruye, porque una reconstrucción tira todos los
+ * AdminId creados en memoria — incluido el nuestro. Sin esto el dueño pierde el mando en
+ * mitad de su reserva, sin aviso y sin haber hecho nada.
+ *
+ * No es un caso raro: SourceBans reconstruye la caché al cargar sus propios admins desde la
+ * base, y cualquier sm_reloadadmins hace lo mismo. Antes de instalar el panel esto no
+ * pasaba nunca, y por eso el fallo estuvo escondido. */
+public void OnRebuildAdminCache(AdminCachePart part)
+{
+    if (part != AdminCache_Admins) return;
+
+    for (int i = 1; i <= MaxClients; i++)
+        AplicarSiEsElDuenio(i);
+}
+
 void AplicarSiEsElDuenio(int client)
 {
     if (g_Duenio[0] == '\0') return;

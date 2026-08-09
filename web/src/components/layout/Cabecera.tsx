@@ -27,8 +27,8 @@ export default function Cabecera() {
         <nav className="cab-acc">
           {/* Sale de la SPA: el panel de baneos es otra aplicación servida en esa ruta, así
               que va como enlace de verdad y no por el router. */}
-          <a className="cab-chip cab-chip--bans" href="/sourcebans/">
-            Baneos
+          <a className="cab-enlace" href="/sourcebans/">
+            SourceBans
           </a>
 
           {me?.slot && (

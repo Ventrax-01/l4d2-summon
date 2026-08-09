@@ -32,6 +32,9 @@ sourcebans_panel_url: "https://l4d2.ventrax.dev/sourcebans/"
 # La raíz del sitio. El panel es una aplicación aparte y sin esto no hay forma de volver:
 # quien entra desde la cabecera se queda ahí encallado salvo que edite la barra.
 sourcebans_site_url: "https://l4d2.ventrax.dev/"
+# La que se muestra en la lista de servidores del panel. Es solo presentación —el servidor
+# se identifica con sb_id— así que aquí va la que le sirve a la gente para conectarse.
+sourcebans_ip_publica: "38.253.185.38"
 # Para avisos de caducidad del certificado.
 sourcebans_email: ""
 # Con false se queda solo en la LAN y no se pide certificado. Útil para probar sin depender
