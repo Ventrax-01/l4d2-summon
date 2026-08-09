@@ -342,9 +342,9 @@
     cmd: >-
       docker exec sourcebans-db mariadb -u{{ sourcebans_db_user }} -p{{ sourcebans_db_pass }}
       {{ sourcebans_db_name }} -e
-      "UPDATE sb_settings SET value = '{{ sourcebans_intro_titulo | replace(\"'\", \"''\") }}'
+      "UPDATE sb_settings SET value = '{{ sourcebans_intro_titulo | replace("'", "''") }}'
          WHERE setting = 'dash.intro.title';
-       UPDATE sb_settings SET value = '{{ sourcebans_intro_texto | replace(\"'\", \"''\") }}'
+       UPDATE sb_settings SET value = '{{ sourcebans_intro_texto | replace("'", "''") }}'
          WHERE setting = 'dash.intro.text';"
   changed_when: false
   when: config_presente | bool
