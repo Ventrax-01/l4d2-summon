@@ -113,10 +113,61 @@
 }
 
 .tsl-jugadores {
+  position: relative;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-2);
   white-space: nowrap;
+}
+
+/* Quién está dentro. Aparece al pasar por encima del recuento, que es donde uno mira
+   cuando se pregunta justamente eso. */
+.tsl-globo {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: max-content;
+  max-width: 200px;
+  padding: 7px 10px;
+  border-radius: var(--r);
+  background: rgb(0 0 0 / 0.82);
+  backdrop-filter: blur(3px);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  /* --gx/--gy los escribe el ratón; el -50% es lo que lo centra sobre el recuento. */
+  transform: translate(calc(-50% + var(--gx, 0px)), var(--gy, 0px));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* La opacidad entra rápido para que no parezca lento; el desplazamiento va con una
+     transición más larga, que es de donde sale la sensación de que flota en vez de seguir
+     al cursor pegado. */
+  transition: opacity 0.12s ease, visibility 0s linear 0.12s, transform 0.25s ease-out;
+}
+
+.tsl-jugadores:hover .tsl-globo {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.12s ease, visibility 0s, transform 0.25s ease-out;
+}
+
+.tsl-globo-linea {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sin movimiento para quien lo pidió: el globo sigue apareciendo, quieto. */
+@media (prefers-reduced-motion: reduce) {
+  .tsl-globo {
+    transform: translateX(-50%);
+    transition: opacity 0.12s ease, visibility 0s linear 0.12s;
+  }
 }
 
 .tsl-chip {

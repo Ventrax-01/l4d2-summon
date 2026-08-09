@@ -66,6 +66,7 @@ export interface Slot {
   players?: number
   bots?: number
   maxPlayers?: number
+  nombres?: string[]
   claimSteamId?: string | null
   claimDeadline?: number | null
   updatedAt: number
@@ -458,6 +459,8 @@ export interface ReporteSlot {
   players?: number
   bots?: number
   maxPlayers?: number
+  /** Quiénes están dentro, bots incluidos. Solo para enseñarlo; nada se decide con esto. */
+  nombres?: string[]
   pluginsOk?: boolean
   adminSembrado?: boolean
 }
@@ -523,12 +526,13 @@ export async function actualizarSlotDesdeAgente(r: ReporteSlot): Promise<void> {
   let quitar = ''
 
   if (!mudo) {
-    asignaciones.push('#m = :map, players = :pl, bots = :bots, maxPlayers = :mx')
+    asignaciones.push('#m = :map, players = :pl, bots = :bots, maxPlayers = :mx, nombres = :nom')
     nombres['#m'] = 'map'
     valores[':map'] = r.map ?? null
     valores[':pl'] = r.players ?? 0
     valores[':bots'] = r.bots ?? 0
     valores[':mx'] = r.maxPlayers ?? 8
+    valores[':nom'] = r.nombres ?? []
 
     // El reloj de vacío se pone al ver el servidor sin gente y se borra en cuanto entra
     // alguien, así que solo cuenta el vacío continuo.

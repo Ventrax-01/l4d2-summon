@@ -27,6 +27,22 @@ export default function TarjetaSlot({ slot, mio = false, onReservar, onGestionar
   const conError = slot.estado === 'ERROR'
   const lleno = Boolean(slot.players && slot.maxPlayers && slot.players >= slot.maxPlayers)
   const mapa = nombreDeMapa(slot.map)
+  const hayNombres = Boolean(slot.nombres?.length)
+
+  /* El globo se desplaza un poco con el ratón, dentro del propio hover. No es adorno: un
+     panel que aparece clavado se lee como parte de la tarjeta, y ese resto de movimiento lo
+     separa y lo hace sentir flotando encima. El recorrido es de pocos píxeles a propósito;
+     más y persigue al cursor en vez de acompañarlo.
+     Se escribe en variables CSS en vez de en el estado de React porque esto ocurre en cada
+     movimiento del ratón: pasar por el ciclo de render sería repintar la tarjeta entera
+     decenas de veces por segundo para mover un globo. */
+  const seguirRaton = (e: React.MouseEvent<HTMLElement>) => {
+    const caja = e.currentTarget.getBoundingClientRect()
+    const dx = (e.clientX - caja.left) / caja.width - 0.5
+    const dy = (e.clientY - caja.top) / caja.height - 0.5
+    e.currentTarget.style.setProperty('--gx', `${(dx * 10).toFixed(1)}px`)
+    e.currentTarget.style.setProperty('--gy', `${(dy * 6).toFixed(1)}px`)
+  }
 
   const conMiniatura = enJuego || libre || preparando
   // Con miniatura el chip va encima; si no, baja a la fila del cuerpo.
@@ -73,8 +89,20 @@ export default function TarjetaSlot({ slot, mio = false, onReservar, onGestionar
           </h3>
 
           {(enJuego || libre) && (
-            <span className={`tsl-jugadores ${libre ? 'tsl-jugadores--vacio' : ''}`}>
+            <span
+              className={`tsl-jugadores ${libre ? 'tsl-jugadores--vacio' : ''}`}
+              onMouseMove={hayNombres ? seguirRaton : undefined}
+            >
               <span aria-hidden="true">👥</span> {slot.players ?? 0}/{slot.maxPlayers ?? 8}
+              {hayNombres && (
+                <span className="tsl-globo" role="tooltip">
+                  {slot.nombres!.map((n, i) => (
+                    <span key={`${n}-${i}`} className="tsl-globo-linea">
+                      {n}
+                    </span>
+                  ))}
+                </span>
+              )}
             </span>
           )}
 

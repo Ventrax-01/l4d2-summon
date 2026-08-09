@@ -107,6 +107,12 @@ async function estado(sesion: Sesion | null) {
       : cfg.startMap) ?? undefined,
     players: s.players,
     maxPlayers: s.maxPlayers ?? 8,
+    /* Solo mientras hay partida. En un slot dormido el último dato es de la sesión anterior,
+       y enseñar a gente que ya no está es peor que no enseñar nada. */
+    nombres:
+      (s.estado === 'ACTIVO' || s.estado === 'VACIO') && s.nombres?.length
+        ? s.nombres
+        : undefined,
     since: s.since ?? undefined,
     // La dirección solo se da si hay algo a lo que conectarse.
     connect:

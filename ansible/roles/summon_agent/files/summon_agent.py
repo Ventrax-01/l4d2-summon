@@ -53,6 +53,8 @@ INCOMUNICADO_MAX_S = int(os.environ.get("OFFLINE_SHUTDOWN_SEC", "900"))
 ESTADO = os.environ.get("STATE_FILE", "/var/lib/summon-agent/estado.json")
 
 A2S_INFO = b"\xFF\xFF\xFF\xFF\x54Source Engine Query\x00"
+# La de los nombres. Lleva el reto pegado detrás, por eso va sin terminador.
+A2S_PLAYER = b"\xFF\xFF\xFF\xFF\x55"
 
 
 def log(msg, **datos):
@@ -160,6 +162,50 @@ def consultar_a2s(puerto: int, intentos: int = 3) -> dict:
         if intento + 1 < intentos:
             time.sleep(0.3)
     return {}
+
+
+def consultar_nombres(puerto: int) -> list:
+    """Los nombres de quienes están dentro.
+
+    Es una consulta distinta de la de arriba —A2S_PLAYER— y va en dos pasos: el servidor
+    contesta primero con un reto que hay que devolverle. Sin eso no responde.
+
+    A diferencia del recuento, esto es decorativo: alimenta el globo de la web y nada más.
+    Por eso un solo intento y sin reintentos: si se pierde, la vuelta siguiente lo arregla y
+    mientras tanto no se decide nada con ello.
+
+    La lista va tal como la devuelve el servidor, sin filtrar. En L4D2 los supervivientes
+    controlados por la máquina no salen aquí, pero si algún día saliera alguno tampoco
+    importaría: el recuento de personas se sigue sacando de la otra consulta, que sí marca
+    los bots aparte.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(2)
+    try:
+        s.sendto(A2S_PLAYER + b"\xFF\xFF\xFF\xFF", (GAME_IP, puerto))
+        datos, _ = s.recvfrom(4096)
+        if datos[4:5] == b"\x41":  # el reto
+            s.sendto(A2S_PLAYER + datos[5:9], (GAME_IP, puerto))
+            datos, _ = s.recvfrom(4096)
+        if datos[4:5] != b"\x44":
+            return []
+        nombres = []
+        resto = datos[6:]
+        while resto:
+            # índice (1) + nombre terminado en cero + puntuación (4) + tiempo jugado (4)
+            resto = resto[1:]
+            fin = resto.find(b"\x00")
+            if fin < 0:
+                break
+            nombre = resto[:fin].decode("utf-8", "replace").strip()
+            resto = resto[fin + 1 + 8:]
+            if nombre:
+                nombres.append(nombre)
+        return nombres[:32]
+    except Exception:
+        return []
+    finally:
+        s.close()
 
 
 def interfaz_principal() -> str:
@@ -546,6 +592,9 @@ def reportar_slots() -> list:
         if corriendo:
             puerto = PORT_BASE + n
             r.update(consultar_a2s(puerto))
+            # Solo si hay alguien: en un servidor vacío es una consulta a cambio de nada.
+            if r.get("players", 0) > 0:
+                r["nombres"] = consultar_nombres(puerto)
             # Solo se pregunta por los plugins si el servidor ya responde al juego: si no,
             # es RCON al vacío en cada vuelta.
             if r.get("map"):

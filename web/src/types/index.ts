@@ -47,6 +47,8 @@ export interface Slot {
   map?: string
   players?: number
   maxPlayers?: number
+  /** Quiénes están dentro, bots incluidos. Solo mientras hay partida. */
+  nombres?: string[]
   since?: number
   /** Presente solo si ACTIVO o VACIO. */
   connect?: string
