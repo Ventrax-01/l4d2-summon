@@ -35,6 +35,17 @@ sourcebans_site_url: "https://l4d2.ventrax.dev/"
 # La que se muestra en la lista de servidores del panel. Es solo presentación —el servidor
 # se identifica con sb_id— así que aquí va la que le sirve a la gente para conectarse.
 sourcebans_ip_publica: "38.253.185.38"
+
+# Grupo de permisos del panel. Sin uno, un admin no puede ni banear desde la web.
+sourcebans_grupo_operador: "Operador"
+
+# Lo primero que se lee al entrar. El instalador deja un texto sobre sí mismo; esto explica
+# de qué va la página a quien llega buscando su baneo.
+sourcebans_intro_titulo: "Ventrax's L4D2 Servers - SourceBans"
+sourcebans_intro_texto: >-
+  Aqui quedan los baneos y silencios de los servidores de l4d2.ventrax.dev.\n\nSi crees que
+  el tuyo es un error, puedes apelarlo. Y si alguien te arruino la partida, puedes
+  denunciarlo.
 # Para avisos de caducidad del certificado.
 sourcebans_email: ""
 # Con false se queda solo en la LAN y no se pide certificado. Útil para probar sin depender

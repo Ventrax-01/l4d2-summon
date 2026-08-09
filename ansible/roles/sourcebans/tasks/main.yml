@@ -318,6 +318,37 @@
     owner: "{{ steam_user }}"
     group: "{{ steam_user }}"
 
+# El instalador no crea ningún grupo de permisos, y sin grupo un admin del panel no tiene
+# nada: ni banear. Se crea el del operador con la `z` de root. Solo rige DENTRO del panel;
+# el mando en el juego sale de admins_simple.ini, que es otra cosa y no depende de la base.
+- name: Give the panel a group with full rights
+  ansible.builtin.command:
+    cmd: >-
+      docker exec sourcebans-db mariadb -u{{ sourcebans_db_user }} -p{{ sourcebans_db_pass }}
+      {{ sourcebans_db_name }} -e
+      "INSERT INTO sb_srvgroups (flags, immunity, name, groups_immune)
+       SELECT 'z', 100, '{{ sourcebans_grupo_operador }}', '' FROM DUAL
+       WHERE NOT EXISTS (SELECT 1 FROM sb_srvgroups WHERE name = '{{ sourcebans_grupo_operador }}');
+       UPDATE sb_admins SET srv_group = '{{ sourcebans_grupo_operador }}', immunity = 100
+       WHERE srv_group IS NULL OR srv_group = '';"
+  changed_when: false
+  when: config_presente | bool
+
+# El panel abre con un texto de bienvenida que trae puesto el instalador y que habla de la
+# instalación en vez de para qué sirve la página. Se queda ahí para siempre si nadie lo
+# cambia, y es lo primero que ve quien llega buscando su baneo.
+- name: Say what the panel is for, instead of that it got installed
+  ansible.builtin.command:
+    cmd: >-
+      docker exec sourcebans-db mariadb -u{{ sourcebans_db_user }} -p{{ sourcebans_db_pass }}
+      {{ sourcebans_db_name }} -e
+      "UPDATE sb_settings SET value = '{{ sourcebans_intro_titulo | replace(\"'\", \"''\") }}'
+         WHERE setting = 'dash.intro.title';
+       UPDATE sb_settings SET value = '{{ sourcebans_intro_texto | replace(\"'\", \"''\") }}'
+         WHERE setting = 'dash.intro.text';"
+  changed_when: false
+  when: config_presente | bool
+
 # SourceBans no descubre los servidores solo: hay que darlos de alta, y cada baneo guarda
 # el sid del servidor donde se puso. Si el servidor no está en la tabla el sid sale nulo y
 # el INSERT del baneo se cae entero.
