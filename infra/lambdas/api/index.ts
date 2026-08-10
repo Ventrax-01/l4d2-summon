@@ -117,8 +117,13 @@ async function estado(sesion: Sesion | null) {
     // La dirección solo se da si hay algo a lo que conectarse.
     connect:
       s.estado === 'ACTIVO' || s.estado === 'VACIO'
-        ? `steam://connect/${HOST_JUEGO}:${s.port}`
+        ? m.enlaceDeConexion(HOST_JUEGO, s.port)
         : undefined,
+    /* La misma dirección en crudo, para escribirla en la consola del juego. Hace falta
+       porque el enlace de Steam solo sirve con el juego cerrado: si ya está abierto, Steam
+       no le pasa el parámetro y no ocurre nada. */
+    direccion:
+      s.estado === 'ACTIVO' || s.estado === 'VACIO' ? `${HOST_JUEGO}:${s.port}` : undefined,
   }))
 
   const base = {
@@ -160,7 +165,8 @@ async function estado(sesion: Sesion | null) {
       slot: mio
         ? {
             index: mio.index,
-            connect: `steam://connect/${HOST_JUEGO}:${mio.port}`,
+            connect: m.enlaceDeConexion(HOST_JUEGO, mio.port),
+            direccion: `${HOST_JUEGO}:${mio.port}`,
             players: mio.players,
             map: mio.map ?? undefined,
             emptySince: mio.emptySince ?? null,

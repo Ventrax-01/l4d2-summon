@@ -87,8 +87,14 @@ void AplicarSiEsElDuenio(int client)
     PrintToChat(client, "%s Este servidor es tuyo: puedes echar jugadores y cambiar de mapa.", TAG);
 }
 
-/* La nube lo llama por RCON en cuanto el servidor responde. Responde OK porque el agente
- * espera esa palabra para dar la reserva por lista. */
+/* La nube lo llama por RCON en cuanto el servidor responde, y luego lo repite en cada vuelta
+ * mientras dure la reserva. Esa repetición es deliberada: el dueño vive en memoria de este
+ * plugin, así que cualquier recarga lo borra —y el paso a matchmode recarga TODOS los
+ * plugins, que es justo lo que pasa cuando alguien escribe !match nada más entrar.
+ *
+ * Por eso una llamada con el mismo SteamID no hace nada y no imprime nada: si no, serían
+ * cuatro líneas por minuto en la consola de cada servidor para no decir nada. Responde OK
+ * igualmente porque el agente espera esa palabra para dar la reserva por lista. */
 public Action CmdDarMando(int args)
 {
     if (args < 1)
@@ -97,7 +103,16 @@ public Action CmdDarMando(int args)
         return Plugin_Handled;
     }
 
-    GetCmdArg(1, g_Duenio, sizeof(g_Duenio));
+    char nuevo[32];
+    GetCmdArg(1, nuevo, sizeof(nuevo));
+
+    if (StrEqual(nuevo, g_Duenio))
+    {
+        PrintToServer("OK sin cambios");
+        return Plugin_Handled;
+    }
+
+    strcopy(g_Duenio, sizeof(g_Duenio), nuevo);
 
     // Puede que ya esté dentro esperando: se le da el mando ahora mismo.
     for (int i = 1; i <= MaxClients; i++)

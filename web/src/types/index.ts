@@ -52,6 +52,8 @@ export interface Slot {
   since?: number
   /** Presente solo si ACTIVO o VACIO. */
   connect?: string
+  /** `host:puerto` en crudo, para el comando de consola. Mismos estados que `connect`. */
+  direccion?: string
 }
 
 export interface Intent {
@@ -79,6 +81,8 @@ export interface EstadoCola {
 export interface MiSlot {
   index: number
   connect: string
+  /** `host:puerto` en crudo, para el comando de consola. */
+  direccion?: string
   players?: number
   map?: string
   emptySince?: number | null

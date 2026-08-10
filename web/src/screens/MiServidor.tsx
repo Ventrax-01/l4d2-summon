@@ -39,7 +39,7 @@ export default function MiServidor() {
     )
   }
 
-  const comando = comandoConnect(me.slot.connect)
+  const comando = comandoConnect(me.slot.direccion)
 
   async function copiar() {
     try {

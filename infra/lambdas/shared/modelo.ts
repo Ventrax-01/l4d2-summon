@@ -577,8 +577,20 @@ export function despiertaDeVerdad(h: Host): boolean {
 }
 
 /** Marca el slot como entregado y devuelve la dirección de conexión. */
+/* Identificador de Left 4 Dead 2 en Steam. Va explícito en el enlace por un motivo:
+   `steam://connect/host:puerto` obliga a Steam a consultar al servidor para averiguar de qué
+   juego se trata, y si esa consulta no le devuelve el identificador —cortafuegos, servidor
+   recién arrancado, o simplemente que no responde a tiempo— el enlace no hace nada en
+   absoluto: ni abre el juego ni avisa. Diciéndoselo nosotros, no hay nada que averiguar. */
+const APPID_L4D2 = 550
+
+/** El enlace que abre el juego y entra. Ver APPID_L4D2 para por qué no es `steam://connect`. */
+export function enlaceDeConexion(hostJuego: string, port: number): string {
+  return `steam://run/${APPID_L4D2}//+connect ${hostJuego}:${port}/`
+}
+
 export async function entregarSlot(index: number, port: number, hostJuego: string): Promise<string> {
-  const connect = `steam://connect/${hostJuego}:${port}`
+  const connect = enlaceDeConexion(hostJuego, port)
   await ddb.send(
     new UpdateCommand({
       TableName: TABLA,

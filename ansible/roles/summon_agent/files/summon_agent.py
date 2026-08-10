@@ -600,14 +600,20 @@ def reportar_slots() -> list:
             if r.get("map"):
                 r["pluginsOk"] = plugins_cargados(puerto)
 
-            # El admin se siembra en cuanto el servidor puede recibirlo.
+            # El admin se siembra en cuanto el servidor puede recibirlo, y se REAFIRMA en
+            # cada vuelta mientras dure la reserva. Lo segundo no es paranoia: el dueño vive
+            # en memoria del plugin, y el paso a matchmode recarga todos los plugins. Como
+            # casi todo el mundo escribe !match nada más entrar, el dueño perdía el mando a
+            # los pocos segundos de recibirlo y parecía que nunca se le había dado.
+            # Repetirlo sale gratis: con el mismo SteamID el plugin no hace nada.
             esperando = estado["pendiente_admin"].get(str(n))
-            if esperando and r.get("pluginsOk"):
-                if sembrar_admin(puerto, esperando):
-                    estado["sembrado"][str(n)] = esperando
+            duenio = esperando or estado["sembrado"].get(str(n))
+            if duenio and r.get("pluginsOk"):
+                if sembrar_admin(puerto, duenio) and esperando:
+                    estado["sembrado"][str(n)] = duenio
                     estado["pendiente_admin"].pop(str(n), None)
                     guardar_estado()
-                    log("admin sembrado", slot=n, steamId=esperando)
+                    log("admin sembrado", slot=n, steamId=duenio)
             # Solo se declara sembrado si de verdad se sembró, o si nunca hubo nada que
             # sembrar. Antes bastaba con no tener nada pendiente, y como lo pendiente vivía
             # en memoria, un reinicio del agente entregaba el servidor sin admin diciendo

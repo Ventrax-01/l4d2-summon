@@ -28,9 +28,11 @@ export function iniciales(nick?: string): string {
 
 /** Convierte "steam://connect/host:puerto" en "connect host:puerto" para copiar
     en la consola del juego. */
-export function comandoConnect(url?: string | null): string {
-  if (!url) return ''
-  return `connect ${url.replace('steam://connect/', '')}`
+/** Lo que se escribe en la consola del juego. Se arma con la dirección en crudo que da la
+    API y no recortando el enlace de Steam: ese enlace cambió de forma una vez y se llevó
+    esto por delante en silencio. */
+export function comandoConnect(direccion?: string | null): string {
+  return direccion ? `connect ${direccion}` : ''
 }
 
 /** Degradado de la miniatura del mapa (uno por campaña, como en el diseño). */
