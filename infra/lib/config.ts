@@ -6,6 +6,16 @@
 import type { App } from 'aws-cdk-lib'
 
 export interface AppConfig {
+  /* ¿Este despliegue es el dueño de los nombres de dominio?
+
+     Existe porque los nombres son exclusivos: CloudFront no admite dos distribuciones con
+     el mismo alias, y un registro de Route53 apunta a un sitio y solo a uno. Mientras se
+     prueba la versión en la nube, esta se los cede poniéndolo en false.
+
+     No borra nada más: la web, la API y los datos siguen aquí intactos, servidos por la
+     dirección propia de CloudFront. Volver es cambiar esto a true y desplegar. */
+  dominioActivo: boolean
+
   account: string
   regionApp: string
   regionCert: string
@@ -63,6 +73,7 @@ export function loadConfig(app: App): AppConfig {
   const prefijo: string = raw.ssmPrefix
 
   return {
+    dominioActivo: raw.dominioActivo !== false,
     ...raw,
     ssm: {
       steamApiKey: `${prefijo}/steam-web-api-key`,

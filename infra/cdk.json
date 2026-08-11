@@ -30,7 +30,8 @@
       "priceClass": "PriceClass_100",
       "ssmPrefix": "/l4d2-summon",
       "panelHostname": "sb.ventrax.dev",
-      "panelPort": 8443
+      "panelPort": 8443,
+      "dominioActivo": false
     },
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,

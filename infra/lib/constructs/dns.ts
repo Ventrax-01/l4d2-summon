@@ -23,6 +23,13 @@ export class Dns extends Construct {
       zoneName: config.hostedZoneName,
     })
 
+    /* Cedidos a otro despliegue: aquí no se declara ningún registro.
+
+       Los nombres son exclusivos —un registro apunta a un sitio y solo a uno—, así que
+       mientras la versión en la nube los use, esta no puede declararlos sin pisárselos.
+       Volver a tenerlos es poner `dominioActivo` en true y desplegar. */
+    if (!config.dominioActivo) return
+
     // La web. Los alias hacia recursos de AWS no cuentan como consultas facturables.
     const alias = route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribucion))
     new route53.ARecord(this, 'SitioA', {

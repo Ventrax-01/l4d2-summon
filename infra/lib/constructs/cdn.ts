@@ -86,8 +86,9 @@ function handler(event) {
 
     this.distribucion = new cloudfront.Distribution(this, 'Distribucion', {
       comment: 'l4d2-summon',
-      domainNames: [config.domainName],
-      certificate: certificado,
+      // Sin nombre propio, CloudFront sigue sirviendo por su dirección de siempre
+      // (dxxxx.cloudfront.net). No deja de funcionar: deja de responder a este nombre.
+      ...(config.dominioActivo ? { domainNames: [config.domainName], certificate: certificado } : {}),
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
       httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
